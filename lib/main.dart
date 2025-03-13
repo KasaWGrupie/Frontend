@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kasa_w_grupie/features/auth/login_screen.dart';
+import 'package:kasa_w_grupie/features/auth/register_screen.dart';
 import 'package:kasa_w_grupie/features/home/home_screen.dart';
 
 void main() async {
@@ -13,7 +15,16 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),
-      routes: [],
+      routes: [
+        GoRoute(
+          path: 'login',
+          builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: 'register',
+          builder: (context, state) => const RegisterScreen(),
+        ),
+      ],
     ),
   ],
 );

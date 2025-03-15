@@ -6,6 +6,9 @@ import 'package:kasa_w_grupie/features/auth/auth_service.dart';
 import 'package:kasa_w_grupie/features/auth/login_screen.dart';
 import 'package:kasa_w_grupie/features/auth/register_screen.dart';
 import 'package:kasa_w_grupie/features/home/home_screen.dart';
+import 'package:kasa_w_grupie/features/add_group/add_group_screen.dart';
+import 'package:kasa_w_grupie/features/add_group/add_group_cubit.dart';
+import 'package:kasa_w_grupie/features/add_group/group_service.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -27,6 +30,10 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'register',
           builder: (context, state) => const RegisterScreen(),
+        ),
+        GoRoute(
+          path: 'addGroup',
+          builder: (context, state) => const CreateGroupScreen(),
         ),
       ],
     ),
@@ -50,6 +57,10 @@ class _AppState extends State<_App> {
           create: (context) => AuthCubit(
             authService: context.read(),
           ),
+        ),
+        BlocProvider<AddGroupCubit>(
+          create: (context) => AddGroupCubit(
+              groupService: GroupServiceMock(authService: context.read())),
         ),
       ],
       child: MaterialApp.router(

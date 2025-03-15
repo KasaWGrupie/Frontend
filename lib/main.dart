@@ -1,19 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kasa_w_grupie/features/auth/auth_cubit.dart';
+import 'package:kasa_w_grupie/features/auth/auth_service.dart';
+import 'package:kasa_w_grupie/features/auth/login_screen.dart';
+import 'package:kasa_w_grupie/features/auth/register_screen.dart';
+import 'package:kasa_w_grupie/features/home/home_screen.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MainApp());
+void main() async {
+  runApp(
+    const _App(),
+  );
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+final GoRouter _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const HomeScreen(),
+      routes: [
+        GoRoute(
+          path: 'login',
+          builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: 'register',
+          builder: (context, state) => const RegisterScreen(),
+        ),
+      ],
+    ),
+  ],
+);
+
+class _App extends StatefulWidget {
+  const _App();
 
   @override
+  State<_App> createState() => _AppState();
+}
+
+class _AppState extends State<_App> {
+  @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
+    return MultiProvider(
+      providers: [
+        Provider<AuthService>(create: (context) => AuthServiceMock()),
+        BlocProvider<AuthCubit>(
+          create: (context) => AuthCubit(
+            authService: context.read(),
+          ),
         ),
+      ],
+      child: MaterialApp.router(
+        title: 'CashInGroup',
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.pink,
+          ),
+        ),
+        routerConfig: _router,
       ),
     );
   }

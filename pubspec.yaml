@@ -1,14 +1,18 @@
 name: kasa_w_grupie
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
   sdk: ^3.6.1
 
 dependencies:
+  equatable: ^2.0.7
   flutter:
     sdk: flutter
+  flutter_bloc: ^9.1.0
+  go_router: ^14.8.1
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:

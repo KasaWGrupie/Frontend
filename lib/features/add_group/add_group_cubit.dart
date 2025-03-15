@@ -12,6 +12,7 @@ class AddGroupCubit extends Cubit<AddGroupState> {
     required String name,
     String? description,
     required CurrencyEnum currency,
+    required String adminId,
     required List<String> members,
     required String invitationCode,
   }) async {
@@ -19,8 +20,6 @@ class AddGroupCubit extends Cubit<AddGroupState> {
     await Future<void>.delayed(const Duration(seconds: 1));
 
     try {
-      String adminId = await groupService.getUserId();
-
       final group = Group(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,

@@ -4,9 +4,15 @@ import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/features/add_group/add_group_cubit.dart';
 import 'package:kasa_w_grupie/core/group.dart';
 import 'package:kasa_w_grupie/core/widgets/base_screen.dart';
-
-import 'dart:math';
+import 'package:kasa_w_grupie/features/add_group/models/friend.dart';
 import 'package:flutter/services.dart';
+import 'package:kasa_w_grupie/core/user.dart';
+import 'package:kasa_w_grupie/features/add_group/widgets/friends_list.dart';
+import 'package:kasa_w_grupie/features/add_group/widgets/invitation_code_tile.dart';
+import 'package:kasa_w_grupie/features/auth/auth_service.dart';
+import 'package:kasa_w_grupie/features/add_group/widgets/group_photo.dart';
+import 'package:kasa_w_grupie/features/add_group/widgets/currency_list.dart';
+import 'dart:math';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -24,13 +30,22 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   CurrencyEnum selectedCurrency = CurrencyEnum.eur;
 
+  late final User currentUser;
+  late final List<Friend> friends;
+  bool isSelectingFriends = false;
+
   @override
   void initState() {
     super.initState();
+    // Fetch current user from AuthService
+    final authService = context.read<AuthService>();
+    currentUser = authService.currentUser!;
+
     invitationCodeController.text = generateInvitationCode();
+    friends = currentUser.getFriends();
   }
 
-  // Function simulating generating invitation code - to be changed
+  // Function generating invitation code - mock function, to be changed
   String generateInvitationCode({int length = 8}) {
     const chars =
         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -69,6 +84,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     key: _formKey,
                     child: ListView(
                       children: [
+                        // Group photo field
+                        const GroupPhotoWithAddButton(),
+                        const SizedBox(height: 16),
+
                         // Group name field
                         TextFormField(
                           controller: nameController,
@@ -89,85 +108,73 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           decoration: InputDecoration(
                             labelText: 'Group Description (optional)',
                             border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade400),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
 
                         // Currency field
-                        DropdownButtonFormField<CurrencyEnum>(
-                          value: selectedCurrency,
-                          decoration: InputDecoration(
-                            labelText: 'Currency',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                          ),
-                          items: CurrencyEnum.values.map((currency) {
-                            return DropdownMenuItem<CurrencyEnum>(
-                              value: currency,
-                              child: Text(currency.name.toUpperCase()),
-                            );
-                          }).toList(),
-                          onChanged: (CurrencyEnum? value) {
-                            if (value != null) {
-                              setState(() => selectedCurrency = value);
-                            }
+                        CurrencySelector(
+                          selectedCurrency: selectedCurrency,
+                          onCurrencySelected: (currency) {
+                            setState(() {
+                              selectedCurrency = currency;
+                            });
                           },
-                          validator: (value) =>
-                              value == null ? 'Please select a currency' : null,
+                          isSelectingFriends: isSelectingFriends,
+                          onExpansionChanged: (expanded) {
+                            setState(() {
+                              isSelectingFriends = expanded;
+                            });
+                          },
                         ),
                         const SizedBox(height: 16),
 
                         // Add members field
-                        TextFormField(
-                          controller: membersController,
-                          decoration: InputDecoration(
-                            labelText: 'Members',
-                            hintText: 'Enter member emails (comma separated)',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                          ),
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Please enter member emails'
-                              : null,
+                        FriendSelector(
+                          friends: friends,
+                          isSelectingFriends: isSelectingFriends,
+                          onExpansionChanged: (expanded) {
+                            setState(() {
+                              isSelectingFriends = expanded;
+                            });
+                          },
+                          onFriendToggle: (friend) {
+                            setState(() {
+                              friend.isSelected = !friend.isSelected;
+                            });
+                          },
                         ),
+
                         const SizedBox(height: 16),
 
                         // Copy invitation code field
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: invitationCodeController,
-                                decoration: InputDecoration(
-                                  labelText: 'Invitation Code',
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                ),
-                                readOnly: true,
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.copy),
-                              onPressed: () => copyToClipboard(
-                                  invitationCodeController.text),
-                            ),
-                          ],
+                        InvitationCodeField(
+                          controller: invitationCodeController,
+                          onCopyPressed: () {
+                            copyToClipboard(invitationCodeController.text);
+                          },
                         ),
+
                         const SizedBox(height: 16),
 
                         // Create group button
                         ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
+                              List<String> selectedMembersIds = friends
+                                  .where((friend) => friend.isSelected)
+                                  .map((friend) => friend.id)
+                                  .toList();
                               await context.read<AddGroupCubit>().addGroup(
                                     name: nameController.text,
                                     description: descriptionController.text,
                                     currency: selectedCurrency,
-                                    members: membersController.text
-                                        .split(',')
-                                        .map((e) => e.trim())
-                                        .toList(),
+                                    adminId: currentUser.id,
+                                    members: selectedMembersIds,
                                     invitationCode:
                                         invitationCodeController.text,
                                   );

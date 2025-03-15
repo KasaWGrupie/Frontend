@@ -1,10 +1,8 @@
 import 'package:kasa_w_grupie/core/group.dart';
 import 'package:kasa_w_grupie/features/auth/auth_service.dart';
-import 'package:kasa_w_grupie/core/user.dart';
 
 abstract class GroupService {
   Future<String?> addGroup(Group group);
-  Future<String> getUserId();
 
   Future<List<Group>> getGroupsForUser();
 }
@@ -25,15 +23,6 @@ class GroupServiceMock implements GroupService {
     } catch (e) {
       return 'Failed to create group: $e';
     }
-  }
-
-  @override
-  Future<String> getUserId() async {
-    final User? currUser = authService.currentUser;
-    if (currUser == null) {
-      throw Exception("No user is currently signed in.");
-    }
-    return currUser.id;
   }
 
   @override

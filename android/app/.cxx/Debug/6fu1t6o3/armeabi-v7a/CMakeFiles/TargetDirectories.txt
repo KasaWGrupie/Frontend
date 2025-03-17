@@ -1,2 +1,0 @@
-/home/annap/Pulpit/IO_2/IO_Frontend/android/app/.cxx/Debug/6fu1t6o3/armeabi-v7a/CMakeFiles/edit_cache.dir
-/home/annap/Pulpit/IO_2/IO_Frontend/android/app/.cxx/Debug/6fu1t6o3/armeabi-v7a/CMakeFiles/rebuild_cache.dir

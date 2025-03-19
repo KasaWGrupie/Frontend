@@ -1,4 +1,4 @@
-import 'package:kasa_w_grupie/core/user.dart';
+import 'package:kasa_w_grupie/models/user.dart';
 
 enum SignInResult {
   invalidEmail,
@@ -20,7 +20,6 @@ abstract class AuthService {
   User? get currentUser;
 
   Future<SignInResult> signInWithEmail(String email, String password);
-
 
   // Returns error message in case of error, null otherwise
 
@@ -96,7 +95,6 @@ class AuthServiceMock implements AuthService {
     _users[email] = newUser;
 
     return null;
-
   }
 
   @override

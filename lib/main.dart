@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kasa_w_grupie/features/auth/auth_cubit.dart';
-import 'package:kasa_w_grupie/features/auth/auth_service.dart';
-import 'package:kasa_w_grupie/features/auth/login_screen.dart';
-import 'package:kasa_w_grupie/features/auth/register_screen.dart';
-import 'package:kasa_w_grupie/features/home/home_screen.dart';
+import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/screens/login_screen.dart';
+import 'package:kasa_w_grupie/screens/register_screen.dart';
+import 'package:kasa_w_grupie/screens/home_screen.dart';
 
-import 'package:kasa_w_grupie/features/add_group/add_group_screen.dart';
-import 'package:kasa_w_grupie/features/add_group/add_group_cubit.dart';
-import 'package:kasa_w_grupie/features/add_group/group_service.dart';
+import 'package:kasa_w_grupie/screens/add_group_screen/add_group_screen.dart';
+import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
+import 'package:kasa_w_grupie/services/group_service.dart';
 
 import 'package:provider/provider.dart';
 
@@ -36,12 +36,10 @@ final GoRouter _router = GoRouter(
           path: 'register',
           builder: (context, state) => const RegisterScreen(),
         ),
-
         GoRoute(
           path: 'addGroup',
           builder: (context, state) => const CreateGroupScreen(),
         ),
-
       ],
     ),
   ],
@@ -65,12 +63,10 @@ class _AppState extends State<_App> {
             authService: context.read(),
           ),
         ),
-
         BlocProvider<AddGroupCubit>(
           create: (context) => AddGroupCubit(
               groupService: GroupServiceMock(authService: context.read())),
         ),
-
       ],
       child: MaterialApp.router(
         title: 'CashInGroup',

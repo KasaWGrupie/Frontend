@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kasa_w_grupie/features/auth/auth_service.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 
 class RegisterCubit extends Cubit<RegisterState> {
   RegisterCubit({required this.authService})

@@ -1,5 +1,5 @@
-import 'package:kasa_w_grupie/core/group.dart';
-import 'package:kasa_w_grupie/features/auth/auth_service.dart';
+import 'package:kasa_w_grupie/models/group.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 
 abstract class GroupService {
   Future<String?> addGroup(Group group);

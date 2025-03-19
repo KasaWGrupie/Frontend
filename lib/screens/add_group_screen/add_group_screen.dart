@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kasa_w_grupie/features/add_group/add_group_cubit.dart';
-import 'package:kasa_w_grupie/core/group.dart';
-import 'package:kasa_w_grupie/core/widgets/base_screen.dart';
-import 'package:kasa_w_grupie/features/add_group/models/friend.dart';
+import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
+import 'package:kasa_w_grupie/models/friend.dart';
+import 'package:kasa_w_grupie/models/group.dart';
+import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:flutter/services.dart';
-import 'package:kasa_w_grupie/core/user.dart';
-import 'package:kasa_w_grupie/features/add_group/widgets/friends_list.dart';
-import 'package:kasa_w_grupie/features/add_group/widgets/invitation_code_tile.dart';
-import 'package:kasa_w_grupie/features/auth/auth_service.dart';
-import 'package:kasa_w_grupie/features/add_group/widgets/group_photo.dart';
-import 'package:kasa_w_grupie/features/add_group/widgets/currency_list.dart';
+import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/screens/add_group_screen/widgets/friends_list.dart';
+import 'package:kasa_w_grupie/screens/add_group_screen/widgets/invitation_code_tile.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/screens/add_group_screen/widgets/group_photo.dart';
+import 'package:kasa_w_grupie/screens/add_group_screen/widgets/currency_list.dart';
 import 'dart:math';
 
 class CreateGroupScreen extends StatefulWidget {

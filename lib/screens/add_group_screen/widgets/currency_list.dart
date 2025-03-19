@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kasa_w_grupie/core/group.dart';
+import 'package:kasa_w_grupie/models/group.dart';
 
 class CurrencySelector extends StatelessWidget {
   final CurrencyEnum selectedCurrency;

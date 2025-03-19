@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kasa_w_grupie/features/add_group/group_service.dart';
-import 'package:kasa_w_grupie/core/group.dart';
+import 'package:kasa_w_grupie/services/group_service.dart';
+import 'package:kasa_w_grupie/models/group.dart';
 
 class AddGroupCubit extends Cubit<AddGroupState> {
   final GroupService groupService;

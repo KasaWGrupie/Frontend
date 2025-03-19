@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kasa_w_grupie/features/add_group/models/friend.dart';
-import 'package:kasa_w_grupie/features/add_group/widgets/friend_selection_tile.dart';
+import 'package:kasa_w_grupie/models/friend.dart';
+import 'package:kasa_w_grupie/screens/add_group_screen/widgets/friend_selection_tile.dart';
 
 class FriendSelector extends StatelessWidget {
   final List<Friend> friends;

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kasa_w_grupie/features/auth/auth_service.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit({required this.authService}) : super(authService.stateFromAuth) {
@@ -52,7 +52,6 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<String?> trySignUp(String email, String password, String name) =>
       authService.signUpWithEmail(email, password, name);
-
 
   void resetError() {
     if (state is SignedOutState) {

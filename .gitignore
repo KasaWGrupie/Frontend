@@ -44,4 +44,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+
+/android/.gradle/
+/android/app/build/
+/android/build/
+/android/app/.cxx/
+/android/.idea/
+
 .env

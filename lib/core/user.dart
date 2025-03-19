@@ -1,3 +1,7 @@
+
+import 'package:kasa_w_grupie/features/add_group/models/friend.dart';
+
+
 class User {
   User({required this.name, required this.id, required this.email});
   User.fromJson(Map<String, Object> json) {
@@ -17,4 +21,17 @@ class User {
       'email': email,
     };
   }
+
+
+  List<Friend> getFriends() {
+    return [
+      Friend(id: "1", name: "Alice Johnson", email: "alice@example.com"),
+      Friend(id: "2", name: "Bob Smith", email: "bob@example.com"),
+      Friend(id: "3", name: "Charlie Brown", email: "charlie@example.com"),
+      Friend(id: "4", name: "Alice Johnson", email: "alice@example.com"),
+      Friend(id: "5", name: "Bob Smith", email: "bob@example.com"),
+      Friend(id: "6", name: "Charlie Brown", email: "charlie@example.com"),
+    ];
+  }
+
 }

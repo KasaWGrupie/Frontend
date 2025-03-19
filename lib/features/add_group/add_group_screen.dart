@@ -1,0 +1,204 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kasa_w_grupie/features/add_group/add_group_cubit.dart';
+import 'package:kasa_w_grupie/core/group.dart';
+import 'package:kasa_w_grupie/core/widgets/base_screen.dart';
+import 'package:kasa_w_grupie/features/add_group/models/friend.dart';
+import 'package:flutter/services.dart';
+import 'package:kasa_w_grupie/core/user.dart';
+import 'package:kasa_w_grupie/features/add_group/widgets/friends_list.dart';
+import 'package:kasa_w_grupie/features/add_group/widgets/invitation_code_tile.dart';
+import 'package:kasa_w_grupie/features/auth/auth_service.dart';
+import 'package:kasa_w_grupie/features/add_group/widgets/group_photo.dart';
+import 'package:kasa_w_grupie/features/add_group/widgets/currency_list.dart';
+import 'dart:math';
+
+class CreateGroupScreen extends StatefulWidget {
+  const CreateGroupScreen({super.key});
+
+  @override
+  State<CreateGroupScreen> createState() => _CreateGroupScreenState();
+}
+
+class _CreateGroupScreenState extends State<CreateGroupScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final nameController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final invitationCodeController = TextEditingController();
+  final membersController = TextEditingController();
+
+  CurrencyEnum selectedCurrency = CurrencyEnum.eur;
+
+  late final User currentUser;
+  late final List<Friend> friends;
+  bool isSelectingFriends = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch current user from AuthService
+    final authService = context.read<AuthService>();
+    currentUser = authService.currentUser!;
+
+    invitationCodeController.text = generateInvitationCode();
+    friends = currentUser.getFriends();
+  }
+
+  // Function generating invitation code - mock function, to be changed
+  String generateInvitationCode({int length = 8}) {
+    const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    Random rand = Random();
+    return List.generate(length, (index) => chars[rand.nextInt(chars.length)])
+        .join();
+  }
+
+  // Helper funcion for copying invitation code
+  void copyToClipboard(String code) {
+    Clipboard.setData(ClipboardData(text: code));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Invitation code copied to clipboard!')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => AddGroupCubit(
+          groupService: context.read<AddGroupCubit>().groupService),
+      child: BlocListener<AddGroupCubit, AddGroupState>(
+        listener: (context, state) {
+          if (state.isSuccess) {
+            context.pop();
+          }
+        },
+        child: BaseScreen(
+          title: 'Create Group',
+          child: BlocBuilder<AddGroupCubit, AddGroupState>(
+            builder: (context, state) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    child: ListView(
+                      children: [
+                        // Group photo field
+                        const GroupPhotoWithAddButton(),
+                        const SizedBox(height: 16),
+
+                        // Group name field
+                        TextFormField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                            labelText: 'Group Name',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Please enter a group name'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Group description field
+                        TextFormField(
+                          controller: descriptionController,
+                          decoration: InputDecoration(
+                            labelText: 'Group Description (optional)',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade400),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Currency field
+                        CurrencySelector(
+                          selectedCurrency: selectedCurrency,
+                          onCurrencySelected: (currency) {
+                            setState(() {
+                              selectedCurrency = currency;
+                            });
+                          },
+                          isSelectingFriends: isSelectingFriends,
+                          onExpansionChanged: (expanded) {
+                            setState(() {
+                              isSelectingFriends = expanded;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Add members field
+                        FriendSelector(
+                          friends: friends,
+                          isSelectingFriends: isSelectingFriends,
+                          onExpansionChanged: (expanded) {
+                            setState(() {
+                              isSelectingFriends = expanded;
+                            });
+                          },
+                          onFriendToggle: (friend) {
+                            setState(() {
+                              friend.isSelected = !friend.isSelected;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Copy invitation code field
+                        InvitationCodeField(
+                          controller: invitationCodeController,
+                          onCopyPressed: () {
+                            copyToClipboard(invitationCodeController.text);
+                          },
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Create group button
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              List<String> selectedMembersIds = friends
+                                  .where((friend) => friend.isSelected)
+                                  .map((friend) => friend.id)
+                                  .toList();
+                              await context.read<AddGroupCubit>().addGroup(
+                                    name: nameController.text,
+                                    description: descriptionController.text,
+                                    currency: selectedCurrency,
+                                    adminId: currentUser.id,
+                                    members: selectedMembersIds,
+                                    invitationCode:
+                                        invitationCodeController.text,
+                                  );
+                            }
+                          },
+                          child: const Text('Create Group'),
+                        ),
+                        const SizedBox(height: 16),
+                        if (state.error != null) ...[
+                          Text(state.error!,
+                              style: const TextStyle(color: Colors.red)),
+                          const SizedBox(height: 16),
+                        ] else if (state.isLoading) ...[
+                          const CircularProgressIndicator(),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}

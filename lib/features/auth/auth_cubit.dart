@@ -53,6 +53,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<String?> trySignUp(String email, String password, String name) =>
       authService.signUpWithEmail(email, password, name);
 
+
   void resetError() {
     if (state is SignedOutState) {
       emit(SignedOutState());

@@ -30,7 +30,9 @@ class BaseScreen extends StatelessWidget {
             Expanded(
               child: IconButton(
                 onPressed: () {
+
                   context.go('/addGroup');
+
                 },
                 icon: const Icon(Icons.list),
               ),

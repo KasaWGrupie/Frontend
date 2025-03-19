@@ -21,6 +21,9 @@ abstract class AuthService {
 
   Future<SignInResult> signInWithEmail(String email, String password);
 
+
+  // Returns error message in case of error, null otherwise
+
   Future<String?> signUpWithEmail(
     String email,
     String password,
@@ -91,7 +94,9 @@ class AuthServiceMock implements AuthService {
         name: name,
         email: email);
     _users[email] = newUser;
-    return 'User registered successfully';
+
+    return null;
+
   }
 
   @override

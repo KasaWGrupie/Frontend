@@ -1,4 +1,6 @@
+
 import 'package:kasa_w_grupie/features/add_group/models/friend.dart';
+
 
 class User {
   User({required this.name, required this.id, required this.email});
@@ -20,6 +22,7 @@ class User {
     };
   }
 
+
   List<Friend> getFriends() {
     return [
       Friend(id: "1", name: "Alice Johnson", email: "alice@example.com"),
@@ -30,4 +33,5 @@ class User {
       Friend(id: "6", name: "Charlie Brown", email: "charlie@example.com"),
     ];
   }
+
 }

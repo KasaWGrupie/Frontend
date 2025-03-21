@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
+import 'package:kasa_w_grupie/screens/friends_screen.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/screens/login_screen.dart';
 import 'package:kasa_w_grupie/screens/register_screen.dart';
@@ -39,6 +40,10 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'addGroup',
           builder: (context, state) => const CreateGroupScreen(),
+        ),
+        GoRoute(
+          path: 'friends',
+          builder: (context, state) => const FriendsScreen(),
         ),
       ],
     ),

@@ -199,7 +199,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                               style: const TextStyle(color: Colors.red)),
                           const SizedBox(height: 16),
                         ] else if (state.isLoading) ...[
-                          const CircularProgressIndicator(),
+                          Center(
+                            child: const CircularProgressIndicator(),
+                          ),
                         ],
                       ],
                     ),

@@ -43,6 +43,23 @@ final GoRouter _router = GoRouter(
       ],
     ),
   ],
+  redirect: (context, state) async {
+    final loggedIn = BlocProvider.of<AuthCubit>(context).isSignedIn();
+    final loggingIn = state.matchedLocation == '/login';
+    final signingIn = state.matchedLocation == '/register';
+    final inHome = state.matchedLocation == '/';
+    if (inHome) return '/';
+    if (!loggedIn) {
+      if (signingIn) {
+        return '/register';
+      }
+      return '/login';
+    }
+    if (loggingIn || signingIn) {
+      return '/groups';
+    }
+    return null;
+  },
 );
 
 class _App extends StatefulWidget {

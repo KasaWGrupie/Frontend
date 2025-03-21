@@ -42,7 +42,18 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     currentUser = authService.currentUser!;
 
     invitationCodeController.text = generateInvitationCode();
-    friends = currentUser.getFriends();
+    friends = parseUsersToFriends(currentUser.getFriends());
+  }
+
+  // Function converting list of Users to list of Friends
+  List<Friend> parseUsersToFriends(List<User> list) {
+    return list.map((user) {
+      return Friend(
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      );
+    }).toList();
   }
 
   // Function generating invitation code - mock function, to be changed
@@ -188,7 +199,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                               style: const TextStyle(color: Colors.red)),
                           const SizedBox(height: 16),
                         ] else if (state.isLoading) ...[
-                          const CircularProgressIndicator(),
+                          Center(
+                            child: const CircularProgressIndicator(),
+                          ),
                         ],
                       ],
                     ),

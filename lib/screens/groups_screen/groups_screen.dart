@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
 import 'package:kasa_w_grupie/cubits/groups_cubit.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
@@ -13,10 +12,8 @@ class GroupsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authCubit = context.read<AuthCubit>();
     return BlocProvider(
-      create: (context) =>
-          GroupsCubit(context.read<GroupService>(), authCubit.userUid)..fetch(),
+      create: (context) => GroupsCubit(context.read<GroupService>())..fetch(),
       child: BaseScreen(
         floatingActionButton: FloatingActionButton(
           onPressed: () => context.go('/addGroup'),

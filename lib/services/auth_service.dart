@@ -33,7 +33,9 @@ abstract class AuthService {
 }
 
 class AuthServiceMock implements AuthService {
-  final Map<String, User> _users = {};
+  final Map<String, User> _users = {
+    "test@test.com": User(name: "test", id: "0", email: "test@test.com")
+  };
   User? _currentUser;
   bool _isSignedIn = false;
 

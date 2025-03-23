@@ -11,8 +11,13 @@ class FriendsLoading extends FriendsState {}
 class FriendsLoaded extends FriendsState {
   final List<User> friends;
   final List<User> friendRequests;
+  final List<User> sentRequests;
 
-  FriendsLoaded({required this.friends, required this.friendRequests});
+  FriendsLoaded({
+    required this.friends,
+    required this.friendRequests,
+    required this.sentRequests,
+  });
 }
 
 class FriendsError extends FriendsState {
@@ -25,13 +30,17 @@ class FriendsCubit extends Cubit<FriendsState> {
 
   FriendsCubit({required this.friendsService}) : super(FriendsInitial());
 
-  // Load both friends and incoming requests
+  // Load friends, incoming and sent requests
   Future<void> loadFriends() async {
     emit(FriendsLoading());
     try {
       final friends = await friendsService.getFriends();
       final friendRequests = await friendsService.getFriendRequests();
-      emit(FriendsLoaded(friends: friends, friendRequests: friendRequests));
+      final sentRequests = await friendsService.getSentRequests();
+      emit(FriendsLoaded(
+          friends: friends,
+          friendRequests: friendRequests,
+          sentRequests: sentRequests));
     } catch (e) {
       emit(FriendsError("Failed to load data"));
     }
@@ -45,7 +54,11 @@ class FriendsCubit extends Cubit<FriendsState> {
       // After accepting the request, reload friends and requests
       final friends = await friendsService.getFriends();
       final friendRequests = await friendsService.getFriendRequests();
-      emit(FriendsLoaded(friends: friends, friendRequests: friendRequests));
+      final sentRequests = await friendsService.getSentRequests();
+      emit(FriendsLoaded(
+          friends: friends,
+          friendRequests: friendRequests,
+          sentRequests: sentRequests));
     } catch (e) {
       emit(FriendsError("Failed to accept request"));
     }
@@ -59,7 +72,11 @@ class FriendsCubit extends Cubit<FriendsState> {
       // After declining the request, reload friends and requests
       final friends = await friendsService.getFriends();
       final friendRequests = await friendsService.getFriendRequests();
-      emit(FriendsLoaded(friends: friends, friendRequests: friendRequests));
+      final sentRequests = await friendsService.getSentRequests();
+      emit(FriendsLoaded(
+          friends: friends,
+          friendRequests: friendRequests,
+          sentRequests: sentRequests));
     } catch (e) {
       emit(FriendsError("Failed to decline request"));
     }
@@ -69,19 +86,23 @@ class FriendsCubit extends Cubit<FriendsState> {
   Future<void> sendFriendRequest(String email) async {
     emit(FriendsLoading());
     try {
-      // Send friend request through service
+      // Send friend request
       await friendsService.sendFriendRequest(email);
 
       // After sending the request, reload friends and friend requests
       final friends = await friendsService.getFriends();
       final friendRequests = await friendsService.getFriendRequests();
-      emit(FriendsLoaded(friends: friends, friendRequests: friendRequests));
+      final sentRequests = await friendsService.getSentRequests();
+      emit(FriendsLoaded(
+          friends: friends,
+          friendRequests: friendRequests,
+          sentRequests: sentRequests));
     } catch (e) {
       emit(FriendsError("Failed to send friend request"));
     }
   }
 
-  // Remove a friend (unfriend)
+  // Remove a friend
   Future<void> removeFriend(String friendId) async {
     try {
       await friendsService.removeFriend(friendId);
@@ -89,9 +110,33 @@ class FriendsCubit extends Cubit<FriendsState> {
       // After removing the friend, reload the friends list
       final friends = await friendsService.getFriends();
       final friendRequests = await friendsService.getFriendRequests();
-      emit(FriendsLoaded(friends: friends, friendRequests: friendRequests));
+      final sentRequests = await friendsService.getSentRequests();
+      emit(FriendsLoaded(
+          friends: friends,
+          friendRequests: friendRequests,
+          sentRequests: sentRequests));
     } catch (e) {
       emit(FriendsError("Failed to remove friend"));
+    }
+  }
+
+  // Withdraw friend request sent by logged-in user
+  Future<void> withdrawFriendRequest(String friendId) async {
+    try {
+      await friendsService.withdrawFriendRequest(friendId);
+
+      // Reload updated sent requests
+      final friends = await friendsService.getFriends();
+      final friendRequests = await friendsService.getFriendRequests();
+      final sentRequests = await friendsService.getSentRequests();
+
+      emit(FriendsLoaded(
+        friends: friends,
+        friendRequests: friendRequests,
+        sentRequests: sentRequests,
+      ));
+    } catch (e) {
+      emit(FriendsError("Failed to withdraw friend request"));
     }
   }
 }

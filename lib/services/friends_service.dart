@@ -32,13 +32,12 @@ class FriendsService {
     "6",
     "7",
     "8",
-    "9",
-    "10",
-    "11",
-    "12"
   ];
 
-  final List<String> sentByUserRequests = [];
+  final List<String> sentByUserRequests = [
+    "10",
+    "11",
+  ];
 
   // Fetch friends for the logged-in user
   Future<List<User>> getFriends() async {
@@ -50,6 +49,13 @@ class FriendsService {
   Future<List<User>> getFriendRequests() async {
     await Future.delayed(Duration(milliseconds: 250));
     return mockUsers.where((user) => friendRequests.contains(user.id)).toList();
+  }
+
+  Future<List<User>> getSentRequests() async {
+    await Future.delayed(Duration(milliseconds: 250));
+    return mockUsers
+        .where((user) => sentByUserRequests.contains(user.id))
+        .toList();
   }
 
   // Accept friend request
@@ -69,6 +75,7 @@ class FriendsService {
     friendRequests.remove(friendId);
   }
 
+  // Get User object based on email
   Future<User?> getUserByEmail(String email) async {
     if (mockUsers.any((user) => user.email == email)) {
       return mockUsers.firstWhere((user) => user.email == email);
@@ -89,6 +96,19 @@ class FriendsService {
     }
   }
 
+  // Withdraw friend request sent by logged-in user
+  Future<void> withdrawFriendRequest(String friendId) async {
+    await Future.delayed(Duration(milliseconds: 100));
+    sentByUserRequests.remove(friendId);
+  }
+
+  // Delete user from logged-in user friends list
+  Future<void> removeFriend(String targetUserId) async {
+    await Future.delayed(Duration(milliseconds: 100));
+
+    friendships.removeWhere((user) => user == targetUserId);
+  }
+
   bool isAlreadyFriend(String targetUserId) {
     return friendships.any((user) => user == targetUserId);
   }
@@ -99,11 +119,5 @@ class FriendsService {
 
   bool isRequestReceived(String targetUserId) {
     return friendRequests.any((user) => user == targetUserId);
-  }
-
-  Future<void> removeFriend(String targetUserId) async {
-    await Future.delayed(Duration(milliseconds: 100));
-
-    friendships.removeWhere((user) => user == targetUserId);
   }
 }

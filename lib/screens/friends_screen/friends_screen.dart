@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/friends_cubit.dart';
-import 'package:kasa_w_grupie/screens/friends_screen/widgets/incoming_requests_tab.dart';
-import 'package:kasa_w_grupie/screens/friends_screen/widgets/my_friends_tab.dart';
+import 'package:kasa_w_grupie/screens/friends_screen/widgets/tabs/incoming_requests_tab.dart';
+import 'package:kasa_w_grupie/screens/friends_screen/widgets/tabs/my_friends_tab.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/widgets/search_delegate.dart';
+import 'package:kasa_w_grupie/screens/friends_screen/widgets/tabs/sent_requests_tab.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 
@@ -45,13 +46,14 @@ class FriendsScreen extends StatelessWidget {
           ),
         ),
         body: DefaultTabController(
-          length: 2,
+          length: 3,
           child: Column(
             children: [
               TabBar(
                 tabs: [
                   Tab(icon: Icon(Icons.people), text: "My Friends"),
                   Tab(icon: Icon(Icons.group_add), text: "Requests"),
+                  Tab(icon: Icon(Icons.hourglass_bottom), text: "My Requests"),
                 ],
               ),
               Expanded(
@@ -59,6 +61,7 @@ class FriendsScreen extends StatelessWidget {
                   children: [
                     MyFriendsTab(),
                     IncomingRequestsTab(),
+                    SentRequestsTab(),
                   ],
                 ),
               ),

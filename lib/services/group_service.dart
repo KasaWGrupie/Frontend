@@ -10,7 +10,17 @@ abstract class GroupService {
 class GroupServiceMock implements GroupService {
   final AuthService authService;
 
-  final List<Group> _allGroups = [];
+  final List<Group> _allGroups = [
+    Group(
+      id: "0",
+      name: "Wycieczka Marki",
+      currency: CurrencyEnum.pln,
+      status: GroupStatus.active,
+      adminId: "0",
+      membersId: ["0"],
+      invitationCode: "fjh4390h094",
+    ),
+  ];
 
   GroupServiceMock({required this.authService});
 

@@ -20,6 +20,7 @@ class FriendsService {
     User(id: "10", name: "Jane Juice", email: "jane3@example.com"),
     User(id: "11", name: "Alice Wood", email: "alice3@example.com"),
     User(id: "12", name: "Bob Builder", email: "bob3@example.com"),
+    User(id: "13", name: "John Snow", email: "johnSnow@example.com"),
   ];
 
   // Mock friendships for logged-in user
@@ -36,6 +37,8 @@ class FriendsService {
     "11",
     "12"
   ];
+
+  final List<String> sentByUserRequests = [];
 
   // Fetch friends for the logged-in user
   Future<List<User>> getFriends() async {
@@ -64,5 +67,43 @@ class FriendsService {
   Future<void> declineFriendRequest(String friendId) async {
     await Future.delayed(Duration(milliseconds: 100));
     friendRequests.remove(friendId);
+  }
+
+  Future<User?> getUserByEmail(String email) async {
+    if (mockUsers.any((user) => user.email == email)) {
+      return mockUsers.firstWhere((user) => user.email == email);
+    }
+    return null;
+  }
+
+  // Send a friend request to another user by their email
+  Future<void> sendFriendRequest(String email) async {
+    await Future.delayed(Duration(milliseconds: 500));
+
+    User? user = await getUserByEmail(email);
+
+    if (user != null && user.id != currentUserId) {
+      sentByUserRequests.add(user.id);
+    } else {
+      throw Exception("User not found or invalid request.");
+    }
+  }
+
+  bool isAlreadyFriend(String targetUserId) {
+    return friendships.any((user) => user == targetUserId);
+  }
+
+  bool isRequestSentByUser(String targetUserId) {
+    return sentByUserRequests.any((user) => user == targetUserId);
+  }
+
+  bool isRequestReceived(String targetUserId) {
+    return friendRequests.any((user) => user == targetUserId);
+  }
+
+  Future<void> removeFriend(String targetUserId) async {
+    await Future.delayed(Duration(milliseconds: 100));
+
+    friendships.removeWhere((user) => user == targetUserId);
   }
 }

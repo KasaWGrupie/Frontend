@@ -29,7 +29,7 @@ class IncomingRequestsTab extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 20,
-                      backgroundColor: Colors.green,
+                      backgroundColor: const Color.fromARGB(255, 119, 180, 121),
                       child: IconButton(
                         onPressed: () {
                           context
@@ -42,7 +42,7 @@ class IncomingRequestsTab extends StatelessWidget {
                     SizedBox(width: 8),
                     CircleAvatar(
                       radius: 20,
-                      backgroundColor: Colors.red,
+                      backgroundColor: const Color.fromARGB(255, 231, 79, 79),
                       child: IconButton(
                         onPressed: () {
                           context

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/friends_cubit.dart';
-import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/widgets/incoming_requests_tab.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/widgets/my_friends_tab.dart';
+import 'package:kasa_w_grupie/screens/friends_screen/widgets/search_delegate.dart';
+import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 
 class FriendsScreen extends StatelessWidget {
@@ -17,36 +18,50 @@ class FriendsScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => FriendsCubit(
         friendsService: FriendsService(currentUserId: currentUser.id),
-        currentUserId: currentUser.id,
       )..loadFriends(),
-      child: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            title: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search to add friends...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: BorderSide.none,
+      child: Scaffold(
+        appBar: AppBar(
+          title: TextField(
+            onTap: () {
+              showSearch(
+                context: context,
+                delegate: FriendSearchDelegate(
+                  friendsService: FriendsService(currentUserId: currentUser.id),
+                  currentUserId: currentUser.id,
                 ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: EdgeInsets.symmetric(vertical: 10.0),
+              );
+            },
+            decoration: InputDecoration(
+              hintText: 'Search to add friends...',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30.0),
+                borderSide: BorderSide.none,
               ),
-            ),
-            bottom: TabBar(
-              tabs: [
-                Tab(icon: Icon(Icons.people), text: "My Friends"),
-                Tab(icon: Icon(Icons.group_add), text: "Requests"),
-              ],
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: EdgeInsets.symmetric(vertical: 10.0),
             ),
           ),
-          body: TabBarView(
+        ),
+        body: DefaultTabController(
+          length: 2,
+          child: Column(
             children: [
-              MyFriendsTab(),
-              IncomingRequestsTab(),
+              TabBar(
+                tabs: [
+                  Tab(icon: Icon(Icons.people), text: "My Friends"),
+                  Tab(icon: Icon(Icons.group_add), text: "Requests"),
+                ],
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    MyFriendsTab(),
+                    IncomingRequestsTab(),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

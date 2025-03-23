@@ -6,6 +6,10 @@ First, install the Firebase CLI if you haven't already:
 ```sh
 npm install -g firebase-tools
 ```
+or
+```sh
+curl -sL https://firebase.tools | bash
+```
 Then, log in to your Firebase account:
 ```sh
 firebase login

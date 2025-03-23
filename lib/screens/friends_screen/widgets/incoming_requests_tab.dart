@@ -13,7 +13,7 @@ class IncomingRequestsTab extends StatelessWidget {
           return Center(child: CircularProgressIndicator());
         } else if (state is FriendsLoaded) {
           if (state.friendRequests.isEmpty) {
-            return Center(child: Text("No incoming requests"));
+            return Center(child: Text("No incoming requests."));
           }
 
           return ListView.builder(
@@ -27,21 +27,30 @@ class IncomingRequestsTab extends StatelessWidget {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: Icon(Icons.check, color: Colors.green),
-                      onPressed: () {
-                        context
-                            .read<FriendsCubit>()
-                            .acceptFriendRequest(request.id);
-                      },
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.green,
+                      child: IconButton(
+                        onPressed: () {
+                          context
+                              .read<FriendsCubit>()
+                              .acceptFriendRequest(request.id);
+                        },
+                        icon: Icon(Icons.check, color: Colors.white),
+                      ),
                     ),
-                    IconButton(
-                      icon: Icon(Icons.close, color: Colors.red),
-                      onPressed: () {
-                        context
-                            .read<FriendsCubit>()
-                            .declineFriendRequest(request.id);
-                      },
+                    SizedBox(width: 8),
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.red,
+                      child: IconButton(
+                        onPressed: () {
+                          context
+                              .read<FriendsCubit>()
+                              .declineFriendRequest(request.id);
+                        },
+                        icon: Icon(Icons.close, color: Colors.white),
+                      ),
                     ),
                   ],
                 ),

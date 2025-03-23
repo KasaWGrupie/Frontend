@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
+import 'package:kasa_w_grupie/screens/groups_screen/groups_screen.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/screens/login_screen.dart';
 import 'package:kasa_w_grupie/screens/register_screen.dart';
@@ -40,6 +41,10 @@ final GoRouter _router = GoRouter(
           path: 'addGroup',
           builder: (context, state) => const CreateGroupScreen(),
         ),
+        GoRoute(
+          path: 'groups',
+          builder: (context, state) => const GroupsScreen(),
+        )
       ],
     ),
   ],
@@ -76,10 +81,16 @@ class _AppState extends State<_App> {
             authService: context.read(),
           ),
         ),
+        Provider<GroupService>(
+          create: (context) => GroupServiceMock(
+            authService: context.read(),
+          ),
+        ),
         BlocProvider<AddGroupCubit>(
           create: (context) => AddGroupCubit(
-              groupService: GroupServiceMock(authService: context.read())),
-        ),
+            groupService: context.read(),
+          ),
+        )
       ],
       child: MaterialApp.router(
         title: 'CashInGroup',

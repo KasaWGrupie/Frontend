@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is SignedInState) {
-          context.go('/addGroup');
+          context.go('/groups');
         }
       },
       child: BaseScreen(

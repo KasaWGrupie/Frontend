@@ -1,0 +1,56 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kasa_w_grupie/cubits/friends_cubit.dart';
+import 'package:kasa_w_grupie/services/friends_service.dart';
+import 'package:kasa_w_grupie/screens/friends_screen/widgets/incoming_requests_tab.dart';
+import 'package:kasa_w_grupie/screens/friends_screen/widgets/my_friends_tab.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
+
+class FriendsScreen extends StatelessWidget {
+  const FriendsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authService = context.read<AuthService>();
+    final currentUser = authService.currentUser!;
+
+    return BlocProvider(
+      create: (context) => FriendsCubit(
+        friendsService: FriendsService(currentUserId: currentUser.id),
+        currentUserId: currentUser.id,
+      )..loadFriends(),
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            title: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search to add friends...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: EdgeInsets.symmetric(vertical: 10.0),
+              ),
+            ),
+            bottom: TabBar(
+              tabs: [
+                Tab(icon: Icon(Icons.people), text: "My Friends"),
+                Tab(icon: Icon(Icons.group_add), text: "Requests"),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              MyFriendsTab(),
+              IncomingRequestsTab(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

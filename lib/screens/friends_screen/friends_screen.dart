@@ -18,7 +18,7 @@ class FriendsScreen extends StatelessWidget {
 
     return BlocProvider(
       create: (context) => FriendsCubit(
-        friendsService: FriendsService(currentUserId: currentUser.id),
+        friendsService: MockFriendsService(currentUserId: currentUser.id),
       )..loadFriends(),
       child: Scaffold(
         appBar: AppBar(
@@ -27,7 +27,8 @@ class FriendsScreen extends StatelessWidget {
               showSearch(
                 context: context,
                 delegate: FriendSearchDelegate(
-                  friendsService: FriendsService(currentUserId: currentUser.id),
+                  friendsService:
+                      MockFriendsService(currentUserId: currentUser.id),
                   currentUserId: currentUser.id,
                 ),
               );

@@ -1,10 +1,25 @@
 import 'dart:async';
 import 'package:kasa_w_grupie/models/user.dart';
 
-class FriendsService {
+abstract class FriendsService {
+  Future<List<User>> getFriends();
+  Future<List<User>> getFriendRequests();
+  Future<List<User>> getSentRequests();
+  Future<void> acceptFriendRequest(String friendId);
+  Future<void> declineFriendRequest(String friendId);
+  Future<User?> getUserByEmail(String email);
+  Future<void> sendFriendRequest(String email);
+  Future<void> withdrawFriendRequest(String friendId);
+  Future<void> removeFriend(String targetUserId);
+  bool isAlreadyFriend(String targetUserId);
+  bool isRequestSentByUser(String targetUserId);
+  bool isRequestReceived(String targetUserId);
+}
+
+class MockFriendsService implements FriendsService {
   final String currentUserId;
 
-  FriendsService({required this.currentUserId});
+  MockFriendsService({required this.currentUserId});
 
   // Mock users
   final List<User> mockUsers = [
@@ -40,17 +55,20 @@ class FriendsService {
   ];
 
   // Fetch friends for the logged-in user
+  @override
   Future<List<User>> getFriends() async {
     await Future.delayed(Duration(milliseconds: 250));
     return mockUsers.where((user) => friendships.contains(user.id)).toList();
   }
 
   // Fetch incoming friend requests for the logged-in user
+  @override
   Future<List<User>> getFriendRequests() async {
     await Future.delayed(Duration(milliseconds: 250));
     return mockUsers.where((user) => friendRequests.contains(user.id)).toList();
   }
 
+  @override
   Future<List<User>> getSentRequests() async {
     await Future.delayed(Duration(milliseconds: 250));
     return mockUsers
@@ -59,6 +77,7 @@ class FriendsService {
   }
 
   // Accept friend request
+  @override
   Future<void> acceptFriendRequest(String friendId) async {
     await Future.delayed(Duration(milliseconds: 100));
 
@@ -70,12 +89,14 @@ class FriendsService {
   }
 
   // Decline friend request
+  @override
   Future<void> declineFriendRequest(String friendId) async {
     await Future.delayed(Duration(milliseconds: 100));
     friendRequests.remove(friendId);
   }
 
   // Get User object based on email
+  @override
   Future<User?> getUserByEmail(String email) async {
     if (mockUsers.any((user) => user.email == email)) {
       return mockUsers.firstWhere((user) => user.email == email);
@@ -84,6 +105,7 @@ class FriendsService {
   }
 
   // Send a friend request to another user by their email
+  @override
   Future<void> sendFriendRequest(String email) async {
     await Future.delayed(Duration(milliseconds: 500));
 
@@ -97,26 +119,31 @@ class FriendsService {
   }
 
   // Withdraw friend request sent by logged-in user
+  @override
   Future<void> withdrawFriendRequest(String friendId) async {
     await Future.delayed(Duration(milliseconds: 100));
     sentByUserRequests.remove(friendId);
   }
 
   // Delete user from logged-in user friends list
+  @override
   Future<void> removeFriend(String targetUserId) async {
     await Future.delayed(Duration(milliseconds: 100));
 
     friendships.removeWhere((user) => user == targetUserId);
   }
 
+  @override
   bool isAlreadyFriend(String targetUserId) {
     return friendships.any((user) => user == targetUserId);
   }
 
+  @override
   bool isRequestSentByUser(String targetUserId) {
     return sentByUserRequests.any((user) => user == targetUserId);
   }
 
+  @override
   bool isRequestReceived(String targetUserId) {
     return friendRequests.any((user) => user == targetUserId);
   }

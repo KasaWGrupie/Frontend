@@ -1,4 +1,6 @@
-import 'package:kasa_w_grupie/models/user.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kasa_w_grupie/models/user.dart' as u;
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 enum SignInResult {
   invalidEmail,
@@ -17,12 +19,13 @@ abstract class AuthService {
 
   Future<String> userName();
 
-  User? get currentUser;
+  String get userId;
+
+  Future<u.User?> currentUser();
 
   Future<SignInResult> signInWithEmail(String email, String password);
 
   // Returns error message in case of error, null otherwise
-
   Future<String?> signUpWithEmail(
     String email,
     String password,
@@ -33,8 +36,8 @@ abstract class AuthService {
 }
 
 class AuthServiceMock implements AuthService {
-  final Map<String, User> _users = {};
-  User? _currentUser;
+  final Map<String, u.User> _users = {};
+  u.User? _currentUser;
   bool _isSignedIn = false;
 
   @override
@@ -62,9 +65,6 @@ class AuthServiceMock implements AuthService {
   }
 
   @override
-  User? get currentUser => _currentUser;
-
-  @override
   Future<SignInResult> signInWithEmail(String email, String password) async {
     // Simulate a basic email-password match for demo
     final user = _users[email];
@@ -88,7 +88,7 @@ class AuthServiceMock implements AuthService {
     }
 
     // Create a new user and add to the "database"
-    final newUser = User(
+    final newUser = u.User(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
         email: email);
@@ -101,5 +101,107 @@ class AuthServiceMock implements AuthService {
   Future<void> signOut() async {
     _currentUser = null;
     _isSignedIn = false;
+  }
+
+  @override
+  // TODO: implement userId
+  String get userId => _currentUser!.id;
+
+  @override
+  Future<u.User?> currentUser() async {
+    return _currentUser;
+  }
+}
+
+class FirebaseAuthService implements AuthService {
+  const FirebaseAuthService({
+    required this.userService,
+    required this.firebaseAuth,
+  });
+
+  final FirebaseAuth firebaseAuth;
+  final UsersService userService;
+  @override
+  bool get isSignedIn => firebaseAuth.currentUser != null;
+
+  @override
+  Stream<bool> get isSignedInStream =>
+      firebaseAuth.userChanges().map((user) => user != null);
+
+  @override
+  String get userEmail => firebaseAuth.currentUser!.email!;
+
+  @override
+  Future<String> userName() async {
+    return userService
+        .getUser(firebaseAuth.currentUser!.uid)
+        .then((value) => value!.name);
+  }
+
+  @override
+  Future<SignInResult> signInWithEmail(String email, String password) async {
+    try {
+      if (isSignedIn) {
+        await firebaseAuth.signOut();
+      }
+
+      await firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      return SignInResult.success;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+          return SignInResult.invalidEmail;
+        case 'user-disabled':
+          return SignInResult.userDisabled;
+        case 'user-not-found' || 'invalid-credential':
+          return SignInResult.userNotFound;
+        case 'wrong-password':
+          return SignInResult.wrongPassword;
+        default:
+          rethrow;
+      }
+    }
+  }
+
+  @override
+  Future<String?> signUpWithEmail(
+    String email,
+    String password,
+    String name,
+  ) async {
+    try {
+      if (isSignedIn) {
+        await firebaseAuth.signOut();
+      }
+
+      final credential = await firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      if (credential.user == null) {
+        return 'Error occurred';
+      }
+
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    } catch (err) {
+      return 'Error occurred';
+    }
+  }
+
+  @override
+  Future<void> signOut() => firebaseAuth.signOut();
+
+  @override
+  String get userId => firebaseAuth.currentUser!.uid;
+
+  @override
+  Future<u.User?> currentUser() {
+    return userService.getUser(firebaseAuth.currentUser!.uid);
   }
 }

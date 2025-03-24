@@ -28,7 +28,7 @@ class GroupServiceMock implements GroupService {
   @override
   Future<List<Group>> getGroupsForUser() async {
     try {
-      final user = authService.currentUser;
+      final user = await authService.currentUser();
 
       if (user == null) {
         return [];

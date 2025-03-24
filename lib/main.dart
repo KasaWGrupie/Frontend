@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +13,7 @@ import 'package:kasa_w_grupie/screens/home_screen.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/add_group_screen.dart';
 import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 import 'package:provider/provider.dart';
 
@@ -86,7 +88,11 @@ class _AppState extends State<_App> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return MultiProvider(providers: [
-              Provider<AuthService>(create: (context) => AuthServiceMock()),
+              Provider<AuthService>(
+                create: (context) => FirebaseAuthService(
+                    userService: UsersServiceMock(),
+                    firebaseAuth: FirebaseAuth.instance),
+              ),
               BlocProvider<AuthCubit>(
                 create: (context) => AuthCubit(
                   authService: context.read(),

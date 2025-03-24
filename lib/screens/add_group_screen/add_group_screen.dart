@@ -35,11 +35,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   bool isSelectingFriends = false;
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
     // Fetch current user from AuthService
     final authService = context.read<AuthService>();
-    currentUser = authService.currentUser!;
+    currentUser = (await authService.currentUser())!;
 
     invitationCodeController.text = generateInvitationCode();
     friends = parseUsersToFriends(currentUser.getFriends());

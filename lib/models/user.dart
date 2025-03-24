@@ -28,4 +28,11 @@ class User {
       User(id: "6", name: "Charlie Brown", email: "charlie@example.com"),
     ];
   }
+
+  List<User> getPendingRequests() {
+    return [
+      User(id: "1", name: "Alice Smith", email: "alice@example.com"),
+      User(id: "2", name: "Bob Budowniczy", email: "bob@example.com"),
+    ];
+  }
 }

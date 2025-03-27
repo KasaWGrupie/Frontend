@@ -15,10 +15,11 @@ class FriendsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authService = context.read<AuthService>();
     final currentUser = authService.currentUser!;
+    final friendService = MockFriendsService(currentUserId: currentUser.id);
 
     return BlocProvider(
       create: (context) => FriendsCubit(
-        friendsService: MockFriendsService(currentUserId: currentUser.id),
+        friendsService: friendService,
       )..loadFriends(),
       child: Scaffold(
         appBar: AppBar(
@@ -27,8 +28,7 @@ class FriendsScreen extends StatelessWidget {
               showSearch(
                 context: context,
                 delegate: FriendSearchDelegate(
-                  friendsService:
-                      MockFriendsService(currentUserId: currentUser.id),
+                  friendsService: friendService,
                   currentUserId: currentUser.id,
                 ),
               );
@@ -60,7 +60,9 @@ class FriendsScreen extends StatelessWidget {
               Expanded(
                 child: TabBarView(
                   children: [
-                    MyFriendsTab(),
+                    MyFriendsTab(
+                      friendsService: friendService,
+                    ),
                     IncomingRequestsTab(),
                     SentRequestsTab(),
                   ],

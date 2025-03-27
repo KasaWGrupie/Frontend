@@ -14,6 +14,7 @@ abstract class FriendsService {
   bool isAlreadyFriend(String targetUserId);
   bool isRequestSentByUser(String targetUserId);
   bool isRequestReceived(String targetUserId);
+  Future<Map<String, dynamic>> getUserBalances(int userId);
 }
 
 class MockFriendsService implements FriendsService {
@@ -53,6 +54,12 @@ class MockFriendsService implements FriendsService {
     "10",
     "11",
   ];
+
+  final Map<int, Map<bool, double>> balances = {
+    1: {true: 100.0},
+    2: {true: 250.0},
+    3: {false: 200.0},
+  };
 
   // Fetch friends for the logged-in user
   @override
@@ -146,5 +153,19 @@ class MockFriendsService implements FriendsService {
   @override
   bool isRequestReceived(String targetUserId) {
     return friendRequests.any((user) => user == targetUserId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> getUserBalances(int userId) async {
+    await Future.delayed(const Duration(seconds: 1));
+    if (balances.containsKey(userId)) {
+      var entry = balances[userId]!;
+      return {
+        "isOwedToUser": entry.keys.first,
+        "amount": entry.values.first,
+      };
+    } else {
+      return {"isOwedToUser": null, "amount": 0.0};
+    }
   }
 }

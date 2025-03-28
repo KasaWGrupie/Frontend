@@ -14,7 +14,8 @@ abstract class FriendsService {
   bool isAlreadyFriend(String targetUserId);
   bool isRequestSentByUser(String targetUserId);
   bool isRequestReceived(String targetUserId);
-  Future<Map<String, dynamic>> getUserBalances(int userId);
+  Future<Map<String, dynamic>> getUserBalances(String userId);
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(String userId);
 }
 
 class MockFriendsService implements FriendsService {
@@ -55,10 +56,24 @@ class MockFriendsService implements FriendsService {
     "11",
   ];
 
-  final Map<int, Map<bool, double>> balances = {
-    1: {true: 100.0},
-    2: {true: 250.0},
-    3: {false: 200.0},
+  final Map<String, Map<bool, double>> balances = {
+    "1": {true: 100.0},
+    "2": {true: 250.0},
+    "3": {false: 200.0},
+  };
+
+  final Map<String, Map<String, Map<bool, double>>> balancesPerGroupPerUser = {
+    "1": {
+      "Trip one": {true: 100.0},
+      "Trip two": {true: 150.0},
+      "Trip three": {false: 50.0},
+    },
+    "2": {
+      "Trip one": {false: 23.1}
+    },
+    "3": {
+      "Trip two": {true: 12.4}
+    },
   };
 
   // Fetch friends for the logged-in user
@@ -156,7 +171,7 @@ class MockFriendsService implements FriendsService {
   }
 
   @override
-  Future<Map<String, dynamic>> getUserBalances(int userId) async {
+  Future<Map<String, dynamic>> getUserBalances(String userId) async {
     await Future.delayed(const Duration(seconds: 1));
     if (balances.containsKey(userId)) {
       var entry = balances[userId]!;
@@ -167,5 +182,29 @@ class MockFriendsService implements FriendsService {
     } else {
       return {"isOwedToUser": null, "amount": 0.0};
     }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(
+      String userId) async {
+    await Future.delayed(Duration(milliseconds: 250));
+
+    List<Map<String, dynamic>> balancesList = [];
+
+    if (balancesPerGroupPerUser.containsKey(userId)) {
+      final userBalances = balancesPerGroupPerUser[userId]!;
+
+      userBalances.forEach((groupName, balanceInfo) {
+        balanceInfo.forEach((isOwed, amount) {
+          balancesList.add({
+            "groupName": groupName,
+            "amount": amount,
+            "isOwed": isOwed,
+          });
+        });
+      });
+    }
+
+    return balancesList;
   }
 }

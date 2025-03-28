@@ -37,7 +37,7 @@ class MyFriendsTab extends StatelessWidget {
               final friend = state.friends[index];
 
               return FutureBuilder<Map<String, dynamic>>(
-                future: friendsService.getUserBalances(int.parse(friend.id)),
+                future: friendsService.getUserBalances(friend.id),
                 builder: (context, snapshot) {
                   String balanceInfo = "Loading...";
 
@@ -45,46 +45,36 @@ class MyFriendsTab extends StatelessWidget {
                     if (snapshot.hasData) {
                       final data = snapshot.data!;
                       final bool? isOwedToUser = data["isOwedToUser"];
-                      final double amount = data["amount"];
+                      final double amount = data["amount"] ?? 0.0;
 
                       balanceInfo = getBalanceInfo(
-                          amount, isOwedToUser == true ? 0.0 : amount);
+                        isOwedToUser == true ? amount : 0.0,
+                        isOwedToUser == false ? amount : 0.0,
+                      );
                     } else {
                       balanceInfo = "Error loading balance";
                     }
                   }
 
                   return ListTile(
-                      leading: CircleAvatar(child: Icon(Icons.person)),
-                      title: Text(friend.name),
-                      subtitle: Text(balanceInfo),
-                      trailing: Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        // Navigate to the FriendDetailsScreen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FriendDetailsScreen(
-                              friendName: friend.name,
-                              friendEmail: friend.email,
-                              owesAmount: balanceInfo.contains("Owes you:")
-                                  ? double.tryParse(balanceInfo
-                                          .split(":")[1]
-                                          .replaceAll("\$", "")
-                                          .trim()) ??
-                                      0.0
-                                  : 0.0,
-                              owedAmount: balanceInfo.contains("You owe:")
-                                  ? double.tryParse(balanceInfo
-                                          .split(":")[1]
-                                          .replaceAll("\$", "")
-                                          .trim()) ??
-                                      0.0
-                                  : 0.0,
-                            ),
+                    leading: CircleAvatar(child: Icon(Icons.person)),
+                    title: Text(friend.name),
+                    subtitle: Text(balanceInfo),
+                    trailing: Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FriendDetailsScreen(
+                            userId: friend.id,
+                            friendName: friend.name,
+                            friendEmail: friend.email,
+                            friendsService: friendsService,
                           ),
-                        );
-                      });
+                        ),
+                      );
+                    },
+                  );
                 },
               );
             },

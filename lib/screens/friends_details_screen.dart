@@ -1,283 +1,256 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kasa_w_grupie/screens/base_screen.dart';
+import 'package:kasa_w_grupie/services/friends_service.dart';
+import 'package:kasa_w_grupie/cubits/group_balance_cubit.dart';
 
-class FriendDetailsScreen extends StatelessWidget {
+class FriendDetailsScreen extends StatefulWidget {
   final String friendName;
   final String friendEmail;
-  final double owesAmount;
-  final double owedAmount;
+  final String userId;
+  final FriendsService friendsService;
 
   const FriendDetailsScreen({
     super.key,
     required this.friendName,
     required this.friendEmail,
-    required this.owesAmount,
-    required this.owedAmount,
+    required this.userId,
+    required this.friendsService,
   });
 
-  // Helper function to get balance info
-  String getBalanceInfo() {
-    if (owesAmount > 0) {
-      return "Owes you: \$${owesAmount.toStringAsFixed(2)}";
-    } else if (owedAmount > 0) {
-      return "You owe: \$${owedAmount.toStringAsFixed(2)}";
-    } else {
-      return "No debts";
+  @override
+  FriendDetailsScreenState createState() => FriendDetailsScreenState();
+}
+
+class FriendDetailsScreenState extends State<FriendDetailsScreen> {
+  double totalBalance = 0.0;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTotalBalance();
+  }
+
+  Future<void> fetchTotalBalance() async {
+    try {
+      final balanceData =
+          await widget.friendsService.getUserBalances(widget.userId);
+      final bool? isOwedToUser = balanceData["isOwedToUser"];
+      final double amount = balanceData["amount"] ?? 0.0;
+
+      setState(() {
+        totalBalance = isOwedToUser == true ? amount : -amount;
+        isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('$friendName - Balance Details')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Header Tile (User Info)
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  radius: 30,
-                  child: Icon(Icons.person, size: 30, color: Colors.white),
-                ),
-                title: Text(
-                  friendName,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  friendEmail,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(color: Colors.grey),
-                ),
-              ),
-            ),
+    return BlocProvider(
+      create: (context) => GroupBalanceCubit(
+        friendsService: widget.friendsService,
+      )..loadGroupBalances(widget.userId),
+      child: BaseScreen(
+        title: 'Balance Details',
+        child: BlocBuilder<GroupBalanceCubit, GroupBalanceState>(
+          builder: (context, state) {
+            if (state is GroupBalanceLoading || isLoading) {
+              return Center(child: CircularProgressIndicator());
+            } else if (state is GroupBalanceError) {
+              return Center(child: Text(state.message));
+            } else if (state is GroupBalanceLoaded) {
+              final groupBalances = state.groupBalances;
 
-            SizedBox(height: 20),
-
-            // ListView for balances (structured for future extensions)
-            Expanded(
-              child: ListView(
+              return Column(
                 children: [
-                  // Single Tile for Total Balance (for now)
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        "Total Balance",
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      subtitle: Text(
-                        getBalanceInfo(),
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          // Action logic (to be added later)
-                        },
-                        child: Text("Settle Up"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: owesAmount > 0
-                              ? Colors.green
-                              : owedAmount > 0
-                                  ? Colors.red
-                                  : Colors.grey,
-                        ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          // User Info Tile
+                          Card(
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                radius: 30,
+                                child: Icon(Icons.person,
+                                    size: 30, color: Colors.white),
+                              ),
+                              title: Text(
+                                widget.friendName,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              subtitle: Text(
+                                widget.friendEmail,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      color: Colors.grey,
+                                    ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 20),
+
+                          // Group balance details
+                          if (groupBalances.isNotEmpty)
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: groupBalances.length,
+                                itemBuilder: (context, index) {
+                                  final groupBalance = groupBalances[index];
+
+                                  final groupName = groupBalance["groupName"] ??
+                                      "Unknown Group";
+                                  final balanceAmount =
+                                      (groupBalance["amount"] ?? 0.0)
+                                          .toDouble();
+                                  final isOwes =
+                                      groupBalance["isOwed"] ?? false;
+
+                                  final balanceText =
+                                      isOwes ? "User owes you: " : "You owe: ";
+                                  final formattedAmount =
+                                      "${isOwes ? "+" : "-"} ${balanceAmount.abs().toStringAsFixed(2)}";
+
+                                  return Card(
+                                    elevation: 4,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: ListTile(
+                                      title: Text(
+                                        groupName,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      subtitle: RichText(
+                                        text: TextSpan(
+                                          text: balanceText,
+                                          style: DefaultTextStyle.of(context)
+                                              .style,
+                                          children: [
+                                            TextSpan(
+                                              text: formattedAmount,
+                                              style: TextStyle(
+                                                color: isOwes
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      trailing: ElevatedButton(
+                                        onPressed: () {},
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isOwes
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                        child: Text(isOwes ? "Settle" : "Pay"),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+
+                          // If no balances exist, show "You are settled up"
+                          if (groupBalances.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(
+                                "You are settled up",
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                            ),
+
+                          // Total balance message
+                          if (groupBalances.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: RichText(
+                                text: TextSpan(
+                                  text: "Total balance: ", // Normal color
+                                  style: DefaultTextStyle.of(context)
+                                      .style
+                                      .copyWith(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                  children: [
+                                    TextSpan(
+                                      text: totalBalance == 0
+                                          ? "You are settled up"
+                                          : "${totalBalance >= 0 ? "+" : "-"} ${totalBalance.abs().toStringAsFixed(2)}",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: totalBalance > 0
+                                            ? Colors.green
+                                            : (totalBalance < 0
+                                                ? Colors.red
+                                                : Colors.black),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
+
+                  // Settle All button at the bottom
+                  if (totalBalance != 0)
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: Text(
+                            "Settle Between Groups",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
-              ),
-            ),
-          ],
+              );
+            } else {
+              return Center(child: Text('Unknown state'));
+            }
+          },
         ),
       ),
     );
   }
 }
-
-// import 'package:flutter/material.dart';
-
-// class FriendDetailsScreen extends StatelessWidget {
-//   final String friendName;
-//   final String friendEmail;
-//   final List<Map<String, dynamic>> groupBalances;
-
-//   const FriendDetailsScreen({
-//     super.key,
-//     required this.friendName,
-//     required this.friendEmail,
-//     required this.groupBalances,
-//   });
-
-//   // Calculate total balance
-//   double getTotalBalance() {
-//     return groupBalances.fold(
-//       0.0,
-//       (sum, group) => sum + (group['owesAmount'] - group['owedAmount']),
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     double totalBalance = getTotalBalance();
-
-//     return Scaffold(
-//       appBar: AppBar(title: Text('$friendName - Balance Details')),
-//       body: Column(
-//         children: [
-//           // Header Tile (User Info)
-//           Card(
-//             elevation: 4,
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(12),
-//             ),
-//             margin: const EdgeInsets.all(16),
-//             child: ListTile(
-//               leading: CircleAvatar(
-//                 radius: 30,
-//                 child: Icon(Icons.person, size: 30, color: Colors.white),
-//               ),
-//               title: Text(
-//                 friendName,
-//                 style: Theme.of(context)
-//                     .textTheme
-//                     .titleLarge
-//                     ?.copyWith(fontWeight: FontWeight.bold),
-//               ),
-//               subtitle: Text(
-//                 friendEmail,
-//                 style: Theme.of(context)
-//                     .textTheme
-//                     .titleMedium
-//                     ?.copyWith(color: Colors.grey),
-//               ),
-//             ),
-//           ),
-
-//           // Group Balances List
-//           Expanded(
-//             child: ListView.builder(
-//               itemCount: groupBalances.length,
-//               itemBuilder: (context, index) {
-//                 final group = groupBalances[index];
-//                 final String groupName = group["groupName"];
-//                 final double owesAmount = group["owesAmount"];
-//                 final double owedAmount = group["owedAmount"];
-
-//                 String balanceText;
-//                 if (owesAmount > 0) {
-//                   balanceText = "Owes you: \$${owesAmount.toStringAsFixed(2)}";
-//                 } else if (owedAmount > 0) {
-//                   balanceText = "You owe: \$${owedAmount.toStringAsFixed(2)}";
-//                 } else {
-//                   balanceText = "No debts";
-//                 }
-
-//                 return Card(
-//                   elevation: 4,
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                   margin:
-//                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//                   child: ListTile(
-//                     title: Text(
-//                       groupName,
-//                       style: Theme.of(context).textTheme.titleMedium,
-//                     ),
-//                     subtitle: Text(
-//                       balanceText,
-//                       style: Theme.of(context)
-//                           .textTheme
-//                           .headlineSmall
-//                           ?.copyWith(fontWeight: FontWeight.bold),
-//                     ),
-//                     trailing: Icon(Icons.arrow_forward_ios),
-//                     onTap: () {
-//                       // Navigate to group details (Future Feature)
-//                     },
-//                   ),
-//                 );
-//               },
-//             ),
-//           ),
-
-//           // Bottom Section (Total Sum & Settle Button)
-//           Container(
-//             padding: const EdgeInsets.all(16),
-//             decoration: BoxDecoration(
-//               color: Colors.white,
-//               border: Border(
-//                 top: BorderSide(color: Colors.grey.shade300),
-//               ),
-//             ),
-//             child: Column(
-//               children: [
-//                 // Total Balance Display
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     Text(
-//                       "Total Balance:",
-//                       style: Theme.of(context)
-//                           .textTheme
-//                           .titleLarge
-//                           ?.copyWith(fontWeight: FontWeight.bold),
-//                     ),
-//                     Text(
-//                       "\$${totalBalance.toStringAsFixed(2)}",
-//                       style:
-//                           Theme.of(context).textTheme.headlineSmall?.copyWith(
-//                               fontWeight: FontWeight.bold,
-//                               color: totalBalance > 0
-//                                   ? Colors.green
-//                                   : totalBalance < 0
-//                                       ? Colors.red
-//                                       : Colors.black),
-//                     ),
-//                   ],
-//                 ),
-
-//                 const SizedBox(height: 12),
-
-//                 // Settle Between Groups Button
-//                 SizedBox(
-//                   width: double.infinity,
-//                   child: ElevatedButton(
-//                     onPressed: () {
-//                       // Handle settlement logic (Future Feature)
-//                     },
-//                     style: ElevatedButton.styleFrom(
-//                       padding: const EdgeInsets.symmetric(vertical: 12),
-//                       backgroundColor:
-//                           totalBalance != 0 ? Colors.blueAccent : Colors.grey,
-//                     ),
-//                     child: Text(
-//                       "Settle Between Groups",
-//                       style: TextStyle(fontSize: 16, color: Colors.white),
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

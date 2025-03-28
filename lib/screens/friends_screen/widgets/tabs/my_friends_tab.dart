@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/friends_cubit.dart';
+import 'package:kasa_w_grupie/screens/friends_details_screen.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 
 class MyFriendsTab extends StatelessWidget {
@@ -54,11 +55,36 @@ class MyFriendsTab extends StatelessWidget {
                   }
 
                   return ListTile(
-                    leading: CircleAvatar(child: Icon(Icons.person)),
-                    title: Text(friend.name),
-                    subtitle: Text(balanceInfo),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                  );
+                      leading: CircleAvatar(child: Icon(Icons.person)),
+                      title: Text(friend.name),
+                      subtitle: Text(balanceInfo),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        // Navigate to the FriendDetailsScreen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FriendDetailsScreen(
+                              friendName: friend.name,
+                              friendEmail: friend.email,
+                              owesAmount: balanceInfo.contains("Owes you:")
+                                  ? double.tryParse(balanceInfo
+                                          .split(":")[1]
+                                          .replaceAll("\$", "")
+                                          .trim()) ??
+                                      0.0
+                                  : 0.0,
+                              owedAmount: balanceInfo.contains("You owe:")
+                                  ? double.tryParse(balanceInfo
+                                          .split(":")[1]
+                                          .replaceAll("\$", "")
+                                          .trim()) ??
+                                      0.0
+                                  : 0.0,
+                            ),
+                          ),
+                        );
+                      });
                 },
               );
             },

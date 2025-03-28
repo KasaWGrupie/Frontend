@@ -14,15 +14,4 @@ class Friend {
     this.owesAmount = 0.0,
     this.owedAmount = 0.0,
   });
-
-  /// Helper method to display debt info
-  String getBalanceInfo() {
-    if (owesAmount > 0) {
-      return "Owes you: ${owesAmount.toStringAsFixed(2)}";
-    } else if (owedAmount > 0) {
-      return "You owe: ${owedAmount.toStringAsFixed(2)}";
-    } else {
-      return "No debts";
-    }
-  }
 }

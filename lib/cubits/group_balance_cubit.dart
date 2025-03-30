@@ -9,8 +9,9 @@ class GroupBalanceLoading extends GroupBalanceState {}
 
 class GroupBalanceLoaded extends GroupBalanceState {
   final List<Map<String, dynamic>> groupBalances;
+  final double totalBalance;
 
-  GroupBalanceLoaded({required this.groupBalances});
+  GroupBalanceLoaded({required this.groupBalances, required this.totalBalance});
 }
 
 class GroupBalanceError extends GroupBalanceState {
@@ -31,7 +32,13 @@ class GroupBalanceCubit extends Cubit<GroupBalanceState> {
     try {
       final groupBalances =
           await friendsService.getUserBalancesWithGroups(userId);
-      emit(GroupBalanceLoaded(groupBalances: groupBalances));
+      final balanceData = await friendsService.getUserBalances(userId);
+      final double totalBalance = balanceData["isOwedToUser"] == true
+          ? balanceData["amount"] ?? 0.0
+          : -(balanceData["amount"] ?? 0.0);
+
+      emit(GroupBalanceLoaded(
+          groupBalances: groupBalances, totalBalance: totalBalance));
     } catch (e) {
       emit(GroupBalanceError("Failed to load group balances"));
     }

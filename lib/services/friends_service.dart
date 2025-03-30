@@ -57,9 +57,9 @@ class MockFriendsService implements FriendsService {
   ];
 
   final Map<String, Map<bool, double>> balances = {
-    "1": {true: 100.0},
-    "2": {true: 250.0},
-    "3": {false: 200.0},
+    "1": {true: 600.0},
+    "2": {false: 23.1},
+    "3": {true: 120.4},
   };
 
   final Map<String, Map<String, Map<bool, double>>> balancesPerGroupPerUser = {
@@ -67,12 +67,18 @@ class MockFriendsService implements FriendsService {
       "Trip one": {true: 100.0},
       "Trip two": {true: 150.0},
       "Trip three": {false: 50.0},
+      "Trip four": {true: 100.0},
+      "Trip five": {true: 150.0},
+      "Trip six": {false: 50.0},
+      "Trip seven": {true: 100.0},
+      "Trip eight": {true: 150.0},
+      "Trip nine": {false: 50.0},
     },
     "2": {
       "Trip one": {false: 23.1}
     },
     "3": {
-      "Trip two": {true: 12.4}
+      "Trip two": {true: 120.4}
     },
   };
 

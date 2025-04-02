@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class GroupTile extends StatelessWidget {
   const GroupTile({
@@ -16,7 +17,8 @@ class GroupTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // context.go('/groups/$groupId');
+        //TODO change later to right values
+        context.go('/editGroup/0');
       },
       child: Card(
         child: Padding(

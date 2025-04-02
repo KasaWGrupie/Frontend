@@ -39,7 +39,7 @@ class MockFriendsService implements FriendsService {
   ];
 
   // Mock friendships for logged-in user
-  final List<String> friendships = ["1", "2", "3", "4"];
+  final List<String> friendships = ["2", "3", "4"];
 
   // Mock pending friend requests for logged-in user
   final List<String> friendRequests = [

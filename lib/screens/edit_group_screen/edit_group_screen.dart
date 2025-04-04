@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
+import 'package:kasa_w_grupie/screens/add_group_screen/widgets/invitation_code_tile.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/friends_list.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/group_photo.dart';
 import 'package:kasa_w_grupie/models/friend.dart';
+import 'package:kasa_w_grupie/screens/edit_group_screen/currency_tile.dart';
 
 class EditGroupScreen extends StatefulWidget {
   final String groupId;
@@ -41,7 +44,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
         title: 'Edit Group',
         child: BlocBuilder<EditGroupCubit, EditGroupState>(
           builder: (context, state) {
-            if (state is EditGroupLoading) {
+            if (state is EditGroupInitial || state is EditGroupLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is EditGroupError) {
               return Center(
@@ -90,6 +93,35 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        // Currency Display (Read-only)
+
+                        const SizedBox(height: 16),
+
+                        // Invitation Code (Read-only)
+                        InvitationCodeField(
+                          controller:
+                              TextEditingController(text: group.invitationCode),
+                          onCopyPressed: () {
+                            Clipboard.setData(
+                                ClipboardData(text: group.invitationCode));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Copied!')),
+                            );
+                          },
+                        ),
+                        const Text(
+                          '*Invitation code can only be copied',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 8),
+
+                        ReadOnlyCurrencyTile(
+                            currencyLabel: group.currency.name.toUpperCase()),
+                        const Text(
+                          '*Currency cannot be changed after group creation',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 8),
 
                         // Friend Selector
                         FriendSelector(

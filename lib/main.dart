@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
 import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
-import 'package:kasa_w_grupie/screens/edit_group_screen.dart';
+import 'package:kasa_w_grupie/screens/edit_group_screen/edit_group_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/friends_screen.dart';
 import 'package:kasa_w_grupie/screens/groups_screen/groups_screen.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';

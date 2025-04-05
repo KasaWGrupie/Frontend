@@ -16,11 +16,11 @@ class EditGroupScreen extends StatefulWidget {
   const EditGroupScreen({super.key, required this.groupId});
 
   @override
-  State<EditGroupScreen> createState() => _EditGroupScreenState();
+  State<EditGroupScreen> createState() => EditGroupScreenState();
 }
 
-class _EditGroupScreenState extends State<EditGroupScreen> {
-  final _formKey = GlobalKey<FormState>();
+class EditGroupScreenState extends State<EditGroupScreen> {
+  final formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
 
@@ -61,7 +61,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Form(
-                    key: _formKey,
+                    key: formKey,
                     child: ListView(
                       children: [
                         // Group Photo
@@ -93,9 +93,6 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Currency Display (Read-only)
-
-                        const SizedBox(height: 16),
 
                         // Invitation Code (Read-only)
                         InvitationCodeField(
@@ -115,6 +112,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                         ),
                         const SizedBox(height: 8),
 
+                        // Currency tile
                         ReadOnlyCurrencyTile(
                             currencyLabel: group.currency.name.toUpperCase()),
                         const Text(
@@ -144,7 +142,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                         // Save Changes Button
                         ElevatedButton(
                           onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
+                            if (formKey.currentState!.validate()) {
                               List<String> selectedMembersIds = friends
                                   .where((friend) => friend.isSelected)
                                   .map((friend) => friend.id)

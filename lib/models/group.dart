@@ -61,4 +61,21 @@ class Group {
       'invitationCode': invitationCode,
     };
   }
+
+  Group copyWith({
+    String? name,
+    String? description,
+    List<String>? membersId,
+  }) {
+    return Group(
+      id: id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      currency: currency,
+      status: status,
+      adminId: adminId,
+      membersId: membersId ?? this.membersId,
+      invitationCode: invitationCode,
+    );
+  }
 }

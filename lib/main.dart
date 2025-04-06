@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
+import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
+import 'package:kasa_w_grupie/screens/edit_group_screen/edit_group_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/friends_screen.dart';
 import 'package:kasa_w_grupie/screens/groups_screen/groups_screen.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
@@ -11,6 +13,7 @@ import 'package:kasa_w_grupie/screens/home_screen.dart';
 
 import 'package:kasa_w_grupie/screens/add_group_screen/add_group_screen.dart';
 import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
+import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 
 import 'package:provider/provider.dart';
@@ -49,7 +52,28 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'groups',
           builder: (context, state) => const GroupsScreen(),
-        )
+        ),
+        GoRoute(
+          path: 'editGroup/:groupId',
+          builder: (context, state) {
+            final groupId = state.pathParameters['groupId'] ?? "0";
+            final authService = context.read<AuthService>();
+            return BlocProvider(
+              create: (context) {
+                final cubit = EditGroupCubit(
+                  groupService: GroupServiceMock(authService: authService),
+                  friendsService: MockFriendsService(
+                      currentUserId: authService.currentUser!.id),
+                  authService: authService,
+                  groupId: groupId,
+                );
+                cubit.loadGroup();
+                return cubit;
+              },
+              child: EditGroupScreen(groupId: groupId),
+            );
+          },
+        ),
       ],
     ),
   ],

@@ -66,8 +66,8 @@ final GoRouter _router = GoRouter(
               create: (context) {
                 final cubit = EditGroupCubit(
                   groupService: GroupServiceMock(authService: authService),
-                  friendsService: MockFriendsService(
-                      currentUserId: authService.currentUser!.id),
+                  friendsService:
+                      MockFriendsService(currentUserId: authService.userId),
                   authService: authService,
                   groupId: groupId,
                 );

@@ -31,18 +31,22 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   CurrencyEnum selectedCurrency = CurrencyEnum.eur;
 
   late final User currentUser;
-  late final List<Friend> friends;
   bool isSelectingFriends = false;
 
-  @override
-  void initState() async {
-    super.initState();
-    // Fetch current user from AuthService
+  late final _getFriendsFuture;
+
+  Future<List<Friend>> getFriends() async {
     final authService = context.read<AuthService>();
     currentUser = (await authService.currentUser())!;
+    return parseUsersToFriends(currentUser.getFriends());
+  }
 
+  @override
+  void initState() {
+    super.initState();
+    _getFriendsFuture = getFriends();
+    // Fetch current user from AuthService
     invitationCodeController.text = generateInvitationCode();
-    friends = parseUsersToFriends(currentUser.getFriends());
   }
 
   // Function converting list of Users to list of Friends
@@ -75,143 +79,160 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AddGroupCubit(
-          groupService: context.read<AddGroupCubit>().groupService),
-      child: BlocListener<AddGroupCubit, AddGroupState>(
-        listener: (context, state) {
-          if (state.isSuccess) {
-            context.pop();
-          }
-        },
-        child: BaseScreen(
-          title: 'Create Group',
-          child: BlocBuilder<AddGroupCubit, AddGroupState>(
-            builder: (context, state) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey,
-                    child: ListView(
-                      children: [
-                        // Group photo field
-                        const GroupPhotoWithAddButton(),
-                        const SizedBox(height: 16),
+    return FutureBuilder(
+      future: _getFriendsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasData) {
+          List<Friend> friends = snapshot.data! as List<Friend>;
+          return BlocProvider(
+            create: (context) => AddGroupCubit(
+                groupService: context.read<AddGroupCubit>().groupService),
+            child: BlocListener<AddGroupCubit, AddGroupState>(
+              listener: (context, state) {
+                if (state.isSuccess) {
+                  context.pop();
+                }
+              },
+              child: BaseScreen(
+                title: 'Create Group',
+                child: BlocBuilder<AddGroupCubit, AddGroupState>(
+                  builder: (context, state) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Form(
+                          key: _formKey,
+                          child: ListView(
+                            children: [
+                              // Group photo field
+                              const GroupPhotoWithAddButton(),
+                              const SizedBox(height: 16),
 
-                        // Group name field
-                        TextFormField(
-                          controller: nameController,
-                          decoration: InputDecoration(
-                            labelText: 'Group Name',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                              // Group name field
+                              TextFormField(
+                                controller: nameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Group Name',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                ),
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Please enter a group name'
+                                        : null,
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Group description field
+                              TextFormField(
+                                controller: descriptionController,
+                                decoration: InputDecoration(
+                                  labelText: 'Group Description (optional)',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide:
+                                        BorderSide(color: Colors.grey.shade400),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Currency field
+                              CurrencySelector(
+                                selectedCurrency: selectedCurrency,
+                                onCurrencySelected: (currency) {
+                                  setState(() {
+                                    selectedCurrency = currency;
+                                  });
+                                },
+                                isSelectingFriends: isSelectingFriends,
+                                onExpansionChanged: (expanded) {
+                                  setState(() {
+                                    isSelectingFriends = expanded;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Add members field
+                              FriendSelector(
+                                friends: friends,
+                                isSelectingFriends: isSelectingFriends,
+                                onExpansionChanged: (expanded) {
+                                  setState(() {
+                                    isSelectingFriends = expanded;
+                                  });
+                                },
+                                onFriendToggle: (friend) {
+                                  setState(() {
+                                    friend.isSelected = !friend.isSelected;
+                                  });
+                                },
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // Copy invitation code field
+                              InvitationCodeField(
+                                controller: invitationCodeController,
+                                onCopyPressed: () {
+                                  copyToClipboard(
+                                      invitationCodeController.text);
+                                },
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // Create group button
+                              ElevatedButton(
+                                onPressed: () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    List<String> selectedMembersIds = friends
+                                        .where((friend) => friend.isSelected)
+                                        .map((friend) => friend.id)
+                                        .toList();
+                                    await context
+                                        .read<AddGroupCubit>()
+                                        .addGroup(
+                                          name: nameController.text,
+                                          description:
+                                              descriptionController.text,
+                                          currency: selectedCurrency,
+                                          adminId: currentUser.id,
+                                          members: selectedMembersIds,
+                                          invitationCode:
+                                              invitationCodeController.text,
+                                        );
+                                  }
+                                },
+                                child: const Text('Create Group'),
+                              ),
+                              const SizedBox(height: 16),
+                              if (state.error != null) ...[
+                                Text(state.error!,
+                                    style: const TextStyle(color: Colors.red)),
+                                const SizedBox(height: 16),
+                              ] else if (state.isLoading) ...[
+                                Center(
+                                  child: const CircularProgressIndicator(),
+                                ),
+                              ],
+                            ],
                           ),
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Please enter a group name'
-                              : null,
                         ),
-                        const SizedBox(height: 16),
-
-                        // Group description field
-                        TextFormField(
-                          controller: descriptionController,
-                          decoration: InputDecoration(
-                            labelText: 'Group Description (optional)',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.grey.shade400),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Currency field
-                        CurrencySelector(
-                          selectedCurrency: selectedCurrency,
-                          onCurrencySelected: (currency) {
-                            setState(() {
-                              selectedCurrency = currency;
-                            });
-                          },
-                          isSelectingFriends: isSelectingFriends,
-                          onExpansionChanged: (expanded) {
-                            setState(() {
-                              isSelectingFriends = expanded;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Add members field
-                        FriendSelector(
-                          friends: friends,
-                          isSelectingFriends: isSelectingFriends,
-                          onExpansionChanged: (expanded) {
-                            setState(() {
-                              isSelectingFriends = expanded;
-                            });
-                          },
-                          onFriendToggle: (friend) {
-                            setState(() {
-                              friend.isSelected = !friend.isSelected;
-                            });
-                          },
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Copy invitation code field
-                        InvitationCodeField(
-                          controller: invitationCodeController,
-                          onCopyPressed: () {
-                            copyToClipboard(invitationCodeController.text);
-                          },
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Create group button
-                        ElevatedButton(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              List<String> selectedMembersIds = friends
-                                  .where((friend) => friend.isSelected)
-                                  .map((friend) => friend.id)
-                                  .toList();
-                              await context.read<AddGroupCubit>().addGroup(
-                                    name: nameController.text,
-                                    description: descriptionController.text,
-                                    currency: selectedCurrency,
-                                    adminId: currentUser.id,
-                                    members: selectedMembersIds,
-                                    invitationCode:
-                                        invitationCodeController.text,
-                                  );
-                            }
-                          },
-                          child: const Text('Create Group'),
-                        ),
-                        const SizedBox(height: 16),
-                        if (state.error != null) ...[
-                          Text(state.error!,
-                              style: const TextStyle(color: Colors.red)),
-                          const SizedBox(height: 16),
-                        ] else if (state.isLoading) ...[
-                          Center(
-                            child: const CircularProgressIndicator(),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-      ),
+              ),
+            ),
+          );
+        } else {
+          return const Center(child: Text('An error occurred.'));
+        }
+      },
     );
   }
 }

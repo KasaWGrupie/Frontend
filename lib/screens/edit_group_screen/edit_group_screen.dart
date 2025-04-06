@@ -8,7 +8,7 @@ import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/friends_list.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/group_photo.dart';
 import 'package:kasa_w_grupie/models/friend.dart';
-import 'package:kasa_w_grupie/screens/edit_group_screen/currency_tile.dart';
+import 'package:kasa_w_grupie/screens/edit_group_screen/widgets/read_only_currency_tile.dart';
 
 class EditGroupScreen extends StatefulWidget {
   final String groupId;

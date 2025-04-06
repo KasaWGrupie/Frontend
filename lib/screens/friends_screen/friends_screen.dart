@@ -15,7 +15,7 @@ class FriendsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authService = context.read<AuthService>();
     final currentUser = authService.currentUser!;
-    final friendService = MockFriendsService(currentUserId: currentUser.id);
+    final friendService = MockFriendsService(currentUserId: authService.userId);
 
     return BlocProvider(
       create: (context) => FriendsCubit(
@@ -29,7 +29,7 @@ class FriendsScreen extends StatelessWidget {
                 context: context,
                 delegate: FriendSearchDelegate(
                   friendsService: friendService,
-                  currentUserId: currentUser.id,
+                  currentUserId: authService.userId,
                 ),
               );
             },

@@ -9,6 +9,7 @@ import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
 import 'package:kasa_w_grupie/screens/edit_group_screen/edit_group_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/friends_screen.dart';
 import 'package:kasa_w_grupie/screens/groups_screen/groups_screen.dart';
+import 'package:kasa_w_grupie/screens/profile_screen.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/screens/login_screen.dart';
 import 'package:kasa_w_grupie/screens/register_screen.dart';
@@ -77,6 +78,10 @@ final GoRouter _router = GoRouter(
               child: EditGroupScreen(groupId: groupId),
             );
           },
+        ),
+        GoRoute(
+          path: 'profile',
+          builder: (context, state) => const ProfileScreen(),
         ),
       ],
     ),

@@ -30,9 +30,7 @@ class BaseScreen extends StatelessWidget {
             Expanded(
               child: IconButton(
                 onPressed: () {
-
-                  context.go('/addGroup');
-
+                  context.go('/groups');
                 },
                 icon: const Icon(Icons.list),
               ),
@@ -43,6 +41,14 @@ class BaseScreen extends StatelessWidget {
                   context.go('/profile');
                 },
                 icon: const Icon(Icons.person),
+              ),
+            ),
+            Expanded(
+              child: IconButton(
+                onPressed: () {
+                  context.go('/friends');
+                },
+                icon: const Icon(Icons.people),
               ),
             ),
           ],

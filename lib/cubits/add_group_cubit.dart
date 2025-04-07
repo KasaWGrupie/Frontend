@@ -3,7 +3,7 @@ import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 
 class AddGroupCubit extends Cubit<AddGroupState> {
-  final GroupService groupService;
+  final GroupsService groupService;
 
   AddGroupCubit({required this.groupService})
       : super(const AddGroupState.initial());

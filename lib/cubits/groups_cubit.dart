@@ -5,7 +5,7 @@ import 'package:kasa_w_grupie/services/group_service.dart';
 class GroupsCubit extends Cubit<List<Group>?> {
   GroupsCubit(this._groupService) : super(null);
 
-  final GroupService _groupService;
+  final GroupsService _groupService;
 
   Future<void> fetch() async {
     final groups = await _groupService.getGroupsForUser();

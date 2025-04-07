@@ -56,6 +56,18 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'groups',
           builder: (context, state) => const GroupsScreen(),
+          routes: [
+            GoRoute(
+              path: '/:groupId',
+              builder: (context, state) {
+                final groupId = state.pathParameters['groupId'];
+                if (groupId == null) {
+                  throw Exception('there should be id');
+                }
+                return GroupScreen(groupId: groupId);
+              },
+            ),
+          ],
         ),
         GoRoute(
           path: 'editGroup/:groupId',
@@ -137,7 +149,7 @@ class _AppState extends State<_App> {
                   groupService: GroupServiceMock(authService: context.read()),
                 ),
               ),
-              Provider<GroupService>(
+              Provider<GroupsService>(
                 create: (context) => GroupServiceMock(
                   authService: context.read(),
                 ),

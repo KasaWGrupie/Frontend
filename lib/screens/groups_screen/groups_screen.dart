@@ -13,7 +13,7 @@ class GroupsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => GroupsCubit(context.read<GroupService>())..fetch(),
+      create: (context) => GroupsCubit(context.read<GroupsService>())..fetch(),
       child: BaseScreen(
         floatingActionButton: FloatingActionButton(
           onPressed: () => context.go('/addGroup'),

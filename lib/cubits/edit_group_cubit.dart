@@ -7,7 +7,7 @@ import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 
 class EditGroupCubit extends Cubit<EditGroupState> {
-  final GroupService groupService;
+  final GroupsService groupService;
   final FriendsService friendsService;
   final AuthService authService;
   final String groupId;

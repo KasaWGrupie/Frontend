@@ -24,7 +24,7 @@ class EditGroupCubit extends Cubit<EditGroupState> {
       final group = await groupService.getGroupById(groupId);
       final friends = await friendsService.getFriends();
       final groupMembers = await groupService.getUsersForGroup(groupId);
-      final currentUserId = authService.currentUser!.id;
+      final currentUserId = authService.userId;
 
       final membersSet = group.membersId.toSet();
 

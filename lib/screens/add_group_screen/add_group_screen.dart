@@ -33,7 +33,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   late final User currentUser;
   bool isSelectingFriends = false;
 
-  late final _getFriendsFuture;
+  late final dynamic _getFriendsFuture;
 
   Future<List<Friend>> getFriends() async {
     final authService = context.read<AuthService>();
@@ -92,7 +92,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             child: BlocListener<AddGroupCubit, AddGroupState>(
               listener: (context, state) {
                 if (state.isSuccess) {
-                  context.pop();
+                  context.go('/groups');
                 }
               },
               child: BaseScreen(

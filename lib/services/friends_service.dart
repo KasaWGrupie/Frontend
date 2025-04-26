@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 
 abstract class FriendsService {
   Future<List<User>> getFriends();
@@ -19,9 +20,11 @@ abstract class FriendsService {
 }
 
 class MockFriendsService implements FriendsService {
-  final String currentUserId;
+  final AuthService authService;
 
-  MockFriendsService({required this.currentUserId});
+  MockFriendsService({required this.authService});
+
+  String get currentUserId => authService.userId;
 
   // Mock users
   final List<User> mockUsers = [

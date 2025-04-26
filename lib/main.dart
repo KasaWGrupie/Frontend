@@ -62,19 +62,14 @@ final GoRouter _router = GoRouter(
           path: 'editGroup/:groupId',
           builder: (context, state) {
             final groupId = state.pathParameters['groupId'] ?? "0";
-            final authService = context.read<AuthService>();
+
             return BlocProvider(
-              create: (context) {
-                final cubit = EditGroupCubit(
-                  groupService: GroupServiceMock(authService: authService),
-                  friendsService:
-                      MockFriendsService(currentUserId: authService.userId),
-                  authService: authService,
-                  groupId: groupId,
-                );
-                cubit.loadGroup();
-                return cubit;
-              },
+              create: (context) => EditGroupCubit(
+                groupService: context.read<GroupService>(),
+                friendsService: context.read<FriendsService>(),
+                authService: context.read<AuthService>(),
+                groupId: groupId,
+              )..loadGroup(),
               child: EditGroupScreen(groupId: groupId),
             );
           },
@@ -145,6 +140,11 @@ class _AppState extends State<_App> {
               Provider<GroupService>(
                 create: (context) => GroupServiceMock(
                   authService: context.read(),
+                ),
+              ),
+              Provider<FriendsService>(
+                create: (context) => MockFriendsService(
+                  authService: context.read<AuthService>(),
                 ),
               ),
             ], child: child!);

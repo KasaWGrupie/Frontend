@@ -38,17 +38,25 @@ class BaseScreen extends StatelessWidget {
             Expanded(
               child: IconButton(
                 onPressed: () {
-                  context.go('/profile');
+                  context.go('/friends');
                 },
-                icon: const Icon(Icons.person),
+                icon: const Icon(Icons.people),
               ),
             ),
             Expanded(
               child: IconButton(
                 onPressed: () {
-                  context.go('/friends');
+                  context.go('/settlements');
                 },
-                icon: const Icon(Icons.people),
+                icon: const Icon(Icons.mail),
+              ),
+            ),
+            Expanded(
+              child: IconButton(
+                onPressed: () {
+                  context.go('/profile');
+                },
+                icon: const Icon(Icons.person),
               ),
             ),
           ],

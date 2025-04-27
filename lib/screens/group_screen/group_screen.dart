@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/members_screen.dart';
+import 'package:kasa_w_grupie/screens/group_screen/settlements_screen.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
@@ -49,12 +50,8 @@ class GroupScreen extends StatelessWidget {
         appBarBottom: const TabBar(
           tabs: [
             Tab(text: 'Expenses'),
-            Tab(
-              text: 'Members',
-            ),
-            Tab(
-              text: 'Settlements',
-            ),
+            Tab(text: 'Members'),
+            Tab(text: 'Settlements'),
           ],
         ),
         child: TabBarView(
@@ -64,7 +61,7 @@ class GroupScreen extends StatelessWidget {
             // SettlementsScreen(loadedState: state),
             Placeholder(),
             MembersScreen(loadedState: state),
-            Placeholder(),
+            SettlementsScreen(loadedState: state)
           ],
         ),
       ),

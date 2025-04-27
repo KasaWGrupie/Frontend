@@ -2,18 +2,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/settlement.dart';
+import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 sealed class GroupState {}
 
 class GroupLoading extends GroupState {}
 
 class GroupLoaded extends GroupState {
-  GroupLoaded(
-      {required this.group,
-      required this.expenses,
-      required this.balances,
-      required this.settlements}) {
+  GroupLoaded({
+    required this.group,
+    required this.expenses,
+    required this.balances,
+    required this.settlements,
+    required this.members,
+  }) {
     grouped = {};
     for (var expense in expenses) {
       final key =
@@ -35,6 +39,7 @@ class GroupLoaded extends GroupState {
   late Map<DateTime, List<Expense>> grouped;
   final Map<String, double> balances;
   final List<Settlement> settlements;
+  final List<User> members;
 }
 
 class GroupError extends GroupState {
@@ -46,9 +51,11 @@ class GroupCubit extends Cubit<GroupState> {
   GroupCubit({
     required this.groupId,
     required this.groupService,
+    required this.usersService,
   }) : super(GroupLoading());
   final String groupId;
   final GroupService groupService;
+  final UsersService usersService;
 
   Future<void> fetch() async {
     emit(GroupLoading());
@@ -60,13 +67,22 @@ class GroupCubit extends Cubit<GroupState> {
       Group group = await groupService.getGroupById(groupId);
       final balances = await groupService.getBalances(groupId);
       final settlements = calculateSettlements(balances);
+      final members = <User>[];
+      for (var userId in group.membersId) {
+        var user = await usersService.getUser(userId);
+        if (user == null) {
+          emit(GroupError("Error loading group"));
+          return;
+        }
+        members.add(user);
+      }
       return emit(
         GroupLoaded(
-          group: group,
-          expenses: await groupService.getExpensesForGroup(groupId),
-          balances: balances,
-          settlements: settlements,
-        ),
+            group: group,
+            expenses: await groupService.getExpensesForGroup(groupId),
+            balances: balances,
+            settlements: settlements,
+            members: members),
       );
     } catch (e) {
       emit(GroupError("Error loading group"));

@@ -1,4 +1,4 @@
-enum MoneyRequestStatus { pending, cancelled, paid, closed }
+enum MoneyRequestStatus { pending, cancelled, paid, closed, rejected }
 
 class MoneyRequest {
   late final String senderId;

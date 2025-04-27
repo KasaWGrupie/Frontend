@@ -37,7 +37,7 @@ class MoneyRequestServiceMock implements MoneyRequestService {
         recipientId: loggedUserId,
         moneyValue: 20.0,
         groups: ["0"],
-        status: MoneyRequestStatus.paid,
+        status: MoneyRequestStatus.closed,
         finalizedAt: DateTime.now().subtract(const Duration(days: 2)),
       ),
       MoneyRequest(
@@ -53,7 +53,15 @@ class MoneyRequestServiceMock implements MoneyRequestService {
         recipientId: "7",
         moneyValue: 40.0,
         groups: ["0"],
-        status: MoneyRequestStatus.cancelled,
+        status: MoneyRequestStatus.closed,
+        finalizedAt: DateTime.now().subtract(const Duration(days: 5)),
+      ),
+      MoneyRequest(
+        senderId: loggedUserId,
+        recipientId: "7",
+        moneyValue: 40.0,
+        groups: ["0", "0"],
+        status: MoneyRequestStatus.rejected,
         finalizedAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
     ];
@@ -75,7 +83,10 @@ class MoneyRequestServiceMock implements MoneyRequestService {
     if (user == null) return [];
 
     return allMoneyRequests
-        .where((r) => r.senderId == user.id || r.recipientId == user.id)
+        .where((r) =>
+            ((r.senderId == user.id || r.recipientId == user.id) &&
+                r.status == MoneyRequestStatus.closed) ||
+            (r.senderId == user.id && r.status == MoneyRequestStatus.rejected))
         .toList();
   }
 }

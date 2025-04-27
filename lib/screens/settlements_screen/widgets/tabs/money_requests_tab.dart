@@ -153,7 +153,7 @@ class MoneyRequestsTab extends StatelessWidget {
                                   ),
                                   onPressed: () {},
                                   child: const Text(
-                                    'Decline',
+                                    'Reject',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,

@@ -45,12 +45,48 @@ class GroupBalanceCard extends StatelessWidget {
           ),
         ),
         trailing: ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            isOwes
+                ? showConfirmationDialog(
+                    context,
+                    "Are you sure you want to settle?",
+                    () {},
+                  )
+                : showConfirmationDialog(
+                    context,
+                    "Are you sure you made a money transfer?",
+                    () {},
+                  );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: isOwes ? Colors.green : Colors.red,
           ),
           child: Text(isOwes ? "Settle" : "Pay"),
         ),
+      ),
+    );
+  }
+
+  Future<void> showConfirmationDialog(
+      BuildContext context, String message, VoidCallback onConfirm) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirmation'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
+            child: Text('Confirm'),
+          ),
+        ],
       ),
     );
   }

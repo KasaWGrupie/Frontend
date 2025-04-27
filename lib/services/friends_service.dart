@@ -58,7 +58,7 @@ class MockFriendsService implements FriendsService {
 
   final Map<String, Map<bool, double>> balances = {
     "1": {true: 600.0},
-    "2": {false: 23.1},
+    "2": {false: 123.1},
     "3": {true: 120.4},
   };
 
@@ -75,7 +75,10 @@ class MockFriendsService implements FriendsService {
       "Trip nine": {false: 50.0},
     },
     "2": {
-      "Trip one": {false: 23.1}
+      "Trip one": {false: 23.1},
+      "Trip three": {false: 50.0},
+      "Trip four": {true: 100.0},
+      "Trip five": {false: 150.0},
     },
     "3": {
       "Trip two": {true: 120.4}

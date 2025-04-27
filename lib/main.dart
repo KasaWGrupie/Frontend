@@ -62,7 +62,7 @@ final GoRouter _router = GoRouter(
               GoRoute(
                 path: ':groupId',
                 builder: (context, state) => GroupScreen(
-                  state.pathParameters['groupId'] ?? "0",
+                  groupId: state.pathParameters['groupId'] ?? "0",
                 ),
               )
             ]),

@@ -50,6 +50,11 @@ class GroupCubit extends Cubit<GroupState> {
   final String groupId;
   final GroupService groupService;
 
+  Future<void> fetch() async {
+    emit(GroupLoading());
+    await reload();
+  }
+
   Future<void> reload() async {
     try {
       Group group = await groupService.getGroupById(groupId);

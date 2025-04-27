@@ -62,11 +62,11 @@ class GroupServiceMock implements GroupService {
         return [];
       }
 
-      final userGroups = allGroups.where((group) {
-        return group.membersId.contains(user.id) || group.adminId == user.id;
-      }).toList();
+      // final userGroups = allGroups.where((group) {
+      //   return group.membersId.contains(user.id) || group.adminId == user.id;
+      // }).toList();
 
-      return userGroups;
+      return allGroups;
     } catch (e) {
       return [];
     }

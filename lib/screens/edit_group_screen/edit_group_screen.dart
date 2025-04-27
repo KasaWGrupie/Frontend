@@ -37,7 +37,7 @@ class EditGroupScreenState extends State<EditGroupScreen> {
     return BlocListener<EditGroupCubit, EditGroupState>(
       listener: (context, state) {
         if (state is EditGroupSuccess) {
-          context.pop();
+          context.go('/groups');
         }
       },
       child: BaseScreen(

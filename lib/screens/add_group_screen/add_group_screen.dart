@@ -92,7 +92,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             child: BlocListener<AddGroupCubit, AddGroupState>(
               listener: (context, state) {
                 if (state.isSuccess) {
-                  context.pop();
+                  context.go('/groups');
                 }
               },
               child: BaseScreen(

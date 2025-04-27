@@ -14,7 +14,7 @@ class FriendsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = context.read<AuthService>();
-    final friendService = MockFriendsService(currentUserId: authService.userId);
+    final friendService = context.read<FriendsService>();
 
     return BlocProvider(
       create: (context) => FriendsCubit(

@@ -21,7 +21,7 @@ import 'package:kasa_w_grupie/screens/add_group_screen/add_group_screen.dart';
 import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
-import 'package:kasa_w_grupie/services/money_requests_service.dart';
+import 'package:kasa_w_grupie/services/money_transactions_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 import 'package:provider/provider.dart';
@@ -160,8 +160,8 @@ class _AppState extends State<_App> {
               BlocProvider<UserCubit>(
                 create: (context) => UserCubit(context.read<UsersService>()),
               ),
-              Provider<MoneyRequestService>(
-                  create: (context) => MoneyRequestServiceMock(
+              Provider<MoneyTransactionService>(
+                  create: (context) => MoneyTransactionServiceMock(
                       authService: context.read<AuthService>())),
             ], child: child!);
           } else {

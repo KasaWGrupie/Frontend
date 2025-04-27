@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/models/group.dart';
-import 'package:kasa_w_grupie/models/money_requests.dart';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/screens/settlements_screen/widgets/settlement_item.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 class SettlementTile extends StatelessWidget {
-  final MoneyRequest settlement;
+  final SettlementItem settlement;
   final List<Group> groups;
   final User currentUser;
 
@@ -21,7 +21,8 @@ class SettlementTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final userService = context.read<UsersService>();
 
-    final matchedGroups = settlement.groups.map((groupId) {
+    // Fetch all groups that are connected to the money transfers/request
+    final matchedGroups = settlement.groupIds.map((groupId) {
       return groups.firstWhere(
         (g) => g.id == groupId,
         // TODO delete after backend integration
@@ -36,14 +37,17 @@ class SettlementTile extends StatelessWidget {
         ),
       );
     }).toList();
+
+    // Concatenate group names for the money transfer/request
     final groupNames = matchedGroups.map((g) => g.name).join(', ');
+
     // TODO change according to project rules
     final groupCurrency = matchedGroups.isNotEmpty
         ? matchedGroups.first.currency
         : CurrencyEnum.eur;
 
     final isSender = settlement.senderId == currentUser.id;
-    final amount = settlement.moneyValue;
+    final amount = settlement.amount;
 
     return FutureBuilder<List<User?>>(
       future: Future.wait([
@@ -62,9 +66,14 @@ class SettlementTile extends StatelessWidget {
           return const Text("Error loading user data");
         }
 
+        // Prepare corresponding information about money transfer/request
         String text;
-        if (settlement.status == MoneyRequestStatus.rejected && isSender) {
+        if (settlement.isRejected && isSender) {
           text = '${recipientUser.name} rejected your money request';
+        } else if (settlement.isTransfer) {
+          text = isSender
+              ? 'You sent money to ${recipientUser.name}'
+              : '${senderUser.name} sent you money';
         } else {
           text = isSender
               ? 'You sent money to ${recipientUser.name}'
@@ -73,26 +82,31 @@ class SettlementTile extends StatelessWidget {
 
         return Row(
           children: [
+            // User avatar
             const CircleAvatar(
               radius: 24,
               child: Icon(Icons.person),
             ),
             const SizedBox(width: 16),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Show date of transfer/request and name of group it was connected to
                   Text(
-                    "${formatDate(settlement.finalizedAt!)} \t$groupNames",
+                    "${formatDate(settlement.finalizedAt)} \t$groupNames",
                     style: const TextStyle(
                       fontSize: 11,
                       color: Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 4),
+
+                  // Show corresponding information about money transfer/request
                   Text(
                     text,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: Colors.black,
@@ -101,15 +115,17 @@ class SettlementTile extends StatelessWidget {
                 ],
               ),
             ),
+
+            // Format the money amount based on who owes whom
             Text(
-              settlement.status == MoneyRequestStatus.rejected
+              settlement.isRejected
                   ? getFormattedAmount(groupCurrency, amount)
                   : (isSender ? '-' : '+') +
                       getFormattedAmount(groupCurrency, amount),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: settlement.status == MoneyRequestStatus.rejected
+                color: settlement.isRejected
                     ? Colors.grey
                     : (isSender ? Colors.red : Colors.green),
               ),
@@ -120,6 +136,7 @@ class SettlementTile extends StatelessWidget {
     );
   }
 
+  // Helper function for formating currency
   String getFormattedAmount(CurrencyEnum currency, double amount) {
     switch (currency) {
       case CurrencyEnum.pln:
@@ -133,6 +150,7 @@ class SettlementTile extends StatelessWidget {
     }
   }
 
+  // Helper function for formating date
   String formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }

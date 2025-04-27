@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kasa_w_grupie/services/money_requests_service.dart';
+import 'package:kasa_w_grupie/services/money_transactions_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 class MoneyRequestsTab extends StatelessWidget {
@@ -8,7 +8,7 @@ class MoneyRequestsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final moneyRequestService = context.read<MoneyRequestService>();
+    final moneyRequestService = context.read<MoneyTransactionService>();
     final userService = context.read<UsersService>();
 
     return FutureBuilder(
@@ -18,6 +18,7 @@ class MoneyRequestsTab extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
+        // Get data from the snapshot
         final moneyRequests = snapshot.data ?? [];
 
         if (moneyRequests.isEmpty) {

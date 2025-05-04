@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/widgets/group_balance_card.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/widgets/friend_balance_card.dart';
+import 'package:kasa_w_grupie/screens/friends_details_screen/widgets/settle_between_groups_modal.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/cubits/group_balance_cubit.dart';
 
@@ -127,7 +128,10 @@ class FriendDetailsScreen extends StatelessWidget {
                       child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            showSettleBetweenGroupsModal(
+                                context, groupBalances);
+                          },
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 12),
                           ),

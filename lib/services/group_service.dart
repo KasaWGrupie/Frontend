@@ -1,4 +1,6 @@
+import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
+import 'package:kasa_w_grupie/models/settlement.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 
@@ -9,6 +11,9 @@ abstract class GroupService {
   Future<Group> getGroupById(String groupId);
   Future<String?> updateGroup(Group group);
   Future<List<User>> getUsersForGroup(String groupId);
+
+  Future<List<Expense>> getExpensesForGroup(String groupId);
+  Future<Map<String, double>> getBalances(String groupId);
 }
 
 class GroupServiceMock implements GroupService {
@@ -28,6 +33,39 @@ class GroupServiceMock implements GroupService {
         "7",
       ],
       invitationCode: "fjh4390h094",
+    ),
+  ];
+
+  final List<Expense> allExpenses = [
+    Expense(
+      id: 0,
+      pictureUrl:
+          "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
+      date: DateTime.now(),
+      amount: 100,
+      payer: "1",
+      split: ExpenseSplit(),
+      name: "Jedzenie",
+    ),
+    Expense(
+      id: 1,
+      pictureUrl:
+          "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
+      date: DateTime.now().subtract(const Duration(days: 1)),
+      amount: 100,
+      payer: "2",
+      split: ExpenseSplit(),
+      name: "Paliwo",
+    ),
+    Expense(
+      id: 2,
+      pictureUrl:
+          "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
+      date: DateTime.now(),
+      amount: 100,
+      payer: "1",
+      split: ExpenseSplit(),
+      name: "Spanie",
     ),
   ];
 
@@ -62,11 +100,11 @@ class GroupServiceMock implements GroupService {
         return [];
       }
 
-      final userGroups = allGroups.where((group) {
-        return group.membersId.contains(user.id) || group.adminId == user.id;
-      }).toList();
+      // final userGroups = allGroups.where((group) {
+      //   return group.membersId.contains(user.id) || group.adminId == user.id;
+      // }).toList();
 
-      return userGroups;
+      return allGroups;
     } catch (e) {
       return [];
     }
@@ -101,5 +139,21 @@ class GroupServiceMock implements GroupService {
     } catch (e) {
       return 'Failed to update group: $e';
     }
+  }
+
+  @override
+  Future<Map<String, double>> getBalances(String groupId) {
+    // For now return a static map of balances
+    return Future.value({
+      "1": 100,
+      "2": -50,
+      "6": -25,
+      "7": -25,
+    });
+  }
+
+  @override
+  Future<List<Expense>> getExpensesForGroup(String groupId) {
+    return Future.value(allExpenses);
   }
 }

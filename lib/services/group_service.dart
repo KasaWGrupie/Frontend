@@ -45,6 +45,7 @@ class GroupServiceMock implements GroupService {
       amount: 100,
       payer: "1",
       split: ExpenseSplit(),
+      name: "Jedzenie",
     ),
     Expense(
       id: 1,
@@ -54,6 +55,7 @@ class GroupServiceMock implements GroupService {
       amount: 100,
       payer: "2",
       split: ExpenseSplit(),
+      name: "Paliwo",
     ),
     Expense(
       id: 2,
@@ -63,6 +65,7 @@ class GroupServiceMock implements GroupService {
       amount: 100,
       payer: "1",
       split: ExpenseSplit(),
+      name: "Spanie",
     ),
   ];
 

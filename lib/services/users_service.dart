@@ -5,27 +5,19 @@ abstract class UsersService {
 }
 
 class UsersServiceMock implements UsersService {
-  final List<User> allUsers = [
-    User(name: "Captain Code", id: "0", email: "captain.code@test.com"),
-    User(name: "Debugging Diva", id: "1", email: "debugging.diva@test.com"),
-    User(name: "Syntax Samurai", id: "2", email: "syntax.samurai@test.com"),
-    User(
-        name: "Null Pointer Ninja",
-        id: "3",
-        email: "null.pointer.ninja@test.com"),
-    User(name: "Runtime Rebel", id: "4", email: "runtime.rebel@test.com"),
-    User(
-        name: "Stacktrace Surfer",
-        id: "5",
-        email: "stacktrace.surfer@test.com"),
-    User(name: "Binary Bandit", id: "6", email: "binary.bandit@test.com"),
-    User(name: "Algorithm Ace", id: "7", email: "algorithm.ace@test.com"),
-  ];
-
+  final Map<String, User> users = {
+    "0": User(name: "User", id: "0", email: "test@test.com"),
+    "1": User(id: "1", name: "John Doe", email: "john@example.com"),
+    "2": User(id: "2", name: "Jane Smith", email: "jane@example.com"),
+    "6": User(id: "6", name: "Jane Austin", email: "jane2@example.com"),
+    "7": User(id: "7", name: "Alice Wonderland", email: "alice2@example.com"),
+  };
   @override
   Future<User?> getUser(String uid) async {
-    return allUsers.firstWhere(
-      (user) => user.id == uid,
-    );
+    await Future.delayed(const Duration(milliseconds: 10));
+    if (users[uid] == null) {
+      return users["0"];
+    }
+    return users[uid];
   }
 }

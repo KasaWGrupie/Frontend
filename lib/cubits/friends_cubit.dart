@@ -37,12 +37,18 @@ class FriendsCubit extends Cubit<FriendsState> {
       final friends = await friendsService.getFriends();
       final friendRequests = await friendsService.getFriendRequests();
       final sentRequests = await friendsService.getSentRequests();
-      emit(FriendsLoaded(
+
+      if (!isClosed) {
+        emit(FriendsLoaded(
           friends: friends,
           friendRequests: friendRequests,
-          sentRequests: sentRequests));
+          sentRequests: sentRequests,
+        ));
+      }
     } catch (e) {
-      emit(FriendsError("Failed to load data"));
+      if (!isClosed) {
+        emit(FriendsError("Failed to load data"));
+      }
     }
   }
 

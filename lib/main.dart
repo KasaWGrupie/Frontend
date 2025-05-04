@@ -9,6 +9,7 @@ import 'package:kasa_w_grupie/firebase_options.dart';
 import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
 import 'package:kasa_w_grupie/screens/edit_group_screen/edit_group_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/friends_screen.dart';
+import 'package:kasa_w_grupie/screens/group_screen/group_screen.dart';
 import 'package:kasa_w_grupie/screens/groups_screen/groups_screen.dart';
 import 'package:kasa_w_grupie/screens/profile_screen.dart';
 import 'package:kasa_w_grupie/screens/settlements_screen/settlemnets_screen.dart';
@@ -58,9 +59,16 @@ final GoRouter _router = GoRouter(
           builder: (context, state) => const FriendsScreen(),
         ),
         GoRoute(
-          path: 'groups',
-          builder: (context, state) => const GroupsScreen(),
-        ),
+            path: 'groups',
+            builder: (context, state) => const GroupsScreen(),
+            routes: [
+              GoRoute(
+                path: ':groupId',
+                builder: (context, state) => GroupScreen(
+                  groupId: state.pathParameters['groupId'] ?? "0",
+                ),
+              )
+            ]),
         GoRoute(
           path: 'editGroup/:groupId',
           builder: (context, state) {
@@ -129,9 +137,12 @@ class _AppState extends State<_App> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return MultiProvider(providers: [
+              Provider<UsersService>(
+                create: (context) => UsersServiceMock(),
+              ),
               Provider<AuthService>(
                 create: (context) => FirebaseAuthService(
-                    userService: UsersServiceMock(),
+                    userService: context.read(),
                     firebaseAuth: FirebaseAuth.instance),
               ),
               BlocProvider<AuthCubit>(

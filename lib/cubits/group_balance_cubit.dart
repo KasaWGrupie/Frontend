@@ -37,10 +37,16 @@ class GroupBalanceCubit extends Cubit<GroupBalanceState> {
           ? balanceData["amount"] ?? 0.0
           : -(balanceData["amount"] ?? 0.0);
 
-      emit(GroupBalanceLoaded(
-          groupBalances: groupBalances, totalBalance: totalBalance));
+      if (!isClosed) {
+        emit(GroupBalanceLoaded(
+          groupBalances: groupBalances,
+          totalBalance: totalBalance,
+        ));
+      }
     } catch (e) {
-      emit(GroupBalanceError("Failed to load group balances"));
+      if (!isClosed) {
+        emit(GroupBalanceError("Failed to load group balances"));
+      }
     }
   }
 }

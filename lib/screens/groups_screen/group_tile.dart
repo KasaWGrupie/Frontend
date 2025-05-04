@@ -17,7 +17,7 @@ class GroupTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        //TODO change later to right values
+        //TODO change later to right route
         context.go('/editGroup/0');
       },
       child: Card(

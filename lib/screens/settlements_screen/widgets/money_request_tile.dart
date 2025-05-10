@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/models/money_requests.dart';
+import 'package:kasa_w_grupie/screens/friends_details_screen/utils/currency_formater.dart';
 import 'package:kasa_w_grupie/screens/settlements_screen/widgets/money_request_buttons.dart';
 import 'package:kasa_w_grupie/screens/settlements_screen/widgets/transfer_details_button.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
@@ -54,7 +55,8 @@ class MoneyRequestTile extends StatelessWidget {
                         style: TextStyle(fontSize: 16),
                       ),
                       TextSpan(
-                        text: '\$${request.moneyValue.toStringAsFixed(2)}',
+                        text: formatCurrency(
+                            request.moneyValue, request.currency),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

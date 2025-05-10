@@ -23,6 +23,7 @@ import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
+import 'package:kasa_w_grupie/services/settlemnest_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 import 'package:provider/provider.dart';
@@ -174,6 +175,8 @@ class _AppState extends State<_App> {
                   authService: context.read<AuthService>(),
                 ),
               ),
+              Provider<SettlementsService>(
+                  create: (context) => SettlementsServiceMock()),
             ], child: child!);
           } else {
             return const Scaffold(

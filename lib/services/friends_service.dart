@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 
@@ -86,6 +87,18 @@ class MockFriendsService implements FriendsService {
     "3": {
       "Trip two": {true: 120.4}
     },
+  };
+
+  final Map<String, CurrencyEnum> groupCurrencies = {
+    "Trip one": CurrencyEnum.pln,
+    "Trip two": CurrencyEnum.eur,
+    "Trip three": CurrencyEnum.usd,
+    "Trip four": CurrencyEnum.gbp,
+    "Trip five": CurrencyEnum.pln,
+    "Trip six": CurrencyEnum.usd,
+    "Trip seven": CurrencyEnum.eur,
+    "Trip eight": CurrencyEnum.gbp,
+    "Trip nine": CurrencyEnum.pln,
   };
 
   // Fetch friends for the logged-in user
@@ -207,9 +220,11 @@ class MockFriendsService implements FriendsService {
       final userBalances = balancesPerGroupPerUser[userId]!;
 
       userBalances.forEach((groupName, balanceInfo) {
+        final currency = groupCurrencies[groupName] ?? CurrencyEnum.pln;
         balanceInfo.forEach((isOwed, amount) {
           balancesList.add({
             "groupName": groupName,
+            "currency": currency,
             "amount": amount,
             "isOwed": isOwed,
           });

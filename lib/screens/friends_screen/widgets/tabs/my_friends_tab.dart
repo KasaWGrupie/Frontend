@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/friends_cubit.dart';
 import 'package:kasa_w_grupie/cubits/group_balance_cubit.dart';
+import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/friends_details_screen.dart';
+import 'package:kasa_w_grupie/screens/friends_details_screen/utils/currency_formater.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 
 class MyFriendsTab extends StatelessWidget {
@@ -11,11 +13,11 @@ class MyFriendsTab extends StatelessWidget {
   const MyFriendsTab({super.key, required this.friendsService});
 
   // Helper function to get balance info
-  String getBalanceInfo(double totalBalance) {
+  String getBalanceInfo(double totalBalance, CurrencyEnum currency) {
     if (totalBalance > 0) {
-      return "Owes you: ${totalBalance.toStringAsFixed(2)}";
+      return "Owes you: ${formatCurrency(totalBalance, currency)}";
     } else if (totalBalance < 0) {
-      return "You owe: ${totalBalance.abs().toStringAsFixed(2)}";
+      return "You owe: ${formatCurrency(totalBalance.abs(), currency)}";
     } else {
       return "No debts";
     }
@@ -46,7 +48,8 @@ class MyFriendsTab extends StatelessWidget {
                     String balanceInfo = "Loading...";
 
                     if (balanceState is GroupBalanceLoaded) {
-                      balanceInfo = getBalanceInfo(balanceState.totalBalance);
+                      balanceInfo = getBalanceInfo(balanceState.totalBalance,
+                          balanceState.totalBalanceCurrency);
                     } else if (balanceState is GroupBalanceError) {
                       balanceInfo = "Error loading balance";
                     }

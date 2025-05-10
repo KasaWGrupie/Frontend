@@ -3,13 +3,13 @@ import 'package:kasa_w_grupie/models/group.dart';
 
 String formatCurrency(double amount, CurrencyEnum currency) {
   final format = NumberFormat.currency(
-    locale: _getLocale(currency),
-    symbol: _getCurrencySymbol(currency),
+    locale: getLocale(currency),
+    symbol: getCurrencySymbol(currency),
   );
   return format.format(amount);
 }
 
-String _getCurrencySymbol(CurrencyEnum currency) {
+String getCurrencySymbol(CurrencyEnum currency) {
   switch (currency) {
     case CurrencyEnum.eur:
       return '€';
@@ -22,7 +22,7 @@ String _getCurrencySymbol(CurrencyEnum currency) {
   }
 }
 
-String _getLocale(CurrencyEnum currency) {
+String getLocale(CurrencyEnum currency) {
   switch (currency) {
     case CurrencyEnum.eur:
       return 'de_DE';

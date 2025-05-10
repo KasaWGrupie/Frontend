@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/screens/friends_details_screen/utils/currency_formater.dart';
 import 'package:kasa_w_grupie/screens/settlements_screen/widgets/settlement_item.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
@@ -41,10 +42,21 @@ class SettlementTile extends StatelessWidget {
     // Concatenate group names for the money transfer/request
     final groupNames = matchedGroups.map((g) => g.name).join(', ');
 
-    // TODO change according to project rules
-    final groupCurrency = matchedGroups.isNotEmpty
-        ? matchedGroups.first.currency
-        : CurrencyEnum.eur;
+    // TODO change after backend integration
+    final group = groups.firstWhere(
+      (g) => g.id == settlement.groupIds.first,
+      orElse: () => Group(
+        id: 'unknown',
+        name: 'Unknown Group',
+        currency: CurrencyEnum.eur,
+        status: GroupStatus.active,
+        adminId: '',
+        membersId: [],
+        invitationCode: '',
+      ),
+    );
+
+    final groupCurrency = group.currency;
 
     final isSender = settlement.senderId == currentUser.id;
     final amount = settlement.amount;
@@ -119,9 +131,9 @@ class SettlementTile extends StatelessWidget {
             // Format the money amount based on who owes whom
             Text(
               settlement.isRejected
-                  ? getFormattedAmount(groupCurrency, amount)
+                  ? formatCurrency(amount, groupCurrency)
                   : (isSender ? '-' : '+') +
-                      getFormattedAmount(groupCurrency, amount),
+                      formatCurrency(amount, groupCurrency),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -134,20 +146,6 @@ class SettlementTile extends StatelessWidget {
         );
       },
     );
-  }
-
-  // Helper function for formating currency
-  String getFormattedAmount(CurrencyEnum currency, double amount) {
-    switch (currency) {
-      case CurrencyEnum.pln:
-        return 'PLN ${amount.toStringAsFixed(2)}';
-      case CurrencyEnum.usd:
-        return '\$${amount.toStringAsFixed(2)}';
-      case CurrencyEnum.eur:
-        return '€${amount.toStringAsFixed(2)}';
-      default:
-        return '\$${amount.toStringAsFixed(2)}';
-    }
   }
 
   // Helper function for formating date

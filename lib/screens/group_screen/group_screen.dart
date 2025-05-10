@@ -56,6 +56,7 @@ class GroupScreen extends StatelessWidget {
         ),
         child: TabBarView(
           children: [
+            ExpensesScreen(loadedState: state),
             MembersScreen(loadedState: state),
             SettlementsScreen(loadedState: state)
           ],

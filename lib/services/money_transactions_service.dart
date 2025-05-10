@@ -1,3 +1,4 @@
+import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/money_requests.dart';
 import 'package:kasa_w_grupie/models/money_transfer.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
@@ -82,11 +83,12 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
 
     allMoneyRequests = [
       MoneyRequest(
-        senderId: loggedUserId,
-        recipientId: "2",
+        senderId: "2",
+        recipientId: loggedUserId,
         moneyValue: 50.0,
         groups: ["0"],
         status: MoneyRequestStatus.pending,
+        currency: CurrencyEnum.pln,
         finalizedAt: null,
       ),
       MoneyRequest(
@@ -95,6 +97,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
         moneyValue: 20.0,
         groups: ["0"],
         status: MoneyRequestStatus.closed,
+        currency: CurrencyEnum.gbp,
         finalizedAt: DateTime.now().subtract(const Duration(days: 2)),
       ),
       MoneyRequest(
@@ -103,6 +106,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
         moneyValue: 30.0,
         groups: ["0"],
         status: MoneyRequestStatus.pending,
+        currency: CurrencyEnum.eur,
         finalizedAt: null,
       ),
       MoneyRequest(
@@ -111,6 +115,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
         moneyValue: 40.0,
         groups: ["0"],
         status: MoneyRequestStatus.closed,
+        currency: CurrencyEnum.gbp,
         finalizedAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
       MoneyRequest(
@@ -119,6 +124,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
         moneyValue: 40.0,
         groups: ["0", "0"],
         status: MoneyRequestStatus.rejected,
+        currency: CurrencyEnum.usd,
         finalizedAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
     ];
@@ -130,7 +136,8 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
     if (user == null) return [];
 
     return allMoneyRequests
-        .where((r) => r.status == MoneyRequestStatus.pending)
+        .where((r) =>
+            r.status == MoneyRequestStatus.pending && r.recipientId == user.id)
         .toList();
   }
 

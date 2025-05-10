@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class GroupBalanceCard extends StatelessWidget {
   final String groupName;
-  final double balanceAmount;
+  final String balanceAmount;
   final bool isOwes;
 
   const GroupBalanceCard({
@@ -15,8 +15,7 @@ class GroupBalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final balanceText = isOwes ? "User owes you: " : "You owe: ";
-    final formattedAmount =
-        "${isOwes ? "+" : "-"} ${balanceAmount.abs().toStringAsFixed(2)}";
+    final formattedAmount = "${isOwes ? "+" : "-"} $balanceAmount";
 
     return Card(
       elevation: 4,

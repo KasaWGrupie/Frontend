@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
+import 'package:kasa_w_grupie/screens/friends_details_screen/utils/currency_formater.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/widgets/group_balance_card.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/widgets/friend_balance_card.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/widgets/settle_between_groups_modal.dart';
@@ -37,6 +39,7 @@ class FriendDetailsScreen extends StatelessWidget {
             } else if (state is GroupBalanceLoaded) {
               final groupBalances = state.groupBalances;
               final totalBalance = state.totalBalance;
+              final totalBalanceCurrency = state.totalBalanceCurrency;
 
               return Column(
                 children: [
@@ -72,12 +75,17 @@ class FriendDetailsScreen extends StatelessWidget {
                                 itemCount: groupBalances.length,
                                 itemBuilder: (context, index) {
                                   final groupBalance = groupBalances[index];
+                                  final amount = (groupBalance["amount"] ?? 0.0)
+                                      .toDouble();
+                                  final currency = groupBalance["currency"] ??
+                                      CurrencyEnum.pln;
+                                  final formatedAmount =
+                                      formatCurrency(amount, currency);
+
                                   return GroupBalanceCard(
                                     groupName: groupBalance["groupName"] ??
                                         "Unknown Group",
-                                    balanceAmount:
-                                        (groupBalance["amount"] ?? 0.0)
-                                            .toDouble(),
+                                    balanceAmount: formatedAmount,
                                     isOwes: groupBalance["isOwed"] ?? false,
                                   );
                                 },
@@ -101,7 +109,7 @@ class FriendDetailsScreen extends StatelessWidget {
                                     TextSpan(
                                       text: totalBalance == 0
                                           ? "You are settled up"
-                                          : "${totalBalance >= 0 ? "+" : "-"} ${totalBalance.abs().toStringAsFixed(2)}",
+                                          : "${totalBalance >= 0 ? "+" : "-"} ${formatCurrency(totalBalance.abs(), totalBalanceCurrency)}",
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,

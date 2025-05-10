@@ -1,6 +1,5 @@
 import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
-import 'package:kasa_w_grupie/models/settlement.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 

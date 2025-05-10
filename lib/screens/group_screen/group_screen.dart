@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
+import 'package:kasa_w_grupie/screens/group_screen/expenses_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/members_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/settlements_screen.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
@@ -56,6 +57,7 @@ class GroupScreen extends StatelessWidget {
         ),
         child: TabBarView(
           children: [
+            ExpensesScreen(loadedState: state),
             MembersScreen(loadedState: state),
             SettlementsScreen(loadedState: state)
           ],

@@ -53,6 +53,20 @@ class SettlementsCubit extends Cubit<SettlementsState> {
       emit(SettlementsState.error('Failed to load data: $e'));
     }
   }
+
+  void markRequestAsPaid(MoneyRequest request) async {
+    if (state is SettlementsLoaded) {
+      await _moneyTransactionService.markAsPaid(request.id);
+      await loadData();
+    }
+  }
+
+  void rejectRequest(MoneyRequest request) async {
+    if (state is SettlementsLoaded) {
+      await _moneyTransactionService.rejectRequest(request.id);
+      await loadData();
+    }
+  }
 }
 
 abstract class SettlementsState {

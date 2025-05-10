@@ -3,6 +3,7 @@ import 'package:kasa_w_grupie/models/group.dart';
 enum MoneyRequestStatus { pending, cancelled, paid, closed, rejected }
 
 class MoneyRequest {
+  late final String id;
   late final String senderId;
   late final String recipientId;
   late final double moneyValue;
@@ -12,6 +13,7 @@ class MoneyRequest {
   late final CurrencyEnum currency;
 
   MoneyRequest({
+    required this.id,
     required this.senderId,
     required this.recipientId,
     required this.moneyValue,
@@ -22,6 +24,7 @@ class MoneyRequest {
   });
 
   MoneyRequest.fromJson(Map<String, Object?> json) {
+    id = json["id"]! as String;
     senderId = json['senderId']! as String;
     recipientId = json['recipientId']! as String;
     moneyValue = double.parse(json['moneyValue']! as String);
@@ -41,6 +44,7 @@ class MoneyRequest {
 
   Map<String, Object?> toJson() {
     return {
+      'id': id,
       'senderId': senderId,
       'recipientId': recipientId,
       'moneyValue': moneyValue.toStringAsFixed(2),

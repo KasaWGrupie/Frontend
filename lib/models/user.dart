@@ -9,6 +9,9 @@ class User {
   late final String name;
   late final String email;
   late final String id;
+  String get pictureUrl {
+    return "https://i.kym-cdn.com/entries/icons/original/000/044/122/avatarguystaring.jpg";
+  }
 
   Map<String, Object> toJson() {
     return {

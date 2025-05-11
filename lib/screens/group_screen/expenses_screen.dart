@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/screens/group_screen/expense_tile.dart';
@@ -14,12 +15,12 @@ class ExpensesScreen extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () => BlocProvider.of<GroupCubit>(context).reload(),
       child: Scaffold(
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        //     context.go('/groups/${loadedState.group.id}/new_expense');
-        //   },
-        //   child: const Icon(Icons.add),
-        // ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            context.go('/groups/${loadedState.group.id}/new_expense');
+          },
+          child: const Icon(Icons.add),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(10),
           child: ListView.builder(

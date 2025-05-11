@@ -43,7 +43,7 @@ class GroupServiceMock implements GroupService {
       date: DateTime.now(),
       amount: 100,
       payer: "1",
-      split: ExpenseSplit(),
+      split: ExpenseSplit.equal(participants: []),
       name: "Jedzenie",
     ),
     Expense(
@@ -53,7 +53,7 @@ class GroupServiceMock implements GroupService {
       date: DateTime.now().subtract(const Duration(days: 1)),
       amount: 100,
       payer: "2",
-      split: ExpenseSplit(),
+      split: ExpenseSplit.equal(participants: []),
       name: "Paliwo",
     ),
     Expense(
@@ -63,7 +63,7 @@ class GroupServiceMock implements GroupService {
       date: DateTime.now(),
       amount: 100,
       payer: "1",
-      split: ExpenseSplit(),
+      split: ExpenseSplit.equal(participants: []),
       name: "Spanie",
     ),
   ];

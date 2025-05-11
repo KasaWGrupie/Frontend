@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
+import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/cubits/user_cubit.dart';
 import 'package:kasa_w_grupie/firebase_options.dart';
 import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
+import 'package:kasa_w_grupie/screens/add_expense_screen/add_expense_screen.dart';
 import 'package:kasa_w_grupie/screens/edit_group_screen/edit_group_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/friends_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/group_screen.dart';
@@ -20,6 +22,7 @@ import 'package:kasa_w_grupie/screens/home_screen.dart';
 
 import 'package:kasa_w_grupie/screens/add_group_screen/add_group_screen.dart';
 import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
+import 'package:kasa_w_grupie/services/expense_service.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
@@ -64,11 +67,28 @@ final GoRouter _router = GoRouter(
             builder: (context, state) => const GroupsScreen(),
             routes: [
               GoRoute(
-                path: ':groupId',
-                builder: (context, state) => GroupScreen(
-                  groupId: state.pathParameters['groupId'] ?? "0",
-                ),
-              )
+                  path: ':groupId',
+                  builder: (context, state) => GroupScreen(
+                        groupId: state.pathParameters['groupId'] ?? "0",
+                      ),
+                  routes: [
+                    GoRoute(
+                      path: 'new_expense',
+                      builder: (context, state) {
+                        final groupId = state.pathParameters['groupId'] ?? "0";
+                        return BlocProvider<GroupCubit>(
+                          create: (context) => GroupCubit(
+                            groupId: groupId,
+                            groupService: context.read(),
+                            usersService: context.read(),
+                          ),
+                          child: AddExpenseScreen(
+                            expenseService: context.read(),
+                          ),
+                        );
+                      },
+                    )
+                  ]),
             ]),
         GoRoute(
           path: 'editGroup/:groupId',
@@ -166,6 +186,9 @@ class _AppState extends State<_App> {
               ),
               BlocProvider<UserCubit>(
                 create: (context) => UserCubit(context.read<UsersService>()),
+              ),
+              Provider<ExpenseService>(
+                create: (context) => MockExpenseService(),
               ),
               Provider<MoneyTransactionService>(
                   create: (context) => MoneyTransactionServiceMock(

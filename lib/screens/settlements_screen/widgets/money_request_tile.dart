@@ -68,7 +68,9 @@ class MoneyRequestTile extends StatelessWidget {
                 const SizedBox(height: 12),
                 ShowTransferDetailsButton(),
                 const SizedBox(height: 16),
-                MoneyRequestsButton(),
+                MoneyRequestsButton(
+                  request: request,
+                ),
               ],
             ),
           ),

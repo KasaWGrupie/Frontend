@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/utils/currency_formater.dart';
-import 'package:kasa_w_grupie/services/settlemnest_service.dart';
+import 'package:kasa_w_grupie/services/settlements_service.dart';
 
 Future<void> showSelectedGroupsSummaryModal(
   BuildContext context,

@@ -7,6 +7,8 @@ abstract class MoneyTransactionService {
   Future<List<MoneyRequest>> getMoneyRequestsForUser();
   Future<List<MoneyRequest>> getRejectedMoneyRequestsForUser();
   Future<List<MoneyTransfer>> getMoneyTransfersForUser();
+  Future<void> markAsPaid(String requestId);
+  Future<void> rejectRequest(String requestId);
 }
 
 class MoneyTransactionServiceMock implements MoneyTransactionService {
@@ -83,6 +85,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
 
     allMoneyRequests = [
       MoneyRequest(
+        id: "1",
         senderId: "2",
         recipientId: loggedUserId,
         moneyValue: 50.0,
@@ -92,6 +95,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
         finalizedAt: null,
       ),
       MoneyRequest(
+        id: "2",
         senderId: "2",
         recipientId: loggedUserId,
         moneyValue: 20.0,
@@ -101,6 +105,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
         finalizedAt: DateTime.now().subtract(const Duration(days: 2)),
       ),
       MoneyRequest(
+        id: "3",
         senderId: "6",
         recipientId: loggedUserId,
         moneyValue: 30.0,
@@ -110,6 +115,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
         finalizedAt: null,
       ),
       MoneyRequest(
+        id: "4",
         senderId: loggedUserId,
         recipientId: "7",
         moneyValue: 40.0,
@@ -119,6 +125,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
         finalizedAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
       MoneyRequest(
+        id: "5",
         senderId: loggedUserId,
         recipientId: "7",
         moneyValue: 40.0,
@@ -162,5 +169,15 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
             (t.senderId == user.id || t.recipientId == user.id) &&
             t.status == MoneyTransferStatus.confirmed)
         .toList();
+  }
+
+  @override
+  Future<void> markAsPaid(String requestId) async {
+    allMoneyRequests.removeWhere((request) => request.id == requestId);
+  }
+
+  @override
+  Future<void> rejectRequest(String requestId) async {
+    allMoneyRequests.removeWhere((request) => request.id == requestId);
   }
 }

@@ -26,7 +26,7 @@ import 'package:kasa_w_grupie/services/expense_service.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
-import 'package:kasa_w_grupie/services/settlemnest_service.dart';
+import 'package:kasa_w_grupie/services/settlements_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 import 'package:provider/provider.dart';

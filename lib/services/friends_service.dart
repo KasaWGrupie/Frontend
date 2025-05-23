@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 
 abstract class FriendsService {
   Future<List<User>> getFriends();
@@ -14,12 +16,16 @@ abstract class FriendsService {
   bool isAlreadyFriend(String targetUserId);
   bool isRequestSentByUser(String targetUserId);
   bool isRequestReceived(String targetUserId);
+  Future<Map<String, dynamic>> getUserBalances(String userId);
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(String userId);
 }
 
 class MockFriendsService implements FriendsService {
-  final String currentUserId;
+  final AuthService authService;
 
-  MockFriendsService({required this.currentUserId});
+  MockFriendsService({required this.authService});
+
+  String get currentUserId => authService.userId;
 
   // Mock users
   final List<User> mockUsers = [
@@ -53,6 +59,47 @@ class MockFriendsService implements FriendsService {
     "10",
     "11",
   ];
+
+  final Map<String, Map<bool, double>> balances = {
+    "1": {true: 600.0},
+    "2": {false: 123.1},
+    "3": {true: 120.4},
+  };
+
+  final Map<String, Map<String, Map<bool, double>>> balancesPerGroupPerUser = {
+    "1": {
+      "Trip one": {true: 100.0},
+      "Trip two": {true: 150.0},
+      "Trip three": {false: 50.0},
+      "Trip four": {true: 100.0},
+      "Trip five": {true: 150.0},
+      "Trip six": {false: 50.0},
+      "Trip seven": {true: 100.0},
+      "Trip eight": {true: 150.0},
+      "Trip nine": {false: 50.0},
+    },
+    "2": {
+      "Trip one": {false: 23.1},
+      "Trip three": {false: 50.0},
+      "Trip four": {true: 100.0},
+      "Trip five": {false: 150.0},
+    },
+    "3": {
+      "Trip two": {true: 120.4}
+    },
+  };
+
+  final Map<String, CurrencyEnum> groupCurrencies = {
+    "Trip one": CurrencyEnum.pln,
+    "Trip two": CurrencyEnum.eur,
+    "Trip three": CurrencyEnum.usd,
+    "Trip four": CurrencyEnum.gbp,
+    "Trip five": CurrencyEnum.pln,
+    "Trip six": CurrencyEnum.usd,
+    "Trip seven": CurrencyEnum.eur,
+    "Trip eight": CurrencyEnum.gbp,
+    "Trip nine": CurrencyEnum.pln,
+  };
 
   // Fetch friends for the logged-in user
   @override
@@ -146,5 +193,45 @@ class MockFriendsService implements FriendsService {
   @override
   bool isRequestReceived(String targetUserId) {
     return friendRequests.any((user) => user == targetUserId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> getUserBalances(String userId) async {
+    await Future.delayed(const Duration(seconds: 1));
+    if (balances.containsKey(userId)) {
+      var entry = balances[userId]!;
+      return {
+        "isOwedToUser": entry.keys.first,
+        "amount": entry.values.first,
+      };
+    } else {
+      return {"isOwedToUser": null, "amount": 0.0};
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(
+      String userId) async {
+    await Future.delayed(Duration(milliseconds: 250));
+
+    List<Map<String, dynamic>> balancesList = [];
+
+    if (balancesPerGroupPerUser.containsKey(userId)) {
+      final userBalances = balancesPerGroupPerUser[userId]!;
+
+      userBalances.forEach((groupName, balanceInfo) {
+        final currency = groupCurrencies[groupName] ?? CurrencyEnum.pln;
+        balanceInfo.forEach((isOwed, amount) {
+          balancesList.add({
+            "groupName": groupName,
+            "currency": currency,
+            "amount": amount,
+            "isOwed": isOwed,
+          });
+        });
+      });
+    }
+
+    return balancesList;
   }
 }

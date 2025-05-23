@@ -8,7 +8,11 @@ import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/friends_list.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/group_photo.dart';
 import 'package:kasa_w_grupie/models/friend.dart';
+<<<<<<< HEAD
 import 'package:kasa_w_grupie/screens/edit_group_screen/currency_tile.dart';
+=======
+import 'package:kasa_w_grupie/screens/edit_group_screen/widgets/read_only_currency_tile.dart';
+>>>>>>> develop
 
 class EditGroupScreen extends StatefulWidget {
   final String groupId;
@@ -37,7 +41,11 @@ class EditGroupScreenState extends State<EditGroupScreen> {
     return BlocListener<EditGroupCubit, EditGroupState>(
       listener: (context, state) {
         if (state is EditGroupSuccess) {
+<<<<<<< HEAD
           context.pop();
+=======
+          context.go('/groups');
+>>>>>>> develop
         }
       },
       child: BaseScreen(

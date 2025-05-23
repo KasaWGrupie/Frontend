@@ -52,3 +52,9 @@ app.*.map.json
 /android/.idea/
 
 .env
+
+# Firebase related
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+firebase.json
+firebase_options.dart

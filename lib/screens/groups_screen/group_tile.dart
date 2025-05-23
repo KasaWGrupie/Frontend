@@ -17,8 +17,7 @@ class GroupTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        //TODO change later to right values
-        context.go('/editGroup/0');
+        context.go('/groups/$groupId');
       },
       child: Card(
         child: Padding(

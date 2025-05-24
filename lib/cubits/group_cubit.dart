@@ -3,6 +3,7 @@ import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/settlement.dart';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
@@ -17,6 +18,7 @@ class GroupLoaded extends GroupState {
     required this.balances,
     required this.settlements,
     required this.members,
+    required this.currentUserId,
   }) {
     grouped = {};
     for (var expense in expenses) {
@@ -40,6 +42,7 @@ class GroupLoaded extends GroupState {
   final Map<String, double> balances;
   final List<Settlement> settlements;
   final List<User> members;
+  final String currentUserId;
 }
 
 class GroupError extends GroupState {
@@ -52,10 +55,12 @@ class GroupCubit extends Cubit<GroupState> {
     required this.groupId,
     required this.groupService,
     required this.usersService,
+    required this.authService,
   }) : super(GroupLoading());
   final String groupId;
   final GroupService groupService;
   final UsersService usersService;
+  final AuthService authService;
 
   Future<void> fetch() async {
     emit(GroupLoading());
@@ -76,13 +81,16 @@ class GroupCubit extends Cubit<GroupState> {
         }
         members.add(user);
       }
+
       return emit(
         GroupLoaded(
-            group: group,
-            expenses: await groupService.getExpensesForGroup(groupId),
-            balances: balances,
-            settlements: settlements,
-            members: members),
+          group: group,
+          expenses: await groupService.getExpensesForGroup(groupId),
+          balances: balances,
+          settlements: settlements,
+          members: members,
+          currentUserId: authService.userId,
+        ),
       );
     } catch (e) {
       emit(GroupError("Error loading group"));

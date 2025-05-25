@@ -9,9 +9,9 @@ class AddExpenseScreen extends StatefulWidget {
   final ExpenseService expenseService;
 
   const AddExpenseScreen({
-    Key? key,
+    super.key,
     required this.expenseService,
-  }) : super(key: key);
+  });
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -26,7 +26,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   String? _selectedPayer;
   SplitType _selectedSplitType = SplitType.equal;
   Map<String, double> _splitDetails = {};
-  Map<String, bool> _participatingMembers =
+  final Map<String, bool> _participatingMembers =
       {}; // Tracks participation for "Equal" split
 
   bool _isLoading = false;

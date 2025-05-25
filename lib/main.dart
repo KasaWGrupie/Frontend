@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
 import 'package:kasa_w_grupie/cubits/user_cubit.dart';
@@ -29,6 +30,7 @@ import 'package:kasa_w_grupie/services/users_service.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
+  await dotenv.load();
   runApp(
     const _App(),
   );
@@ -171,7 +173,7 @@ class _AppState extends State<_App> {
                   create: (context) => MoneyTransactionServiceMock(
                       authService: context.read<AuthService>())),
               Provider<FriendsService>(
-                create: (context) => MockFriendsService(
+                create: (context) => FriendsServiceApi(
                   authService: context.read<AuthService>(),
                 ),
               ),

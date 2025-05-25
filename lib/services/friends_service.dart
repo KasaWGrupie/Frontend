@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
@@ -18,6 +21,60 @@ abstract class FriendsService {
   bool isRequestReceived(String targetUserId);
   Future<Map<String, dynamic>> getUserBalances(String userId);
   Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(String userId);
+}
+
+class FriendsServiceApi implements FriendsService {
+  final AuthService authService;
+
+  FriendsServiceApi({required this.authService});
+
+  String get baseUrl => ApiConfig.baseUrl;
+  String get currentUserId => authService.userId;
+
+  @override
+  Future<List<User>> getFriends() async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/users/friends/$currentUserId');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => User.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load friends');
+    }
+  }
+
+  @override
+  Future<List<User>> getFriendRequests() => throw UnimplementedError();
+  @override
+  Future<List<User>> getSentRequests() => throw UnimplementedError();
+  @override
+  Future<void> acceptFriendRequest(String friendId) =>
+      throw UnimplementedError();
+  @override
+  Future<void> declineFriendRequest(String friendId) =>
+      throw UnimplementedError();
+  @override
+  Future<User?> getUserByEmail(String email) => throw UnimplementedError();
+  @override
+  Future<void> sendFriendRequest(String email) => throw UnimplementedError();
+  @override
+  Future<void> withdrawFriendRequest(String friendId) =>
+      throw UnimplementedError();
+  @override
+  Future<void> removeFriend(String targetUserId) => throw UnimplementedError();
+  @override
+  bool isAlreadyFriend(String targetUserId) => throw UnimplementedError();
+  @override
+  bool isRequestSentByUser(String targetUserId) => throw UnimplementedError();
+  @override
+  bool isRequestReceived(String targetUserId) => throw UnimplementedError();
+  @override
+  Future<Map<String, dynamic>> getUserBalances(String userId) =>
+      throw UnimplementedError();
+  @override
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(String userId) =>
+      throw UnimplementedError();
 }
 
 class MockFriendsService implements FriendsService {

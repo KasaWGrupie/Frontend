@@ -3,8 +3,9 @@ import 'package:go_router/go_router.dart';
 
 class BaseScreen extends StatelessWidget {
   const BaseScreen({
-    required this.title,
     required this.child,
+    this.title,
+    this.customAppBar,
     this.floatingActionButton,
     this.appBarBottom,
     this.appBarActions,
@@ -13,7 +14,8 @@ class BaseScreen extends StatelessWidget {
   });
 
   final Widget child;
-  final String title;
+  final String? title;
+  final PreferredSizeWidget? customAppBar;
   final Widget? floatingActionButton;
   final PreferredSizeWidget? appBarBottom;
   final List<Widget>? appBarActions;
@@ -25,11 +27,14 @@ class BaseScreen extends StatelessWidget {
       backgroundColor:
           backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: floatingActionButton,
-      appBar: AppBar(
-        title: Text(title),
-        bottom: appBarBottom,
-        actions: appBarActions,
-      ),
+      appBar: customAppBar ??
+          (title != null
+              ? AppBar(
+                  title: Text(title!),
+                  bottom: appBarBottom,
+                  actions: appBarActions,
+                )
+              : null),
       body: child,
       bottomNavigationBar: BottomAppBar(
         child: Row(

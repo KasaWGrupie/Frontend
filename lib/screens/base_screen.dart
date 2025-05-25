@@ -8,6 +8,7 @@ class BaseScreen extends StatelessWidget {
     this.floatingActionButton,
     this.appBarBottom,
     this.appBarActions,
+    this.backgroundColor,
     super.key,
   });
 
@@ -16,10 +17,13 @@ class BaseScreen extends StatelessWidget {
   final Widget? floatingActionButton;
   final PreferredSizeWidget? appBarBottom;
   final List<Widget>? appBarActions;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor:
+          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: floatingActionButton,
       appBar: AppBar(
         title: Text(title),

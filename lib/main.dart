@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
+import 'package:kasa_w_grupie/cubits/edit_expense_cubit.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/cubits/user_cubit.dart';
 import 'package:kasa_w_grupie/firebase_options.dart';
 import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
+import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/screens/add_expense_screen/add_expense_screen.dart';
+import 'package:kasa_w_grupie/screens/edit_expense_screen.dart';
 import 'package:kasa_w_grupie/screens/edit_group_screen/edit_group_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/friends_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/group_screen.dart';
@@ -113,6 +116,37 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'settlements',
           builder: (context, state) => const SettlementsScreen(),
+        ),
+        GoRoute(
+          path: 'edit_expense/:expenseId',
+          builder: (context, state) {
+            final expenseId = state.pathParameters['expenseId'] ?? "0";
+            final expenseService = context.read<ExpenseService>();
+
+            return FutureBuilder<Expense?>(
+              future: expenseService.getExpenseById(expenseId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError || !snapshot.hasData) {
+                  return const Center(child: Text('Error loading expense'));
+                }
+
+                final expense = snapshot.data!;
+                return BlocProvider<GroupCubit>(
+                  create: (context) => GroupCubit(
+                    groupId: "0", // We should ideally get this from the expense
+                    groupService: context.read(),
+                    usersService: context.read(),
+                  )..fetch(),
+                  child: EditExpenseScreen(
+                    expenseService: expenseService,
+                    expense: expense,
+                  ),
+                );
+              },
+            );
+          },
         ),
       ],
     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 
@@ -10,12 +11,20 @@ class ExpenseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(expense.name),
-        subtitle: Text(
-            '${expense.amount.toStringAsFixed(2)} ${currency.name.toUpperCase()}'),
-        trailing: Image.network(expense.pictureUrl),
+    return GestureDetector(
+      onTap: () {
+        context.push(
+          '/edit_expense/${expense.id}',
+          extra: expense,
+        );
+      },
+      child: Card(
+        child: ListTile(
+          title: Text(expense.name),
+          subtitle: Text(
+              '${expense.amount.toStringAsFixed(2)} ${currency.name.toUpperCase()}'),
+          trailing: Image.network(expense.pictureUrl),
+        ),
       ),
     );
   }

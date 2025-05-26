@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/models/expense.dart';
+import 'package:kasa_w_grupie/models/new_expense.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/expense_service.dart';
 
@@ -23,6 +24,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
+  String? error;
   String? _selectedPayer;
   SplitType _selectedSplitType = SplitType.equal;
   Map<String, double> _splitDetails = {};
@@ -30,6 +32,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       {}; // Tracks participation for "Equal" split
 
   bool _isLoading = false;
+  bool _isSubmitted = false;
 
   @override
   void initState() {
@@ -128,11 +131,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     });
 
     if (result == null) {
-      Navigator.pop(context); // Close the form on success
+      setState(() {
+        _isSubmitted = true;
+      });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
-      );
+      setState(() {
+        error = result;
+      });
     }
   }
 
@@ -155,6 +160,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isSubmitted) {
+      Navigator.of(context).pop();
+    }
     return BlocBuilder<GroupCubit, GroupState>(
       builder: (context, state) {
         if (state is GroupLoading) {
@@ -162,7 +170,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             body: Center(child: CircularProgressIndicator()),
           );
         } else if (state is GroupLoaded) {
-          final group = state.group;
           final members = state.members;
 
           // Initialize participating members if not already done
@@ -280,6 +287,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           _selectedSplitType = value!;
                           _splitDetails.clear(); // Reset split details
                           _initializeSplitDetails(members);
+                          _participatingMembers.clear();
+                          for (var member in members) {
+                            _participatingMembers[member.id] =
+                                true; // Default to true
+                          }
                         });
                       },
                     ),
@@ -313,7 +325,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 });
                               },
                             );
-                          }).toList(),
+                          }),
                         ],
                       ),
                     if (_selectedSplitType != SplitType.equal)
@@ -363,10 +375,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                 ],
                               ),
                             );
-                          }).toList(),
+                          }),
                         ],
                       ),
                     const SizedBox(height: 16),
+                    if (error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Text(
+                          error!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _submitForm,
                       style: ElevatedButton.styleFrom(

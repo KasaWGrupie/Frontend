@@ -17,6 +17,28 @@ class Expense {
   String payer;
   ExpenseSplit split;
   String? description;
+
+  Expense copyWith({
+    int? id,
+    String? name,
+    String? pictureUrl,
+    DateTime? date,
+    double? amount,
+    String? payer,
+    ExpenseSplit? split,
+    String? description,
+  }) {
+    return Expense(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      pictureUrl: pictureUrl ?? this.pictureUrl,
+      date: date ?? this.date,
+      amount: amount ?? this.amount,
+      payer: payer ?? this.payer,
+      split: split ?? this.split,
+      description: description ?? this.description,
+    );
+  }
 }
 
 class ExpenseSplit {
@@ -40,6 +62,8 @@ class ExpenseSplit {
       {required this.participants})
       : type = SplitType.byPercentage,
         this.amounts = percentages;
+
+  Map<String, double>? get details => amounts;
 }
 
 enum SplitType { equal, byAmount, byPercentage }

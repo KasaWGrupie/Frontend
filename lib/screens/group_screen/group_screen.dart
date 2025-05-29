@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
+import 'package:kasa_w_grupie/screens/add_group_screen/widgets/invitation_code_tile.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/expenses_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/members_screen.dart';
@@ -49,6 +51,7 @@ class GroupScreen extends StatelessWidget {
   Widget _loaded(GroupLoaded state, BuildContext context) {
     final group = state.group;
     final currentUserId = state.currentUserId;
+    final isAdmin = currentUserId == group.adminId;
 
     return DefaultTabController(
       length: 3,
@@ -61,16 +64,58 @@ class GroupScreen extends StatelessWidget {
             Tab(text: 'Settlements'),
           ],
         ),
-        appBarActions: currentUserId == group.adminId
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {
-                    context.go('/editGroup/$groupId');
-                  },
+        appBarActions: [
+          if (isAdmin)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') {
+                  context.go('/editGroup/${group.id}');
+                } else if (value == 'requests') {
+                  context.go('/groupRequests/${group.id}');
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Text('Edit Group'),
                 ),
-              ]
-            : null,
+                const PopupMenuItem(
+                  value: 'requests',
+                  child: Text('Show Requests'),
+                ),
+              ],
+              icon: const Icon(Icons.settings),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Copy & Share to invite'),
+                    content: InvitationCodeField(
+                      controller:
+                          TextEditingController(text: group.invitationCode),
+                      onCopyPressed: () {
+                        Clipboard.setData(
+                            ClipboardData(text: group.invitationCode));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Copied!')),
+                        );
+                      },
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Center(child: const Text('Close')),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
         child: TabBarView(
           children: [
             ExpensesScreen(loadedState: state),

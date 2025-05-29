@@ -14,6 +14,8 @@ abstract class GroupService {
 
   Future<List<Expense>> getExpensesForGroup(String groupId);
   Future<Map<String, double>> getBalances(String groupId);
+
+  Future<String?> joinGroupByCode(String code);
 }
 
 class GroupServiceMock implements GroupService {
@@ -161,6 +163,12 @@ class GroupServiceMock implements GroupService {
   Future<String?> updateGroupStatus(String groupId, bool isActive) async {
     // For now always changing status of the first group in the list
     allGroups[0].status = isActive ? GroupStatus.active : GroupStatus.closed;
+    return null;
+  }
+
+  @override
+  Future<String?> joinGroupByCode(String code) async {
+    // Simulating no error
     return null;
   }
 }

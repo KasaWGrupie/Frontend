@@ -66,13 +66,14 @@ class Group {
     String? name,
     String? description,
     List<String>? membersId,
+    GroupStatus? status,
   }) {
     return Group(
       id: id,
       name: name ?? this.name,
       description: description ?? this.description,
       currency: currency,
-      status: status,
+      status: status ?? this.status,
       adminId: adminId,
       membersId: membersId ?? this.membersId,
       invitationCode: invitationCode,

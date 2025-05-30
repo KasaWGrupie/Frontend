@@ -14,11 +14,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final email = TextEditingController();
   final password = TextEditingController();
+  bool showPassword = false;
 
   @override
   Widget build(BuildContext context) {
     final authCubit = context.watch<AuthCubit>();
     final state = authCubit.state;
+
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is SignedInState) {
@@ -26,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       },
       child: BaseScreen(
-        title: 'CashInGroup',
+        title: 'Kasa w Grupie',
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -36,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Witamy w Kasie w Grupie!'),
+                    const Text('Witamy w Kasie w Grupie!'),
                     const SizedBox(height: 16),
                     TextField(
                       controller: email,
@@ -51,12 +53,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: password,
-                      obscureText: true,
+                      obscureText: !showPassword,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         hintText: 'Password',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            showPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              showPassword = !showPassword;
+                            });
+                          },
                         ),
                       ),
                     ),
@@ -105,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
                     ] else if (state is SigningInState) ...[
-                      CircularProgressIndicator(),
+                      const CircularProgressIndicator(),
                     ],
                   ],
                 ),

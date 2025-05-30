@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/friends_cubit.dart';
+import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/widgets/tabs/incoming_requests_tab.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/widgets/tabs/my_friends_tab.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/widgets/search_delegate.dart';
@@ -23,12 +24,12 @@ class FriendsScreen extends StatelessWidget {
         builder: (context) {
           final friendsCubit = context.read<FriendsCubit>();
 
-          return Scaffold(
-            appBar: AppBar(
+          return BaseScreen(
+            customAppBar: AppBar(
               title: buildSearchBar(
                   context, friendsService, authService, friendsCubit),
             ),
-            body: BlocListener<FriendsCubit, FriendsState>(
+            child: BlocListener<FriendsCubit, FriendsState>(
               listener: (context, state) {
                 if (state is FriendsError) {
                   ScaffoldMessenger.of(context).showSnackBar(

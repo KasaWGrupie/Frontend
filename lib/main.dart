@@ -105,22 +105,6 @@ final GoRouter _router = GoRouter(
             ),
           ],
         ),
-        // GoRoute(
-        //   path: 'editGroup/:groupId',
-        //   builder: (context, state) {
-        //     final groupId = state.pathParameters['groupId'] ?? "0";
-
-        //     return BlocProvider(
-        //       create: (context) => EditGroupCubit(
-        //         groupService: context.read<GroupService>(),
-        //         friendsService: context.read<FriendsService>(),
-        //         authService: context.read<AuthService>(),
-        //         groupId: groupId,
-        //       )..loadGroup(),
-        //       child: EditGroupScreen(groupId: groupId),
-        //     );
-        //   },
-        // ),
         GoRoute(
           path: 'profile',
           builder: (context, state) => const ProfileScreen(),

@@ -51,7 +51,7 @@ class GroupScreen extends StatelessWidget {
   Widget _loaded(GroupLoaded state, BuildContext context) {
     final group = state.group;
     final currentUserId = state.currentUserId;
-    final isAdmin = currentUserId != group.adminId;
+    final isAdmin = currentUserId == group.adminId;
 
     return DefaultTabController(
       length: 3,
@@ -69,7 +69,7 @@ class GroupScreen extends StatelessWidget {
             PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'edit') {
-                  context.go('/editGroup/${group.id}');
+                  context.go('/groups/${group.id}/edit');
                 } else if (value == 'requests') {
                   context.go('/groups/${group.id}/requests');
                 }

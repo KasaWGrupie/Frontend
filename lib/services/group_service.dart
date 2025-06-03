@@ -1,5 +1,6 @@
 import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
+import 'package:kasa_w_grupie/models/group_join_request.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 
@@ -16,6 +17,9 @@ abstract class GroupService {
   Future<Map<String, double>> getBalances(String groupId);
 
   Future<String?> joinGroupByCode(String code);
+  Future<List<GroupJoinRequest>> getJoinRequests(String groupId);
+  Future<void> respondToJoinRequest(
+      String groupId, String requestId, bool accept);
 }
 
 class GroupServiceMock implements GroupService {
@@ -80,6 +84,21 @@ class GroupServiceMock implements GroupService {
     ]
   };
 
+  final Map<String, List<GroupJoinRequest>> joinRequestsPerGroup = {
+    "0": [
+      GroupJoinRequest(
+        id: "101",
+        name: "New User One",
+        email: "one@example.com",
+      ),
+      GroupJoinRequest(
+        id: "102",
+        name: "New User Two",
+        email: "two@example.com",
+      ),
+    ]
+  };
+
   GroupServiceMock({required this.authService});
 
   @override
@@ -133,6 +152,17 @@ class GroupServiceMock implements GroupService {
       final index = allGroups.indexWhere((g) => g.id == group.id);
 
       if (index != -1) {
+        final oldGroup = allGroups[index];
+        final oldMembers = Set<String>.from(oldGroup.membersId);
+        final newMembers = Set<String>.from(group.membersId);
+
+        final removedMembers = oldMembers.difference(newMembers);
+
+        final userList = usersPerGroups[group.id];
+        if (userList != null) {
+          userList.removeWhere((user) => removedMembers.contains(user.id));
+        }
+
         allGroups[index] = group;
         return null;
       } else {
@@ -170,5 +200,39 @@ class GroupServiceMock implements GroupService {
   Future<String?> joinGroupByCode(String code) async {
     // Simulating no error
     return null;
+  }
+
+  @override
+  Future<List<GroupJoinRequest>> getJoinRequests(String groupId) async {
+    return Future.value(joinRequestsPerGroup[groupId] ?? []);
+  }
+
+  @override
+  Future<void> respondToJoinRequest(
+      String groupId, String requestId, bool accept) async {
+    final requests = joinRequestsPerGroup[groupId];
+    if (requests != null) {
+      requests.removeWhere((r) => r.id == requestId);
+
+      if (accept) {
+        final newUser = User(
+          id: requestId,
+          name: "Accepted User",
+          email: "$requestId@example.com",
+        );
+
+        usersPerGroups[groupId] ??= [];
+        usersPerGroups[groupId]!.add(newUser);
+
+        final group = allGroups.firstWhere(
+          (g) => g.id == groupId,
+          orElse: () => throw Exception('Group not found'),
+        );
+
+        if (!group.membersId.contains(requestId)) {
+          group.membersId.add(requestId);
+        }
+      }
+    }
   }
 }

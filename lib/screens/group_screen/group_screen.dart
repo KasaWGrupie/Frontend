@@ -51,7 +51,7 @@ class GroupScreen extends StatelessWidget {
   Widget _loaded(GroupLoaded state, BuildContext context) {
     final group = state.group;
     final currentUserId = state.currentUserId;
-    final isAdmin = currentUserId == group.adminId;
+    final isAdmin = currentUserId != group.adminId;
 
     return DefaultTabController(
       length: 3,
@@ -71,7 +71,7 @@ class GroupScreen extends StatelessWidget {
                 if (value == 'edit') {
                   context.go('/editGroup/${group.id}');
                 } else if (value == 'requests') {
-                  context.go('/groupRequests/${group.id}');
+                  context.go('/groups/${group.id}/requests');
                 }
               },
               itemBuilder: (context) => [

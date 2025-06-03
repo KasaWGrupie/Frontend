@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
+import 'package:kasa_w_grupie/cubits/group_join_requests_cubit.dart';
 import 'package:kasa_w_grupie/cubits/user_cubit.dart';
 import 'package:kasa_w_grupie/firebase_options.dart';
 import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
@@ -11,6 +12,7 @@ import 'package:kasa_w_grupie/screens/edit_group_screen/edit_group_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/friends_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/group_screen.dart';
 import 'package:kasa_w_grupie/screens/groups_screen/groups_screen.dart';
+import 'package:kasa_w_grupie/screens/join_requests_screen.dart';
 import 'package:kasa_w_grupie/screens/profile_screen.dart';
 import 'package:kasa_w_grupie/screens/settlements_screen/settlemnets_screen.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
@@ -60,16 +62,33 @@ final GoRouter _router = GoRouter(
           builder: (context, state) => const FriendsScreen(),
         ),
         GoRoute(
-            path: 'groups',
-            builder: (context, state) => const GroupsScreen(),
-            routes: [
-              GoRoute(
-                path: ':groupId',
-                builder: (context, state) => GroupScreen(
-                  groupId: state.pathParameters['groupId'] ?? "0",
+          path: 'groups',
+          builder: (context, state) => const GroupsScreen(),
+          routes: [
+            GoRoute(
+              path: ':groupId',
+              builder: (context, state) => GroupScreen(
+                groupId: state.pathParameters['groupId']!,
+              ),
+              routes: [
+                GoRoute(
+                  path: 'requests',
+                  name: 'groupRequests',
+                  builder: (context, state) {
+                    final groupId = state.pathParameters['groupId']!;
+                    return BlocProvider(
+                      create: (context) => GroupJoinRequestsCubit(
+                        groupService: context.read<GroupService>(),
+                        groupId: groupId,
+                      )..fetchRequests(),
+                      child: GroupJoinRequestsScreen(groupId: groupId),
+                    );
+                  },
                 ),
-              )
-            ]),
+              ],
+            ),
+          ],
+        ),
         GoRoute(
           path: 'editGroup/:groupId',
           builder: (context, state) {

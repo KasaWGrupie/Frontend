@@ -9,6 +9,7 @@ abstract class GroupService {
   Future<List<Group>> getGroupsForUser();
   Future<Group> getGroupById(String groupId);
   Future<String?> updateGroup(Group group);
+  Future<String?> updateGroupStatus(String groupId, bool isActive);
   Future<List<User>> getUsersForGroup(String groupId);
 
   Future<List<Expense>> getExpensesForGroup(String groupId);
@@ -154,5 +155,12 @@ class GroupServiceMock implements GroupService {
   @override
   Future<List<Expense>> getExpensesForGroup(String groupId) {
     return Future.value(allExpenses);
+  }
+
+  @override
+  Future<String?> updateGroupStatus(String groupId, bool isActive) async {
+    // For now always changing status of the first group in the list
+    allGroups[0].status = isActive ? GroupStatus.active : GroupStatus.closed;
+    return null;
   }
 }

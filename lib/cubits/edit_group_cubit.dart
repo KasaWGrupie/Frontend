@@ -56,14 +56,18 @@ class EditGroupCubit extends Cubit<EditGroupState> {
     }
   }
 
-  Future<void> updateGroup(
-      {required String name,
-      required String? description,
-      required List<String> members}) async {
+  Future<void> updateGroup({
+    required String name,
+    required String? description,
+    required List<String> members,
+    bool? isActive,
+  }) async {
     if (state is! EditGroupLoaded) return;
 
     final currentState = state as EditGroupLoaded;
-    final updatedGroup = currentState.group.copyWith(
+    final oldGroup = currentState.group;
+
+    final updatedGroup = oldGroup.copyWith(
       name: name,
       description: description,
       membersId: members,
@@ -72,13 +76,24 @@ class EditGroupCubit extends Cubit<EditGroupState> {
     emit(EditGroupState.saving());
 
     try {
-      final result = await groupService.updateGroup(updatedGroup);
+      final updateResult = await groupService.updateGroup(updatedGroup);
 
-      if (result != null) {
-        emit(EditGroupState.error(result));
-      } else {
-        emit(EditGroupState.success());
+      if (updateResult != null) {
+        emit(EditGroupState.error(updateResult));
+        return;
       }
+
+      if (isActive != null) {
+        final statusResult =
+            await groupService.updateGroupStatus(updatedGroup.id, isActive);
+
+        if (statusResult != null) {
+          emit(EditGroupState.error(statusResult));
+          return;
+        }
+      }
+
+      emit(EditGroupState.success());
     } catch (e) {
       emit(EditGroupState.error('Failed to update group: $e'));
     }
@@ -107,6 +122,11 @@ class EditGroupLoaded extends EditGroupState {
   final List<Friend> members;
 
   EditGroupLoaded({required this.group, required this.members});
+}
+
+class EditGroupStatusUpdated extends EditGroupState {
+  final Group group;
+  EditGroupStatusUpdated(this.group);
 }
 
 class EditGroupSaving extends EditGroupState {}

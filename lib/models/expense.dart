@@ -52,10 +52,9 @@ class ExpenseSplit {
         amounts = null;
 
   // Constructor for Split By Amount
-  ExpenseSplit.byAmount(Map<String, double> amounts,
+  ExpenseSplit.byAmount(Map<String, double> this.amounts,
       {required this.participants})
-      : type = SplitType.byAmount,
-        amounts = amounts;
+      : type = SplitType.byAmount;
 
   // Constructor for Split By Percentage
   ExpenseSplit.byPercentage(Map<String, double> percentages,

@@ -8,6 +8,7 @@ import 'package:kasa_w_grupie/screens/add_expense_screen/expense_split_dialog.da
 import 'package:kasa_w_grupie/screens/add_expense_screen/manual_expense_screen.dart';
 import 'package:kasa_w_grupie/screens/add_expense_screen/receipt_expense_screen.dart';
 import 'package:kasa_w_grupie/services/expense_service.dart';
+import 'package:kasa_w_grupie/services/receipt_service.dart';
 
 enum ExpenseType {
   manual,
@@ -134,6 +135,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         nameController: _nameController,
                         groupState: state,
                         onExpenseAdded: _onExpenseAdded,
+                        receiptService: context.read<ReceiptService>(),
                       ),
                   ],
                 ),

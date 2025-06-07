@@ -17,12 +17,15 @@ class ReceiptExpenseScreen extends StatefulWidget {
     required TextEditingController nameController,
     required this.groupState,
     required this.onExpenseAdded,
+    required receiptService,
   })  : _formKey = formKey,
-        _nameController = nameController;
+        _nameController = nameController,
+        _receiptService = receiptService;
 
   final GlobalKey<FormState> _formKey;
   final TextEditingController _nameController;
   final ExpenseService expenseService;
+  final ReceiptService _receiptService;
   final GroupLoaded groupState;
   final VoidCallback onExpenseAdded;
 
@@ -45,9 +48,6 @@ class _ReceiptExpenseScreenState extends State<ReceiptExpenseScreen> {
 
   bool _isLoading = false;
 
-  // Receipt service for parsing the receipt image
-  final ReceiptService _receiptService = MockReceiptParserService();
-
   @override
   void initState() {
     super.initState();
@@ -69,7 +69,7 @@ class _ReceiptExpenseScreenState extends State<ReceiptExpenseScreen> {
         });
 
         try {
-          final result = await _receiptService.parseReceipt(image);
+          final result = await widget._receiptService.parseReceipt(image);
 
           setState(() {
             _receiptResult = result;

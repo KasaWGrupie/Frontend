@@ -28,6 +28,7 @@ import 'package:kasa_w_grupie/services/expense_service.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
+import 'package:kasa_w_grupie/services/receipt_service.dart';
 import 'package:kasa_w_grupie/services/settlements_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
@@ -190,50 +191,57 @@ class _AppState extends State<_App> {
         future: _initialization,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return MultiProvider(providers: [
-              Provider<UsersService>(
-                create: (context) => UsersServiceMock(),
-              ),
-              Provider<AuthService>(
-                create: (context) => FirebaseAuthService(
-                    userService: context.read(),
-                    firebaseAuth: FirebaseAuth.instance),
-              ),
-              BlocProvider<AuthCubit>(
-                create: (context) => AuthCubit(
-                  authService: context.read(),
+            return MultiProvider(
+              providers: [
+                Provider<UsersService>(
+                  create: (context) => UsersServiceMock(),
                 ),
-              ),
-              BlocProvider<AddGroupCubit>(
-                create: (context) => AddGroupCubit(
-                  groupService: GroupServiceMock(authService: context.read()),
+                Provider<AuthService>(
+                  create: (context) => FirebaseAuthService(
+                      userService: context.read(),
+                      firebaseAuth: FirebaseAuth.instance),
                 ),
-              ),
-              Provider<GroupService>(
-                create: (context) => GroupServiceMock(
-                  authService: context.read(),
+                BlocProvider<AuthCubit>(
+                  create: (context) => AuthCubit(
+                    authService: context.read(),
+                  ),
                 ),
-              ),
-              Provider<UsersService>(
-                create: (context) => UsersServiceMock(),
-              ),
-              BlocProvider<UserCubit>(
-                create: (context) => UserCubit(context.read<UsersService>()),
-              ),
-              Provider<ExpenseService>(
-                create: (context) => MockExpenseService(),
-              ),
-              Provider<MoneyTransactionService>(
-                  create: (context) => MoneyTransactionServiceMock(
-                      authService: context.read<AuthService>())),
-              Provider<FriendsService>(
-                create: (context) => MockFriendsService(
-                  authService: context.read<AuthService>(),
+                BlocProvider<AddGroupCubit>(
+                  create: (context) => AddGroupCubit(
+                    groupService: GroupServiceMock(authService: context.read()),
+                  ),
                 ),
-              ),
-              Provider<SettlementsService>(
-                  create: (context) => SettlementsServiceMock()),
-            ], child: child!);
+                Provider<GroupService>(
+                  create: (context) => GroupServiceMock(
+                    authService: context.read(),
+                  ),
+                ),
+                Provider<UsersService>(
+                  create: (context) => UsersServiceMock(),
+                ),
+                BlocProvider<UserCubit>(
+                  create: (context) => UserCubit(context.read<UsersService>()),
+                ),
+                Provider<ExpenseService>(
+                  create: (context) => MockExpenseService(),
+                ),
+                Provider<MoneyTransactionService>(
+                    create: (context) => MoneyTransactionServiceMock(
+                        authService: context.read<AuthService>())),
+                Provider<FriendsService>(
+                  create: (context) => MockFriendsService(
+                    authService: context.read<AuthService>(),
+                  ),
+                ),
+                Provider<SettlementsService>(
+                  create: (context) => SettlementsServiceMock(),
+                ),
+                Provider<ReceiptService>(
+                  create: (context) => MockReceiptParserService(),
+                ),
+              ],
+              child: child!,
+            );
           } else {
             return const Scaffold(
               body: Center(child: CircularProgressIndicator()),

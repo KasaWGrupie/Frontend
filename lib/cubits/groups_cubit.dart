@@ -11,4 +11,9 @@ class GroupsCubit extends Cubit<List<Group>?> {
     final groups = await _groupService.getGroupsForUser();
     emit(groups);
   }
+
+  Future<bool> joinGroupByInvitationCode(String code) async {
+    final error = await _groupService.joinGroupByCode(code);
+    return error == null;
+  }
 }

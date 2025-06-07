@@ -21,7 +21,6 @@ class BaseScreen extends StatelessWidget {
   final List<Widget>? appBarActions;
   final Color? backgroundColor;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -1,8 +1,111 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 
 abstract class UsersService {
   Future<User?> getUser(int uid);
   Future<User?> getUserByEmail(String email);
+  Future<bool> createUser({
+    required String name,
+    required String email,
+    String? profilePicture,
+    required String idToken,
+  });
+}
+
+class UsersServiceApi implements UsersService {
+  @override
+  Future<User?> getUser(int uid) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/users/$uid');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return User.fromJson(json);
+    } else if (response.statusCode == 404) {
+      return null;
+    } else {
+      throw Exception('Failed to fetch user with id $uid');
+    }
+  }
+
+  @override
+  Future<User?> getUserByEmail(String email) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/users/email/$email');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return User.fromJson(json);
+    } else if (response.statusCode == 404) {
+      return null;
+    } else {
+      throw Exception('Failed to fetch user by email $email');
+    }
+  }
+
+  @override
+  Future<bool> createUser({
+    required String name,
+    required String email,
+    String? profilePicture,
+    required String idToken,
+  }) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/users');
+
+    final Map<String, dynamic> requestBody = {
+      'name': name,
+      'email': email,
+    };
+
+    //if (profilePicture != null) {
+    requestBody['profilePicture'] = profilePicture;
+    //}
+
+    final String jsonBody = jsonEncode(requestBody);
+
+    print('Request URL: $url');
+    const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+    final prettyJson = encoder.convert(requestBody);
+    print('Request body:\n$prettyJson');
+    print('ID Token: ${idToken.substring(0, 20)}...');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: jsonBody,
+    );
+
+    final encoder2 = const JsonEncoder.withIndent('  ');
+
+    final fullRequestLog = {
+      'method': 'POST',
+      'url': url.toString(),
+      'headers': {
+        'Authorization': 'Bearer ${idToken.substring(0, 20)}...',
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      'body': requestBody,
+    };
+
+    print('--- FULL HTTP REQUEST ---');
+    print(encoder2.convert(fullRequestLog));
+
+    print('Response status: ${response.statusCode}');
+    print('Response headers: ${response.headers}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      print('Failed to create user: ${response.statusCode}');
+      return false;
+    }
+  }
 }
 
 class UsersServiceMock implements UsersService {
@@ -40,5 +143,15 @@ class UsersServiceMock implements UsersService {
     } catch (_) {
       return null;
     }
+  }
+
+  @override
+  Future<bool> createUser({
+    required String name,
+    required String email,
+    String? profilePicture,
+    required String idToken,
+  }) async {
+    return true;
   }
 }

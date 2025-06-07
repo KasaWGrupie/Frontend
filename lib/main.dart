@@ -143,7 +143,7 @@ class _AppState extends State<_App> {
           if (snapshot.connectionState == ConnectionState.done) {
             return MultiProvider(providers: [
               Provider<UsersService>(
-                create: (context) => UsersServiceMock(),
+                create: (context) => UsersServiceApi(),
               ),
               Provider<AuthService>(
                 create: (context) => FirebaseAuthService(
@@ -164,9 +164,6 @@ class _AppState extends State<_App> {
                 create: (context) => GroupServiceMock(
                   authService: context.read(),
                 ),
-              ),
-              Provider<UsersService>(
-                create: (context) => UsersServiceMock(),
               ),
               BlocProvider<UserCubit>(
                 create: (context) => UserCubit(context.read<UsersService>()),

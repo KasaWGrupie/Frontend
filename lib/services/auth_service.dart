@@ -112,13 +112,16 @@ class AuthServiceMock implements AuthService {
 }
 
 class FirebaseAuthService implements AuthService {
-  const FirebaseAuthService({
+  FirebaseAuthService({
     required this.userService,
     required this.firebaseAuth,
   });
 
   final FirebaseAuth firebaseAuth;
   final UsersService userService;
+
+  u.User? _cachedUser;
+
   @override
   bool get isSignedIn => firebaseAuth.currentUser != null;
 
@@ -127,12 +130,29 @@ class FirebaseAuthService implements AuthService {
       firebaseAuth.userChanges().map((user) => user != null);
 
   @override
-  String get userEmail => firebaseAuth.currentUser!.email!;
+  String get userEmail => firebaseAuth.currentUser?.email ?? '';
 
   @override
-  //TODO CHANGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   Future<String> userName() async {
-    return userService.getUser(0).then((value) => value!.name);
+    final user = await currentUser();
+    return user?.name ?? '';
+  }
+
+  @override
+  int get userId {
+    if (_cachedUser != null) return _cachedUser!.id;
+    throw Exception("User not loaded yet.");
+  }
+
+  @override
+  Future<u.User?> currentUser() async {
+    if (_cachedUser != null) return _cachedUser;
+
+    final email = firebaseAuth.currentUser?.email;
+    if (email == null) return null;
+
+    _cachedUser = await userService.getUserByEmail(email);
+    return _cachedUser;
   }
 
   @override
@@ -147,6 +167,10 @@ class FirebaseAuthService implements AuthService {
         password: password,
       );
 
+      // After signing in, retrieve and cache backend user
+      _cachedUser = await userService.getUserByEmail(email);
+      if (_cachedUser == null) return SignInResult.userNotFound;
+
       return SignInResult.success;
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -154,7 +178,8 @@ class FirebaseAuthService implements AuthService {
           return SignInResult.invalidEmail;
         case 'user-disabled':
           return SignInResult.userDisabled;
-        case 'user-not-found' || 'invalid-credential':
+        case 'user-not-found':
+        case 'invalid-credential':
           return SignInResult.userNotFound;
         case 'wrong-password':
           return SignInResult.wrongPassword;
@@ -179,26 +204,33 @@ class FirebaseAuthService implements AuthService {
         email: email,
         password: password,
       );
+
       if (credential.user == null) {
-        return 'Error occurred';
+        return 'Firebase auth failed';
+      }
+      final user = credential.user!;
+      final token = await user.getIdToken();
+
+      if (token != null) {
+        await userService.createUser(
+          name: name,
+          email: user.email!,
+          profilePicture: null,
+          idToken: token,
+        );
       }
 
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
-    } catch (err) {
-      return 'Error occurred';
+    } catch (_) {
+      return 'Unexpected error';
     }
   }
 
   @override
-  Future<void> signOut() => firebaseAuth.signOut();
-
-  @override
-  // TODO CHANGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  int get userId => 0;
-  @override
-  Future<u.User?> currentUser() {
-    return userService.getUser(0);
+  Future<void> signOut() async {
+    _cachedUser = null;
+    await firebaseAuth.signOut();
   }
 }

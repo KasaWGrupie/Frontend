@@ -4,6 +4,7 @@ import 'package:kasa_w_grupie/cubits/edit_expense_cubit.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/screens/add_expense_screen/expense_split_dialog.dart';
 import 'package:kasa_w_grupie/services/expense_service.dart';
 
 class EditExpenseScreen extends StatefulWidget {
@@ -27,10 +28,9 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   late final TextEditingController _descriptionController;
   String? _selectedPayer;
   SplitType _selectedSplitType = SplitType.equal;
-  Map<String, double> _splitDetails = {};
-  final Map<String, bool> _participatingMembers = {};
   String? _error;
   bool _isLoading = false;
+  ExpenseSplit? _currentSplit;
 
   @override
   void initState() {
@@ -41,25 +41,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
     _descriptionController = TextEditingController(text: expense.description);
     _selectedPayer = expense.payer;
     _selectedSplitType = expense.split.type;
-    _splitDetails = Map<String, double>.from(expense.split.details ?? {});
-    for (var participant in expense.split.participants) {
-      _participatingMembers[participant] = true;
-    }
-  }
-
-  void _initializeSplitDetails(List<User> members) {
-    if (_selectedSplitType == SplitType.byAmount) {
-      final totalAmount = double.tryParse(_amountController.text) ?? 0.0;
-      final defaultAmount = totalAmount / members.length;
-      _splitDetails = {
-        for (var member in members) member.id: defaultAmount,
-      };
-    } else if (_selectedSplitType == SplitType.byPercentage) {
-      final defaultPercentage = 100.0 / members.length;
-      _splitDetails = {
-        for (var member in members) member.id: defaultPercentage,
-      };
-    }
+    _currentSplit = expense.split;
   }
 
   @override
@@ -157,10 +139,17 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                               return null;
                             },
                             onChanged: (value) {
-                              setState(() {
-                                _splitDetails.clear();
-                                _initializeSplitDetails(members);
-                              });
+                              if (value.isNotEmpty) {
+                                final newAmount = double.tryParse(value) ?? 0.0;
+                                context
+                                    .read<EditExpenseCubit>()
+                                    .updateAmount(newAmount);
+
+                                // Reset split details if amount changes
+                                setState(() {
+                                  _currentSplit = null;
+                                });
+                              }
                             },
                           ),
                           const SizedBox(height: 16),
@@ -193,6 +182,9 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                               setState(() {
                                 _selectedPayer = value;
                               });
+                              context
+                                  .read<EditExpenseCubit>()
+                                  .updatePayer(value!);
                             },
                           ),
                           const SizedBox(height: 16),
@@ -213,7 +205,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                           ),
                           const SizedBox(height: 16),
 
-                          // Split type selection
+                          // Split expense button with current split info
                           Card(
                             margin: const EdgeInsets.only(bottom: 8),
                             child: Padding(
@@ -222,202 +214,95 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Split Method',
+                                    'Expense Split Details',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  DropdownButtonFormField<SplitType>(
-                                    value: _selectedSplitType,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Split Type',
-                                      border: OutlineInputBorder(),
-                                      prefixIcon: Icon(Icons.pie_chart),
-                                    ),
-                                    items: SplitType.values.map((type) {
-                                      return DropdownMenuItem(
-                                        value: type,
+                                  const Text(
+                                    'Configure how this expense is split between group members',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.grey),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      Expanded(
                                         child: Text(
-                                            type.toString().split('.').last),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedSplitType = value!;
+                                          'Current split type: ${_currentSplit?.type.toString().split('.').last ?? expense.split.type.toString().split('.').last}',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
+                                      backgroundColor: _currentSplit != null
+                                          ? Colors.green.shade50
+                                          : null,
+                                    ),
+                                    onPressed: () async {
+                                      final totalAmount = double.tryParse(
+                                              _amountController.text) ??
+                                          0.0;
 
-                                        // Initialize participating members for all group members
-                                        if (_participatingMembers.isEmpty) {
-                                          for (var member in members) {
-                                            _participatingMembers[member.id] =
-                                                true;
-                                          }
-                                        }
+                                      // Show split dialog
+                                      final details = await showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return ExpenseSplitDialog(
+                                            totalAmount: totalAmount,
+                                            groupInfo: groupState,
+                                          );
+                                        },
+                                      ) as ExpenseSplit?; // Update state with new split details
+                                      if (details != null) {
+                                        setState(() {
+                                          _currentSplit = details;
+                                          _selectedSplitType = details.type;
 
-                                        if (_selectedSplitType ==
-                                                SplitType.byAmount ||
-                                            _selectedSplitType ==
-                                                SplitType.byPercentage) {
-                                          final defaultValue =
-                                              _selectedSplitType ==
-                                                      SplitType.byAmount
-                                                  ? (double.tryParse(
-                                                              _amountController
-                                                                  .text) ??
-                                                          0.0) /
-                                                      members.length
-                                                  : 100.0 / members.length;
-
-                                          _splitDetails.clear();
-                                          for (var member in members) {
-                                            _splitDetails[member.id] =
-                                                defaultValue;
-                                          }
-                                        } else {
-                                          _splitDetails.clear();
-                                        }
-                                      });
+                                          // Update expense cubit
+                                          context
+                                              .read<EditExpenseCubit>()
+                                              .updateSplit(details);
+                                        });
+                                      }
                                     },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          _currentSplit != null
+                                              ? Icons.check_circle
+                                              : Icons.group_add,
+                                          color: _currentSplit != null
+                                              ? Colors.green
+                                              : null,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          _currentSplit != null
+                                              ? 'Split Configured'
+                                              : 'Configure Split',
+                                          style: TextStyle(
+                                            color: _currentSplit != null
+                                                ? Colors.green
+                                                : null,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
                           ),
-
-                          const SizedBox(height: 8),
-
-                          // Split details based on selected type
-                          if (_selectedSplitType == SplitType.equal)
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Participating Members',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'Select who is sharing this expense equally',
-                                      style: TextStyle(
-                                          fontSize: 12, color: Colors.grey),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    ...members.map((User member) {
-                                      return CheckboxListTile(
-                                        title: Row(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundImage: NetworkImage(
-                                                  member.pictureUrl),
-                                              radius: 16,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(member.name),
-                                          ],
-                                        ),
-                                        value:
-                                            _participatingMembers[member.id] ??
-                                                false,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _participatingMembers[member.id] =
-                                                value!;
-                                          });
-                                        },
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          if (_selectedSplitType != SplitType.equal)
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _selectedSplitType == SplitType.byAmount
-                                          ? 'Split by Amount'
-                                          : 'Split by Percentage',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      _selectedSplitType == SplitType.byAmount
-                                          ? 'Specify how much each person pays'
-                                          : 'Specify percentage each person contributes',
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.grey),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    ...members.map((User member) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8.0),
-                                        child: Row(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundImage: NetworkImage(
-                                                  member.pictureUrl),
-                                              radius: 16,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(member.name),
-                                            ),
-                                            Expanded(
-                                              child: TextFormField(
-                                                initialValue:
-                                                    _splitDetails[member.id]
-                                                            ?.toString() ??
-                                                        '',
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                decoration: InputDecoration(
-                                                  labelText:
-                                                      _selectedSplitType ==
-                                                              SplitType.byAmount
-                                                          ? 'Amount'
-                                                          : 'Percentage',
-                                                  border:
-                                                      const OutlineInputBorder(),
-                                                  suffixText:
-                                                      _selectedSplitType ==
-                                                              SplitType
-                                                                  .byPercentage
-                                                          ? '%'
-                                                          : null,
-                                                ),
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    _splitDetails[member.id] =
-                                                        double.tryParse(
-                                                                value) ??
-                                                            0.0;
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ),
-                            ),
 
                           const SizedBox(height: 16),
 
@@ -451,6 +336,18 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                                     // Validate form
                                     if (!_formKey.currentState!.validate()) {
                                       setState(() {
+                                        _isLoading = false;
+                                      });
+                                      return;
+                                    }
+
+                                    // Ensure split is configured
+                                    if (_currentSplit == null &&
+                                        expense.split.type !=
+                                            _selectedSplitType) {
+                                      setState(() {
+                                        _error =
+                                            "Please configure the expense split details";
                                         _isLoading = false;
                                       });
                                       return;

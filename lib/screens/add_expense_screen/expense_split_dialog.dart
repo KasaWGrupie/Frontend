@@ -23,7 +23,6 @@ class _ExpenseSplitDialogState extends State<ExpenseSplitDialog> {
   final Map<String, bool> _participatingMembers =
       {}; // Tracks participation for "Equal" split
 
-  // Add this to track error messages
   String? _errorMessage;
 
   void _initializeSplitDetails(List<User> members) {

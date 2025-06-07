@@ -3,29 +3,53 @@ import 'package:go_router/go_router.dart';
 
 class BaseScreen extends StatelessWidget {
   const BaseScreen({
-    required this.title,
     required this.child,
+    this.title,
+    this.customAppBar,
     this.floatingActionButton,
     this.appBarBottom,
     this.appBarActions,
+<<<<<<< HEAD
+=======
+    this.backgroundColor,
+>>>>>>> develop
     super.key,
   });
 
   final Widget child;
-  final String title;
+  final String? title;
+  final PreferredSizeWidget? customAppBar;
   final Widget? floatingActionButton;
   final PreferredSizeWidget? appBarBottom;
   final List<Widget>? appBarActions;
+<<<<<<< HEAD
+=======
+  final Color? backgroundColor;
+
+>>>>>>> develop
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor:
+          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: floatingActionButton,
+<<<<<<< HEAD
       appBar: AppBar(
         title: Text(title),
         bottom: appBarBottom,
         actions: appBarActions,
       ),
+=======
+      appBar: customAppBar ??
+          (title != null
+              ? AppBar(
+                  title: Text(title!),
+                  bottom: appBarBottom,
+                  actions: appBarActions,
+                )
+              : null),
+>>>>>>> develop
       body: child,
       bottomNavigationBar: BottomAppBar(
         child: Row(

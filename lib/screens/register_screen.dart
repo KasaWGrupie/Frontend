@@ -19,9 +19,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final confirmPasswordController = TextEditingController();
   final nameController = TextEditingController();
 
+  bool showPassword = false;
+  bool showConfirmPassword = false;
+
   @override
   Widget build(BuildContext context) {
     final authCubit = context.watch<AuthCubit>();
+
     return BlocProvider(
       create: (context) => RegisterCubit(authService: authCubit.authService),
       child: BaseScreen(
@@ -40,6 +44,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Form(
                     key: _formKey,
                     child: ListView(
+                      shrinkWrap: true,
                       children: [
                         TextFormField(
                           controller: nameController,
@@ -81,12 +86,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: passwordController,
-                          obscureText: true,
+                          obscureText: !showPassword,
                           decoration: InputDecoration(
                             labelText: 'Password',
                             hintText: 'Password',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                showPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  showPassword = !showPassword;
+                                });
+                              },
                             ),
                           ),
                           validator: (value) {
@@ -102,12 +119,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: confirmPasswordController,
-                          obscureText: true,
+                          obscureText: !showConfirmPassword,
                           decoration: InputDecoration(
                             labelText: 'Confirm Password',
                             hintText: 'Confirm Password',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                showConfirmPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  showConfirmPassword = !showConfirmPassword;
+                                });
+                              },
                             ),
                           ),
                           validator: (value) {
@@ -152,7 +181,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 16),
                         ] else if (state.isLoading) ...[
-                          CircularProgressIndicator(),
+                          Center(
+                            child: const CircularProgressIndicator(),
+                          )
                         ],
                       ],
                     ),

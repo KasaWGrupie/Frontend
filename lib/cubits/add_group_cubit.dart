@@ -12,8 +12,8 @@ class AddGroupCubit extends Cubit<AddGroupState> {
     required String name,
     String? description,
     required CurrencyEnum currency,
-    required String adminId,
-    required List<String> members,
+    required int adminId,
+    required List<int> members,
     required String invitationCode,
   }) async {
     emit(const AddGroupState.loading());
@@ -21,7 +21,7 @@ class AddGroupCubit extends Cubit<AddGroupState> {
 
     try {
       final group = Group(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: DateTime.now().millisecondsSinceEpoch,
         name: name,
         description: description,
         currency: currency,

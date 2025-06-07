@@ -8,6 +8,7 @@ import 'package:kasa_w_grupie/screens/friends_screen/widgets/search_delegate.dar
 import 'package:kasa_w_grupie/screens/friends_screen/widgets/tabs/sent_requests_tab.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 class FriendsScreen extends StatelessWidget {
   const FriendsScreen({super.key});
@@ -16,6 +17,7 @@ class FriendsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final friendsService = context.read<FriendsService>();
     final authService = context.read<AuthService>();
+    final usersService = context.read<UsersService>();
 
     return BlocProvider(
       create: (context) =>
@@ -26,8 +28,8 @@ class FriendsScreen extends StatelessWidget {
 
           return BaseScreen(
             customAppBar: AppBar(
-              title: buildSearchBar(
-                  context, friendsService, authService, friendsCubit),
+              title: buildSearchBar(context, friendsService, usersService,
+                  authService, friendsCubit),
             ),
             child: BlocListener<FriendsCubit, FriendsState>(
               listener: (context, state) {
@@ -49,6 +51,7 @@ class FriendsScreen extends StatelessWidget {
   Widget buildSearchBar(
     BuildContext context,
     FriendsService friendsService,
+    UsersService usersService,
     AuthService authService,
     FriendsCubit friendsCubit,
   ) {
@@ -59,6 +62,7 @@ class FriendsScreen extends StatelessWidget {
           context: context,
           delegate: FriendSearchDelegate(
             friendsService: friendsService,
+            usersService: usersService,
             currentUserId: authService.userId,
             friendsCubit: friendsCubit,
           ),

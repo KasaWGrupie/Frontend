@@ -1,32 +1,13 @@
 {
   "project_info": {
-    "project_number": "843439591456",
-    "project_id": "habittracker-dfc6e",
-    "storage_bucket": "habittracker-dfc6e.firebasestorage.app"
+    "project_number": "467283107019",
+    "project_id": "kasawgrupie",
+    "storage_bucket": "kasawgrupie.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:843439591456:android:fc545fd3f09192892c2c45",
-        "android_client_info": {
-          "package_name": "com.example.habit_tracker"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDQqBrY1UqbcGbN0fQb7Pnpsqrrtf-ynWI"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:843439591456:android:bc2108af23dcdf4e2c2c45",
+        "mobilesdk_app_id": "1:467283107019:android:368f9fb1463e4c14b38f4e",
         "android_client_info": {
           "package_name": "com.example.kasa_w_grupie"
         }
@@ -34,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDQqBrY1UqbcGbN0fQb7Pnpsqrrtf-ynWI"
+          "current_key": "AIzaSyCoe3g4Cgz4F1KTdUyPgCztlrMXoOf-nRE"
         }
       ],
       "services": {

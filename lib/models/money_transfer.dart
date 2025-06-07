@@ -1,10 +1,10 @@
 enum MoneyTransferStatus { confirmed, rejected, pending }
 
 class MoneyTransfer {
-  late final String senderId;
-  late final String recipientId;
+  late final int senderId;
+  late final int recipientId;
   late final double amount;
-  late final String groupId;
+  late final int groupId;
   late final MoneyTransferStatus status;
   late final DateTime? finalizedAt;
 
@@ -18,10 +18,10 @@ class MoneyTransfer {
   });
 
   MoneyTransfer.fromJson(Map<String, dynamic> json) {
-    senderId = json['senderId']! as String;
+    senderId = json['senderId']! as int;
     recipientId = json['recipientId'];
     amount = double.parse(json['amount']! as String);
-    groupId = json['groupId'] as String;
+    groupId = json['groupId'] as int;
     status = MoneyTransferStatus.values.firstWhere(
       (e) => e.name == json['status'],
       orElse: () => MoneyTransferStatus.pending,

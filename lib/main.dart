@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
 import 'package:kasa_w_grupie/cubits/group_join_requests_cubit.dart';
@@ -31,6 +32,7 @@ import 'package:kasa_w_grupie/services/users_service.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
+  await dotenv.load();
   runApp(
     const _App(),
   );
@@ -68,14 +70,17 @@ final GoRouter _router = GoRouter(
             GoRoute(
               path: ':groupId',
               builder: (context, state) => GroupScreen(
-                groupId: state.pathParameters['groupId']!,
+                groupId:
+                    int.tryParse(state.pathParameters['groupId'] ?? '') ?? 0,
               ),
               routes: [
                 GoRoute(
                   path: 'requests',
                   name: 'groupRequests',
                   builder: (context, state) {
-                    final groupId = state.pathParameters['groupId']!;
+                    final groupId =
+                        int.tryParse(state.pathParameters['groupId'] ?? '') ??
+                            0;
                     return BlocProvider(
                       create: (context) => GroupJoinRequestsCubit(
                         groupService: context.read<GroupService>(),
@@ -89,7 +94,9 @@ final GoRouter _router = GoRouter(
                   path: 'edit',
                   name: 'editGroup',
                   builder: (context, state) {
-                    final groupId = state.pathParameters['groupId']!;
+                    final groupId =
+                        int.tryParse(state.pathParameters['groupId'] ?? '') ??
+                            0;
                     return BlocProvider(
                       create: (context) => EditGroupCubit(
                         groupService: context.read<GroupService>(),
@@ -158,7 +165,7 @@ class _AppState extends State<_App> {
           if (snapshot.connectionState == ConnectionState.done) {
             return MultiProvider(providers: [
               Provider<UsersService>(
-                create: (context) => UsersServiceMock(),
+                create: (context) => UsersServiceApi(),
               ),
               Provider<AuthService>(
                 create: (context) => FirebaseAuthService(
@@ -180,9 +187,6 @@ class _AppState extends State<_App> {
                   authService: context.read(),
                 ),
               ),
-              Provider<UsersService>(
-                create: (context) => UsersServiceMock(),
-              ),
               BlocProvider<UserCubit>(
                 create: (context) => UserCubit(context.read<UsersService>()),
               ),
@@ -192,6 +196,7 @@ class _AppState extends State<_App> {
               Provider<FriendsService>(
                 create: (context) => MockFriendsService(
                   authService: context.read<AuthService>(),
+                  usersService: context.read<UsersService>(),
                 ),
               ),
               Provider<SettlementsService>(

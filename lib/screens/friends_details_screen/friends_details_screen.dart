@@ -12,7 +12,7 @@ import 'package:kasa_w_grupie/cubits/group_balance_cubit.dart';
 class FriendDetailsScreen extends StatelessWidget {
   final String friendName;
   final String friendEmail;
-  final String userId;
+  final int userId;
   final FriendsService friendsService;
 
   const FriendDetailsScreen({

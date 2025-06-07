@@ -8,18 +8,17 @@ abstract class GroupService {
   Future<String?> addGroup(Group group);
 
   Future<List<Group>> getGroupsForUser();
-  Future<Group> getGroupById(String groupId);
+  Future<Group> getGroupById(int groupId);
   Future<String?> updateGroup(Group group);
-  Future<String?> updateGroupStatus(String groupId, bool isActive);
-  Future<List<User>> getUsersForGroup(String groupId);
+  Future<String?> updateGroupStatus(int groupId, bool isActive);
+  Future<List<User>> getUsersForGroup(int groupId);
 
-  Future<List<Expense>> getExpensesForGroup(String groupId);
-  Future<Map<String, double>> getBalances(String groupId);
+  Future<List<Expense>> getExpensesForGroup(int groupId);
+  Future<Map<int, double>> getBalances(int groupId);
 
   Future<String?> joinGroupByCode(String code);
-  Future<List<GroupJoinRequest>> getJoinRequests(String groupId);
-  Future<void> respondToJoinRequest(
-      String groupId, String requestId, bool accept);
+  Future<List<GroupJoinRequest>> getJoinRequests(int groupId);
+  Future<void> respondToJoinRequest(int groupId, int requestId, bool accept);
 }
 
 class GroupServiceMock implements GroupService {
@@ -27,16 +26,16 @@ class GroupServiceMock implements GroupService {
 
   final List<Group> allGroups = [
     Group(
-      id: "0",
+      id: 0,
       name: "Wycieczka Marki",
       currency: CurrencyEnum.pln,
       status: GroupStatus.active,
-      adminId: "1",
+      adminId: 1,
       membersId: [
-        "1",
-        "2",
-        "6",
-        "7",
+        1,
+        2,
+        6,
+        7,
       ],
       invitationCode: "fjh4390h094",
     ),
@@ -75,24 +74,24 @@ class GroupServiceMock implements GroupService {
     ),
   ];
 
-  final Map<String, List<User>> usersPerGroups = {
-    "0": [
-      User(id: "1", name: "John Doe", email: "john@example.com"),
-      User(id: "2", name: "Jane Smith", email: "jane@example.com"),
-      User(id: "6", name: "Jane Austin", email: "jane2@example.com"),
-      User(id: "7", name: "Alice Wonderland", email: "alice2@example.com"),
+  final Map<int, List<User>> usersPerGroups = {
+    0: [
+      User(id: 1, name: "John Doe", email: "john@example.com"),
+      User(id: 2, name: "Jane Smith", email: "jane@example.com"),
+      User(id: 6, name: "Jane Austin", email: "jane2@example.com"),
+      User(id: 7, name: "Alice Wonderland", email: "alice2@example.com"),
     ]
   };
 
-  final Map<String, List<GroupJoinRequest>> joinRequestsPerGroup = {
-    "0": [
+  final Map<int, List<GroupJoinRequest>> joinRequestsPerGroup = {
+    0: [
       GroupJoinRequest(
-        id: "101",
+        id: 101,
         name: "New User One",
         email: "one@example.com",
       ),
       GroupJoinRequest(
-        id: "102",
+        id: 102,
         name: "New User Two",
         email: "two@example.com",
       ),
@@ -132,16 +131,16 @@ class GroupServiceMock implements GroupService {
   }
 
   @override
-  Future<List<User>> getUsersForGroup(String groupId) async {
+  Future<List<User>> getUsersForGroup(int groupId) async {
     // For now return the same set of users
     return Future.value(usersPerGroups["0"]);
   }
 
   // Get a group by its ID
   @override
-  Future<Group> getGroupById(String groupId) async {
+  Future<Group> getGroupById(int groupId) async {
     return allGroups.firstWhere(
-      (group) => group.id == "0",
+      (group) => group.id == 0,
     );
   }
 
@@ -174,23 +173,23 @@ class GroupServiceMock implements GroupService {
   }
 
   @override
-  Future<Map<String, double>> getBalances(String groupId) {
+  Future<Map<int, double>> getBalances(int groupId) {
     // For now return a static map of balances
     return Future.value({
-      "1": 100,
-      "2": -50,
-      "6": -25,
-      "7": -25,
+      1: 100,
+      2: -50,
+      6: -25,
+      7: -25,
     });
   }
 
   @override
-  Future<List<Expense>> getExpensesForGroup(String groupId) {
+  Future<List<Expense>> getExpensesForGroup(int groupId) {
     return Future.value(allExpenses);
   }
 
   @override
-  Future<String?> updateGroupStatus(String groupId, bool isActive) async {
+  Future<String?> updateGroupStatus(int groupId, bool isActive) async {
     // For now always changing status of the first group in the list
     allGroups[0].status = isActive ? GroupStatus.active : GroupStatus.closed;
     return null;
@@ -203,13 +202,13 @@ class GroupServiceMock implements GroupService {
   }
 
   @override
-  Future<List<GroupJoinRequest>> getJoinRequests(String groupId) async {
+  Future<List<GroupJoinRequest>> getJoinRequests(int groupId) async {
     return Future.value(joinRequestsPerGroup[groupId] ?? []);
   }
 
   @override
   Future<void> respondToJoinRequest(
-      String groupId, String requestId, bool accept) async {
+      int groupId, int requestId, bool accept) async {
     final requests = joinRequestsPerGroup[groupId];
     if (requests != null) {
       requests.removeWhere((r) => r.id == requestId);

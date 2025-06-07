@@ -10,7 +10,7 @@ class EditGroupCubit extends Cubit<EditGroupState> {
   final GroupService groupService;
   final FriendsService friendsService;
   final AuthService authService;
-  final String groupId;
+  final int groupId;
 
   EditGroupCubit({
     required this.groupService,
@@ -28,7 +28,7 @@ class EditGroupCubit extends Cubit<EditGroupState> {
 
       final membersSet = group.membersId.toSet();
 
-      final Set<String> uniqueUserIds = {
+      final Set<int> uniqueUserIds = {
         ...friends.map((f) => f.id),
         ...groupMembers.map((m) => m.id),
       };
@@ -59,7 +59,7 @@ class EditGroupCubit extends Cubit<EditGroupState> {
   Future<void> updateGroup({
     required String name,
     required String? description,
-    required List<String> members,
+    required List<int> members,
     bool? isActive,
   }) async {
     if (state is! EditGroupLoaded) return;

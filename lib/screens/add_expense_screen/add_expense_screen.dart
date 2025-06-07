@@ -94,7 +94,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isSubmitted) {
-      Navigator.of(context).pop();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+      });
+      // Reset the flag to prevent multiple navigation attempts
+      _isSubmitted = false;
     }
     return BlocBuilder<GroupCubit, GroupState>(
       builder: (context, state) {
@@ -206,9 +210,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         ),
                       ),
                     const SizedBox(height: 16),
-                    TextButton(
+                    if (_amountController.text.isNotEmpty)
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
                         onPressed: () async {
-                          _splitDetails = await showDialog(
+                          final details = await showDialog(
                             context: context,
                             builder: (context) {
                               return ExpenseSplitDialog(
@@ -219,8 +227,20 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               );
                             },
                           ) as ExpenseSplit?;
+
+                          setState(() {
+                            _splitDetails = details;
+                          });
                         },
-                        child: const Text('Split Expense')),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Split Expense'),
+                            if (_splitDetails != null)
+                              const Icon(Icons.check, color: Colors.green),
+                          ],
+                        ),
+                      ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _submitForm,

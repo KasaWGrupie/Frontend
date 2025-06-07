@@ -32,7 +32,7 @@ class Group {
     required this.invitationCode,
   });
 
-  Group.fromJson(Map<String, Object> json) {
+  Group.fromJson(Map<String, dynamic> json) {
     id = json['id']! as int;
     name = json['name']! as String;
     currency = CurrencyEnum.values.firstWhere(

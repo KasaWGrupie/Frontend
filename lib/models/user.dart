@@ -1,6 +1,6 @@
 class User {
   User({required this.name, required this.id, required this.email});
-  User.fromJson(Map<String, Object> json) {
+  User.fromJson(Map<String, dynamic> json) {
     name = json['name']! as String;
     id = json['id']! as int;
     email = json['email']! as String;

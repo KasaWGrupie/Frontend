@@ -167,7 +167,6 @@ class FirebaseAuthService implements AuthService {
         password: password,
       );
 
-      // After signing in, retrieve and cache backend user
       _cachedUser = await userService.getUserByEmail(email);
       if (_cachedUser == null) return SignInResult.userNotFound;
 
@@ -218,6 +217,8 @@ class FirebaseAuthService implements AuthService {
           profilePicture: null,
           idToken: token,
         );
+      } else {
+        throw Exception("Couldn't retrive authorization token");
       }
 
       return null;

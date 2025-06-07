@@ -23,7 +23,7 @@ class MoneyRequest {
     this.finalizedAt,
   });
 
-  MoneyRequest.fromJson(Map<String, Object?> json) {
+  MoneyRequest.fromJson(Map<String, dynamic?> json) {
     id = json["id"]! as int;
     senderId = json['senderId']! as int;
     recipientId = json['recipientId']! as int;

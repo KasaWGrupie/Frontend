@@ -32,7 +32,7 @@ class GroupBalanceCubit extends Cubit<GroupBalanceState> {
       : super(GroupBalanceInitial());
 
   // Load the group balances
-  Future<void> loadGroupBalances(String userId) async {
+  Future<void> loadGroupBalances(int userId) async {
     emit(GroupBalanceLoading());
     try {
       final groupBalances =

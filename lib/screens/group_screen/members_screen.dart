@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 
@@ -10,7 +9,6 @@ class MembersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groupCubit = BlocProvider.of<GroupCubit>(context);
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -41,7 +39,7 @@ class MemberTile extends StatelessWidget {
   });
 
   final User user;
-  final Map<String, double>? balances;
+  final Map<int, double>? balances;
   final String currency;
 
   @override

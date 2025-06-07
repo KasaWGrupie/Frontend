@@ -12,13 +12,13 @@ enum CurrencyEnum {
 }
 
 class Group {
-  late final String id;
+  late final int id;
   late String name;
   late String? description;
   late final CurrencyEnum currency;
   late GroupStatus status;
-  late final String adminId;
-  late List<String> membersId;
+  late final int adminId;
+  late List<int> membersId;
   late final String invitationCode;
 
   Group({
@@ -32,8 +32,8 @@ class Group {
     required this.invitationCode,
   });
 
-  Group.fromJson(Map<String, Object> json) {
-    id = json['id']! as String;
+  Group.fromJson(Map<String, dynamic> json) {
+    id = json['id']! as int;
     name = json['name']! as String;
     currency = CurrencyEnum.values.firstWhere(
       (e) => e.name == json['currency'],
@@ -45,8 +45,8 @@ class Group {
       (e) => e.name == json['status'],
       orElse: () => GroupStatus.active,
     );
-    adminId = json['adminId']! as String;
-    membersId = List<String>.from(json['membersId'] as List);
+    adminId = json['adminId']! as int;
+    membersId = List<int>.from(json['membersId'] as List);
     invitationCode = json['invitationCode']! as String;
   }
 
@@ -65,14 +65,15 @@ class Group {
   Group copyWith({
     String? name,
     String? description,
-    List<String>? membersId,
+    List<int>? membersId,
+    GroupStatus? status,
   }) {
     return Group(
       id: id,
       name: name ?? this.name,
       description: description ?? this.description,
       currency: currency,
-      status: status,
+      status: status ?? this.status,
       adminId: adminId,
       membersId: membersId ?? this.membersId,
       invitationCode: invitationCode,

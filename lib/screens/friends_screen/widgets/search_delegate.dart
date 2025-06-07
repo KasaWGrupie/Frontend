@@ -4,13 +4,16 @@ import 'package:kasa_w_grupie/cubits/friends_cubit.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/widgets/user_profile_preview.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 class FriendSearchDelegate extends SearchDelegate<User?> {
+  final UsersService usersService;
   final FriendsService friendsService;
-  final String currentUserId;
+  final int currentUserId;
   final FriendsCubit friendsCubit;
 
   FriendSearchDelegate({
+    required this.usersService,
     required this.friendsService,
     required this.currentUserId,
     required this.friendsCubit,
@@ -47,7 +50,7 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
     }
 
     return FutureBuilder<User?>(
-      future: friendsService.getUserByEmail(email),
+      future: usersService.getUserByEmail(email),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());

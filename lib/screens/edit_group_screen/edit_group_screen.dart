@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
+import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/invitation_code_tile.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/friends_list.dart';
@@ -11,7 +12,7 @@ import 'package:kasa_w_grupie/models/friend.dart';
 import 'package:kasa_w_grupie/screens/edit_group_screen/widgets/read_only_currency_tile.dart';
 
 class EditGroupScreen extends StatefulWidget {
-  final String groupId;
+  final int groupId;
 
   const EditGroupScreen({super.key, required this.groupId});
 
@@ -27,6 +28,10 @@ class EditGroupScreenState extends State<EditGroupScreen> {
   late List<Friend> friends;
   bool isSelectingFriends = false;
 
+  // Track initial and current group active status
+  bool? initialIsActive;
+  bool isActive = true;
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +42,7 @@ class EditGroupScreenState extends State<EditGroupScreen> {
     return BlocListener<EditGroupCubit, EditGroupState>(
       listener: (context, state) {
         if (state is EditGroupSuccess) {
-          context.go('/groups');
+          context.go('/groups/${widget.groupId}');
         }
       },
       child: BaseScreen(
@@ -54,8 +59,12 @@ class EditGroupScreenState extends State<EditGroupScreen> {
               final group = state.group;
               friends = state.members;
 
-              nameController.text = group.name;
-              descriptionController.text = group.description ?? '';
+              if (nameController.text.isEmpty) {
+                nameController.text = group.name;
+                descriptionController.text = group.description ?? '';
+                initialIsActive = group.status == GroupStatus.active;
+                isActive = initialIsActive!;
+              }
 
               return Center(
                 child: Padding(
@@ -121,6 +130,20 @@ class EditGroupScreenState extends State<EditGroupScreen> {
                         ),
                         const SizedBox(height: 8),
 
+                        // Group Status Toggle Switch
+                        SwitchListTile(
+                          title: const Text('Active Status'),
+                          value: isActive,
+                          onChanged: (value) {
+                            setState(() {
+                              isActive = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+
                         // Friend Selector
                         FriendSelector(
                           friends: friends,
@@ -143,20 +166,33 @@ class EditGroupScreenState extends State<EditGroupScreen> {
                         ElevatedButton(
                           onPressed: () async {
                             if (formKey.currentState!.validate()) {
-                              List<String> selectedMembersIds = friends
+                              final selectedMembersIds = friends
                                   .where((friend) => friend.isSelected)
                                   .map((friend) => friend.id)
                                   .toList();
 
-                              await context.read<EditGroupCubit>().updateGroup(
-                                    name: nameController.text,
-                                    description: descriptionController.text,
-                                    members: selectedMembersIds,
-                                  );
+                              final cubit = context.read<EditGroupCubit>();
+
+                              if (isActive != initialIsActive) {
+                                await cubit.updateGroup(
+                                  name: nameController.text,
+                                  description: descriptionController.text,
+                                  members: selectedMembersIds,
+                                  isActive: isActive,
+                                );
+                              } else {
+                                await cubit.updateGroup(
+                                  name: nameController.text,
+                                  description: descriptionController.text,
+                                  members: selectedMembersIds,
+                                  isActive: null,
+                                );
+                              }
                             }
                           },
-                          child: const Text('Save Changes'),
+                          child: Text('Save'),
                         ),
+
                         if (state is EditGroupSaving) ...[
                           const SizedBox(height: 16),
                           const Center(child: CircularProgressIndicator()),

@@ -14,6 +14,8 @@ import 'package:kasa_w_grupie/screens/add_group_screen/widgets/group_photo.dart'
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/currency_list.dart';
 import 'dart:math';
 
+import 'package:kasa_w_grupie/services/friends_service.dart';
+
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
 
@@ -37,8 +39,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   Future<List<Friend>> getFriends() async {
     final authService = context.read<AuthService>();
+    final friendService = context.read<FriendsService>();
     currentUser = (await authService.currentUser())!;
-    return parseUsersToFriends(currentUser.getFriends());
+    return parseUsersToFriends(await friendService.getFriends());
   }
 
   @override
@@ -189,7 +192,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                               ElevatedButton(
                                 onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
-                                    List<String> selectedMembersIds = friends
+                                    List<int> selectedMembersIds = friends
                                         .where((friend) => friend.isSelected)
                                         .map((friend) => friend.id)
                                         .toList();

@@ -61,7 +61,7 @@ class SettlementTile extends StatelessWidget {
   final User to;
   final double amount;
   final CurrencyEnum currency;
-  final String groupId;
+  final int groupId;
 
   @override
   Widget build(BuildContext context) {

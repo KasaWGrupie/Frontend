@@ -53,7 +53,7 @@ class FriendsCubit extends Cubit<FriendsState> {
   }
 
   // Accept a friend request
-  Future<void> acceptFriendRequest(String friendId) async {
+  Future<void> acceptFriendRequest(int friendId) async {
     try {
       await friendsService.acceptFriendRequest(friendId);
 
@@ -71,7 +71,7 @@ class FriendsCubit extends Cubit<FriendsState> {
   }
 
   // Decline a friend request
-  Future<void> declineFriendRequest(String friendId) async {
+  Future<void> declineFriendRequest(int friendId) async {
     try {
       await friendsService.declineFriendRequest(friendId);
 
@@ -109,7 +109,7 @@ class FriendsCubit extends Cubit<FriendsState> {
   }
 
   // Remove a friend
-  Future<void> removeFriend(String friendId) async {
+  Future<void> removeFriend(int friendId) async {
     try {
       await friendsService.removeFriend(friendId);
 
@@ -127,7 +127,7 @@ class FriendsCubit extends Cubit<FriendsState> {
   }
 
   // Withdraw friend request sent by logged-in user
-  Future<void> withdrawFriendRequest(String friendId) async {
+  Future<void> withdrawFriendRequest(int friendId) async {
     try {
       await friendsService.withdrawFriendRequest(friendId);
 

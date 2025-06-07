@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
-import 'package:kasa_w_grupie/cubits/edit_expense_cubit.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/cubits/user_cubit.dart';
 import 'package:kasa_w_grupie/firebase_options.dart';

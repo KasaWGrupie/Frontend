@@ -40,7 +40,10 @@ class _ManualExpenseScreenState extends State<ManualExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize state here if needed
+    // Initialize with the first group member as default payer
+    if (widget.groupState.members.isNotEmpty) {
+      _selectedPayer = widget.groupState.members.first.id;
+    }
   }
 
   Future<void> _submitForm() async {
@@ -95,12 +98,41 @@ class _ManualExpenseScreenState extends State<ManualExpenseScreen> {
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Card(
+          margin: const EdgeInsets.only(bottom: 16),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Expense Details',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Enter amount, payer, and other details for this expense.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Amount field
         TextFormField(
           controller: _amountController,
           decoration: const InputDecoration(
             labelText: 'Amount',
             border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.attach_money),
           ),
           keyboardType: TextInputType.number,
           validator: (value) {
@@ -119,11 +151,14 @@ class _ManualExpenseScreenState extends State<ManualExpenseScreen> {
           },
         ),
         const SizedBox(height: 16),
+
+        // Payer dropdown
         DropdownButtonFormField<String>(
           value: _selectedPayer,
           decoration: const InputDecoration(
             labelText: 'Payer',
             border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.person),
           ),
           items: members.map((User member) {
             return DropdownMenuItem(
@@ -147,28 +182,44 @@ class _ManualExpenseScreenState extends State<ManualExpenseScreen> {
           },
         ),
         const SizedBox(height: 16),
+
+        // Description field
         TextFormField(
           controller: _descriptionController,
           decoration: const InputDecoration(
             labelText: 'Description',
             border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.description),
+            hintText: 'Optional notes about this expense',
           ),
-          maxLines: 3,
+          maxLines: 2,
         ),
         const SizedBox(height: 16),
+
+        // Error display
         if (error != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              border: Border.all(color: Colors.red.shade200),
+              borderRadius: BorderRadius.circular(4.0),
+            ),
             child: Text(
               error!,
               style: const TextStyle(color: Colors.red),
             ),
           ),
+
         const SizedBox(height: 16),
+
+        // Split expense button
         if (_amountController.text.isNotEmpty)
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor:
+                  _splitDetails != null ? Colors.green.shade50 : null,
             ),
             onPressed: () async {
               final details = await showDialog(
@@ -188,23 +239,44 @@ class _ManualExpenseScreenState extends State<ManualExpenseScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Split Expense'),
-                if (_splitDetails != null)
-                  const Icon(Icons.check, color: Colors.green),
+                Icon(
+                  _splitDetails != null ? Icons.check_circle : Icons.group_add,
+                  color: _splitDetails != null ? Colors.green : null,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _splitDetails != null
+                      ? 'Split Configured'
+                      : 'Configure Split',
+                  style: TextStyle(
+                    color: _splitDetails != null ? Colors.green : null,
+                  ),
+                ),
               ],
             ),
           ),
         const SizedBox(height: 16),
+
+        // Add expense button
         ElevatedButton(
           onPressed: _isLoading ? null : _submitForm,
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
           ),
-          child: Center(
-            child: _isLoading
-                ? const CircularProgressIndicator()
-                : const Text('Add Expense'),
-          ),
+          child: _isLoading
+              ? const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                )
+              : const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.save),
+                    SizedBox(width: 8),
+                    Text('Add Expense'),
+                  ],
+                ),
         ),
       ],
     );

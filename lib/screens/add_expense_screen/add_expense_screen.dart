@@ -6,7 +6,13 @@ import 'package:kasa_w_grupie/models/new_expense.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/screens/add_expense_screen/expense_split_dialog.dart';
 import 'package:kasa_w_grupie/screens/add_expense_screen/manual_expense_screen.dart';
+import 'package:kasa_w_grupie/screens/add_expense_screen/receipt_expense_screen.dart';
 import 'package:kasa_w_grupie/services/expense_service.dart';
+
+enum ExpenseType {
+  manual,
+  receipt,
+}
 
 class AddExpenseScreen extends StatefulWidget {
   final ExpenseService expenseService;
@@ -24,6 +30,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   bool _expenseAdded = false;
+  ExpenseType _expenseType = ExpenseType.manual; // Default to manual
 
   // Simplified state - removing duplicated state that's managed in child component
   final Map<String, bool> _participatingMembers = {};
@@ -90,13 +97,44 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    ManualExpenseScreen(
-                      formKey: _formKey,
-                      expenseService: widget.expenseService,
-                      nameController: _nameController,
-                      groupState: state,
-                      onExpenseAdded: _onExpenseAdded,
+                    SegmentedButton<ExpenseType>(
+                      segments: [
+                        ButtonSegment<ExpenseType>(
+                          value: ExpenseType.manual,
+                          label: const Text('Manual'),
+                        ),
+                        ButtonSegment<ExpenseType>(
+                          value: ExpenseType.receipt,
+                          label: const Text('Receipt'),
+                        ),
+                      ],
+                      selected: {_expenseType},
+                      onSelectionChanged: (Set<ExpenseType> newSelection) {
+                        setState(() {
+                          // By default there is only a single segment that can be
+                          // selected at one time, so its value is always the first
+                          // item in the selected set.
+                          _expenseType = newSelection.first;
+                        });
+                      },
                     ),
+                    const SizedBox(height: 16),
+                    if (_expenseType == ExpenseType.manual)
+                      ManualExpenseScreen(
+                        formKey: _formKey,
+                        expenseService: widget.expenseService,
+                        nameController: _nameController,
+                        groupState: state,
+                        onExpenseAdded: _onExpenseAdded,
+                      )
+                    else
+                      ReceiptExpenseScreen(
+                        formKey: _formKey,
+                        expenseService: widget.expenseService,
+                        nameController: _nameController,
+                        groupState: state,
+                        onExpenseAdded: _onExpenseAdded,
+                      ),
                   ],
                 ),
               ),

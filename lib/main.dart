@@ -177,6 +177,7 @@ class _AppState extends State<_App> {
               Provider<FriendsService>(
                 create: (context) => MockFriendsService(
                   authService: context.read<AuthService>(),
+                  usersService: context.read<UsersService>(),
                 ),
               ),
               Provider<SettlementsService>(

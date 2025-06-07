@@ -5,6 +5,7 @@ import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class FriendsService {
   Future<List<User>> getFriends();
@@ -12,7 +13,6 @@ abstract class FriendsService {
   Future<List<User>> getSentRequests();
   Future<void> acceptFriendRequest(int friendId);
   Future<void> declineFriendRequest(int friendId);
-  Future<User?> getUserByEmail(String email);
   Future<void> sendFriendRequest(String email);
   Future<void> withdrawFriendRequest(int friendId);
   Future<void> removeFriend(int targetUserId);
@@ -25,8 +25,12 @@ abstract class FriendsService {
 
 class FriendsServiceApi implements FriendsService {
   final AuthService authService;
+  final UsersService usersService;
 
-  FriendsServiceApi({required this.authService});
+  FriendsServiceApi({
+    required this.authService,
+    required this.usersService,
+  });
 
   String get baseUrl => ApiConfig.baseUrl;
   int get currentUserId => authService.userId;
@@ -53,8 +57,6 @@ class FriendsServiceApi implements FriendsService {
   @override
   Future<void> declineFriendRequest(int friendId) => throw UnimplementedError();
   @override
-  Future<User?> getUserByEmail(String email) => throw UnimplementedError();
-  @override
   Future<void> sendFriendRequest(String email) => throw UnimplementedError();
   @override
   Future<void> withdrawFriendRequest(int friendId) =>
@@ -77,8 +79,12 @@ class FriendsServiceApi implements FriendsService {
 
 class MockFriendsService implements FriendsService {
   final AuthService authService;
+  final UsersService usersService;
 
-  MockFriendsService({required this.authService});
+  MockFriendsService({
+    required this.authService,
+    required this.usersService,
+  });
 
   int get currentUserId => authService.userId;
 
@@ -197,21 +203,12 @@ class MockFriendsService implements FriendsService {
     friendRequests.remove(friendId);
   }
 
-  // Get User object based on email
-  @override
-  Future<User?> getUserByEmail(String email) async {
-    if (mockUsers.any((user) => user.email == email)) {
-      return mockUsers.firstWhere((user) => user.email == email);
-    }
-    return null;
-  }
-
   // Send a friend request to another user by their email
   @override
   Future<void> sendFriendRequest(String email) async {
     await Future.delayed(Duration(milliseconds: 500));
 
-    User? user = await getUserByEmail(email);
+    User? user = await usersService.getUserByEmail(email);
 
     if (user != null && user.id != currentUserId) {
       sentByUserRequests.add(user.id);

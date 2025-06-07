@@ -41,144 +41,179 @@ class _ExpenseSplitDialogState extends State<ExpenseSplitDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: Column(children: [
-        DropdownButtonFormField<String>(
-          value: _selectedPayer,
-          decoration: const InputDecoration(
-            labelText: 'Payer',
-            border: OutlineInputBorder(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 30.0),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          DropdownButtonFormField<SplitType>(
+            value: _selectedSplitType,
+            decoration: const InputDecoration(
+              labelText: 'Split Type',
+              border: OutlineInputBorder(),
+            ),
+            items: SplitType.values.map((type) {
+              return DropdownMenuItem(
+                value: type,
+                child: Text(type.toString()),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedSplitType = value!;
+                _splitDetails.clear(); // Reset split details
+                _initializeSplitDetails(widget.groupInfo.members);
+                _participatingMembers.clear();
+                for (var member in widget.groupInfo.members) {
+                  _participatingMembers[member.id] = true; // Default to true
+                }
+              });
+            },
           ),
-          items: widget.groupInfo.members.map((User member) {
-            return DropdownMenuItem(
-              value: member.id,
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(member.pictureUrl),
-                    radius: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(member.name),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedPayer = value;
-            });
-          },
-        ),
-        const SizedBox(height: 16),
-        DropdownButtonFormField<SplitType>(
-          value: _selectedSplitType,
-          decoration: const InputDecoration(
-            labelText: 'Split Type',
-            border: OutlineInputBorder(),
-          ),
-          items: SplitType.values.map((type) {
-            return DropdownMenuItem(
-              value: type,
-              child: Text(type.toString().split('.').last),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedSplitType = value!;
-              _splitDetails.clear(); // Reset split details
-              _initializeSplitDetails(widget.groupInfo.members);
-              _participatingMembers.clear();
-              for (var member in widget.groupInfo.members) {
-                _participatingMembers[member.id] = true; // Default to true
-              }
-            });
-          },
-        ),
-        const SizedBox(height: 16),
-        if (_selectedSplitType == SplitType.equal)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          const SizedBox(height: 16),
+          if (_selectedSplitType == SplitType.equal)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Participating Members',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                ...widget.groupInfo.members.map((User member) {
+                  return CheckboxListTile(
+                    title: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(member.pictureUrl),
+                          radius: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(member.name),
+                      ],
+                    ),
+                    value: _participatingMembers[member.id] ?? false,
+                    onChanged: (value) {
+                      setState(() {
+                        if (_participatingMembers[member.id] == null) {
+                          _participatingMembers[member.id] = value ?? true;
+                        } else {
+                          _participatingMembers[member.id] = value!;
+                        }
+                      });
+                    },
+                  );
+                }),
+              ],
+            ),
+          if (_selectedSplitType != SplitType.equal)
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text(
-                'Participating Members',
+                'Split Details',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               ...widget.groupInfo.members.map((User member) {
-                return CheckboxListTile(
-                  title: Row(
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
                     children: [
                       CircleAvatar(
                         backgroundImage: NetworkImage(member.pictureUrl),
                         radius: 16,
                       ),
                       const SizedBox(width: 8),
-                      Text(member.name),
+                      Expanded(
+                        child: Text(member.name),
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: _splitDetails[member.id]?.toString(),
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: _selectedSplitType == SplitType.byAmount
+                                ? 'Amount'
+                                : 'Percentage',
+                            border: const OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              _splitDetails[member.id] =
+                                  double.tryParse(value) ?? 0.0;
+                            });
+                          },
+                        ),
+                      )
                     ],
                   ),
-                  value: _participatingMembers[member.id],
-                  onChanged: (value) {
-                    setState(() {
-                      _participatingMembers[member.id] = value!;
-                    });
-                  },
                 );
-              }),
-            ],
-          ),
-        if (_selectedSplitType != SplitType.equal)
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text(
-              'Split Details',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              })
+            ]),
+          ElevatedButton(
+            onPressed: _submitForm,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.all(16),
             ),
-            const SizedBox(height: 8),
-            ...widget.groupInfo.members.map((User member) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(member.pictureUrl),
-                      radius: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(member.name),
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: _splitDetails[member.id]?.toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: _selectedSplitType == SplitType.byAmount
-                              ? 'Amount'
-                              : 'Percentage',
-                          border: const OutlineInputBorder(),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _splitDetails[member.id] =
-                                double.tryParse(value) ?? 0.0;
-                          });
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              );
-            })
-          ]),
-        ElevatedButton(
-          onPressed: _submitForm,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Text("Submit Split Details"),
           ),
-          child: _isLoading
-              ? const CircularProgressIndicator()
-              : const Text('Add Expense'),
-        ),
-      ]),
+        ]),
+      ),
     );
+  }
+
+  bool _validateSplitDetails() {
+    if (_selectedSplitType == SplitType.equal) {
+      // Check if at least one participant is selected
+      if (_participatingMembers.values.where((value) => value).isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('At least one participant must be selected.')),
+        );
+        return false;
+      }
+    } else if (_selectedSplitType == SplitType.byAmount) {
+      // Check if amounts sum up to the total amount
+      final sum = _splitDetails.values.fold(0.0, (a, b) => a + b);
+      if (sum != widget.totalAmount) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('The amounts must sum up to $widget.totalAmount.')),
+        );
+        return false;
+      }
+    } else if (_selectedSplitType == SplitType.byPercentage) {
+      // Check if percentages sum up to 100
+      final sum = _splitDetails.values.fold(0.0, (a, b) => a + b);
+      if (sum != 100.0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('The percentages must sum up to 100%.')),
+        );
+        return false;
+      }
+    }
+    return true;
+  }
+
+  ExpenseSplit _buildExpenseSplit() {
+    final participants = _participatingMembers.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
+
+    switch (_selectedSplitType) {
+      case SplitType.equal:
+        return ExpenseSplit.equal(participants: participants);
+      case SplitType.byAmount:
+        return ExpenseSplit.byAmount(_splitDetails, participants: participants);
+      case SplitType.byPercentage:
+        return ExpenseSplit.byPercentage(_splitDetails,
+            participants: participants);
+    }
+  }
+
+  void _submitForm() async {
+    if (!_validateSplitDetails()) return;
+
+    final expenseSplit = _buildExpenseSplit();
+
+    Navigator.of(context).pop(expenseSplit);
   }
 }

@@ -65,4 +65,20 @@ class ExpenseSplit {
   Map<String, double>? get details => amounts;
 }
 
-enum SplitType { equal, byAmount, byPercentage }
+enum SplitType {
+  equal,
+  byAmount,
+  byPercentage;
+
+  @override
+  String toString() {
+    switch (this) {
+      case SplitType.equal:
+        return 'Equal';
+      case SplitType.byAmount:
+        return 'By Amount';
+      case SplitType.byPercentage:
+        return 'By Percentage';
+    }
+  }
+}

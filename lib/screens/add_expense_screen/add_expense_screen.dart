@@ -4,6 +4,7 @@ import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/new_expense.dart';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/screens/add_expense_screen/expense_split_dialog.dart';
 import 'package:kasa_w_grupie/services/expense_service.dart';
 
 class AddExpenseScreen extends StatefulWidget {
@@ -27,10 +28,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   String? error;
   String? _selectedPayer;
   SplitType _selectedSplitType = SplitType.equal;
-  Map<String, double> _splitDetails = {};
   final Map<String, bool> _participatingMembers =
       {}; // Tracks participation for "Equal" split
-
+  ExpenseSplit? _splitDetails;
   bool _isLoading = false;
   bool _isSubmitted = false;
 
@@ -41,58 +41,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     groupCubit.fetch(); // Ensure the group data is loaded
   }
 
-  void _initializeSplitDetails(List<User> members) {
-    if (_selectedSplitType == SplitType.byAmount) {
-      final totalAmount = double.tryParse(_amountController.text) ?? 0.0;
-      final defaultAmount = totalAmount / members.length;
-      _splitDetails = {
-        for (var member in members) member.id: defaultAmount,
-      };
-    } else if (_selectedSplitType == SplitType.byPercentage) {
-      final defaultPercentage = 100.0 / members.length;
-      _splitDetails = {
-        for (var member in members) member.id: defaultPercentage,
-      };
-    }
-  }
-
-  bool _validateSplitDetails() {
-    if (_selectedSplitType == SplitType.equal) {
-      // Check if at least one participant is selected
-      if (_participatingMembers.values.where((value) => value).isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('At least one participant must be selected.')),
-        );
-        return false;
-      }
-    } else if (_selectedSplitType == SplitType.byAmount) {
-      // Check if amounts sum up to the total amount
-      final totalAmount = double.tryParse(_amountController.text) ?? 0.0;
-      final sum = _splitDetails.values.fold(0.0, (a, b) => a + b);
-      if (sum != totalAmount) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('The amounts must sum up to $totalAmount.')),
-        );
-        return false;
-      }
-    } else if (_selectedSplitType == SplitType.byPercentage) {
-      // Check if percentages sum up to 100
-      final sum = _splitDetails.values.fold(0.0, (a, b) => a + b);
-      if (sum != 100.0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('The percentages must sum up to 100%.')),
-        );
-        return false;
-      }
-    }
-    return true;
-  }
-
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-
-    if (!_validateSplitDetails()) return;
 
     setState(() {
       _isLoading = true;
@@ -108,11 +58,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       });
       return;
     }
+    if (_splitDetails == null) {
+      return;
+    }
 
     final group = (groupCubit.state as GroupLoaded).group;
-
-    // Build the ExpenseSplit based on the selected split type
-    final expenseSplit = _buildExpenseSplit();
 
     final newExpense = NewExpense(
       groupId: group.id,
@@ -121,7 +71,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       date: DateTime.now(),
       payer: _selectedPayer,
       description: _descriptionController.text,
-      split: expenseSplit,
+      split: _splitDetails,
     );
 
     final result = await widget.expenseService.addExpense(newExpense);
@@ -138,23 +88,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       setState(() {
         error = result;
       });
-    }
-  }
-
-  ExpenseSplit _buildExpenseSplit() {
-    final participants = _participatingMembers.entries
-        .where((entry) => entry.value)
-        .map((entry) => entry.key)
-        .toList();
-
-    switch (_selectedSplitType) {
-      case SplitType.equal:
-        return ExpenseSplit.equal(participants: participants);
-      case SplitType.byAmount:
-        return ExpenseSplit.byAmount(_splitDetails, participants: participants);
-      case SplitType.byPercentage:
-        return ExpenseSplit.byPercentage(_splitDetails,
-            participants: participants);
     }
   }
 
@@ -177,11 +110,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             for (var member in members) {
               _participatingMembers[member.id] = true; // Default to true
             }
-          }
-
-          // Initialize split details when the split type changes
-          if (_splitDetails.isEmpty) {
-            _initializeSplitDetails(members);
           }
 
           return Scaffold(
@@ -226,8 +154,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       },
                       onChanged: (value) {
                         setState(() {
-                          _splitDetails.clear(); // Recalculate split details
-                          _initializeSplitDetails(members);
+                          _splitDetails = null;
                         });
                       },
                     ),
@@ -270,115 +197,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       maxLines: 3,
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<SplitType>(
-                      value: _selectedSplitType,
-                      decoration: const InputDecoration(
-                        labelText: 'Split Type',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: SplitType.values.map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Text(type.toString().split('.').last),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedSplitType = value!;
-                          _splitDetails.clear(); // Reset split details
-                          _initializeSplitDetails(members);
-                          _participatingMembers.clear();
-                          for (var member in members) {
-                            _participatingMembers[member.id] =
-                                true; // Default to true
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    if (_selectedSplitType == SplitType.equal)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Participating Members',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          ...members.map((User member) {
-                            return CheckboxListTile(
-                              title: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage:
-                                        NetworkImage(member.pictureUrl),
-                                    radius: 16,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(member.name),
-                                ],
-                              ),
-                              value: _participatingMembers[member.id],
-                              onChanged: (value) {
-                                setState(() {
-                                  _participatingMembers[member.id] = value!;
-                                });
-                              },
-                            );
-                          }),
-                        ],
-                      ),
-                    if (_selectedSplitType != SplitType.equal)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Split Details',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          ...members.map((User member) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage:
-                                        NetworkImage(member.pictureUrl),
-                                    radius: 16,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(member.name),
-                                  ),
-                                  Expanded(
-                                    child: TextFormField(
-                                      initialValue:
-                                          _splitDetails[member.id]?.toString(),
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        labelText: _selectedSplitType ==
-                                                SplitType.byAmount
-                                            ? 'Amount'
-                                            : 'Percentage',
-                                        border: const OutlineInputBorder(),
-                                      ),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _splitDetails[member.id] =
-                                              double.tryParse(value) ?? 0.0;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    const SizedBox(height: 16),
                     if (error != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
@@ -387,6 +205,23 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           style: const TextStyle(color: Colors.red),
                         ),
                       ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                        onPressed: () async {
+                          _splitDetails = await showDialog(
+                            context: context,
+                            builder: (context) {
+                              return ExpenseSplitDialog(
+                                totalAmount:
+                                    double.tryParse(_amountController.text) ??
+                                        0.0,
+                                groupInfo: state,
+                              );
+                            },
+                          ) as ExpenseSplit?;
+                        },
+                        child: const Text('Split Expense')),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _submitForm,
                       style: ElevatedButton.styleFrom(

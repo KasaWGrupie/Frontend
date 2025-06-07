@@ -7,8 +7,8 @@ abstract class MoneyTransactionService {
   Future<List<MoneyRequest>> getMoneyRequestsForUser();
   Future<List<MoneyRequest>> getRejectedMoneyRequestsForUser();
   Future<List<MoneyTransfer>> getMoneyTransfersForUser();
-  Future<void> markAsPaid(String requestId);
-  Future<void> rejectRequest(String requestId);
+  Future<void> markAsPaid(int requestId);
+  Future<void> rejectRequest(int requestId);
 }
 
 class MoneyTransactionServiceMock implements MoneyTransactionService {
@@ -33,41 +33,41 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
     allMoneyTransfers = [
       MoneyTransfer(
         senderId: loggedUserId,
-        recipientId: "2",
+        recipientId: 2,
         amount: 100.0,
-        groupId: "1",
+        groupId: 1,
         status: MoneyTransferStatus.pending,
         finalizedAt: null,
       ),
       MoneyTransfer(
-        senderId: "2",
+        senderId: 2,
         recipientId: loggedUserId,
         amount: 30.0,
-        groupId: "1",
+        groupId: 1,
         status: MoneyTransferStatus.confirmed,
         finalizedAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
       MoneyTransfer(
         senderId: loggedUserId,
-        recipientId: "6",
+        recipientId: 6,
         amount: 50.0,
-        groupId: "2",
+        groupId: 2,
         status: MoneyTransferStatus.confirmed,
         finalizedAt: DateTime.now().subtract(const Duration(days: 4)),
       ),
       MoneyTransfer(
         senderId: loggedUserId,
-        recipientId: "7",
+        recipientId: 7,
         amount: 70.0,
-        groupId: "1",
+        groupId: 1,
         status: MoneyTransferStatus.confirmed,
         finalizedAt: DateTime.now().subtract(const Duration(days: 3)),
       ),
       MoneyTransfer(
-        senderId: "7",
+        senderId: 7,
         recipientId: loggedUserId,
         amount: 40.0,
-        groupId: "1",
+        groupId: 1,
         status: MoneyTransferStatus.confirmed,
         finalizedAt: DateTime.now().subtract(const Duration(days: 2)),
       ),
@@ -85,51 +85,51 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
 
     allMoneyRequests = [
       MoneyRequest(
-        id: "1",
-        senderId: "2",
+        id: 1,
+        senderId: 2,
         recipientId: loggedUserId,
         moneyValue: 50.0,
-        groups: ["0"],
+        groups: [0],
         status: MoneyRequestStatus.pending,
         currency: CurrencyEnum.pln,
         finalizedAt: null,
       ),
       MoneyRequest(
-        id: "2",
-        senderId: "2",
+        id: 2,
+        senderId: 2,
         recipientId: loggedUserId,
         moneyValue: 20.0,
-        groups: ["0"],
+        groups: [0],
         status: MoneyRequestStatus.closed,
         currency: CurrencyEnum.gbp,
         finalizedAt: DateTime.now().subtract(const Duration(days: 2)),
       ),
       MoneyRequest(
-        id: "3",
-        senderId: "6",
+        id: 3,
+        senderId: 6,
         recipientId: loggedUserId,
         moneyValue: 30.0,
-        groups: ["0"],
+        groups: [0],
         status: MoneyRequestStatus.pending,
         currency: CurrencyEnum.eur,
         finalizedAt: null,
       ),
       MoneyRequest(
-        id: "4",
+        id: 4,
         senderId: loggedUserId,
-        recipientId: "7",
+        recipientId: 7,
         moneyValue: 40.0,
-        groups: ["0"],
+        groups: [0],
         status: MoneyRequestStatus.closed,
         currency: CurrencyEnum.gbp,
         finalizedAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
       MoneyRequest(
-        id: "5",
+        id: 5,
         senderId: loggedUserId,
-        recipientId: "7",
+        recipientId: 7,
         moneyValue: 40.0,
-        groups: ["0", "0"],
+        groups: [0, 0],
         status: MoneyRequestStatus.rejected,
         currency: CurrencyEnum.usd,
         finalizedAt: DateTime.now().subtract(const Duration(days: 5)),
@@ -172,12 +172,12 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
   }
 
   @override
-  Future<void> markAsPaid(String requestId) async {
+  Future<void> markAsPaid(int requestId) async {
     allMoneyRequests.removeWhere((request) => request.id == requestId);
   }
 
   @override
-  Future<void> rejectRequest(String requestId) async {
+  Future<void> rejectRequest(int requestId) async {
     allMoneyRequests.removeWhere((request) => request.id == requestId);
   }
 }

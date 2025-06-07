@@ -19,7 +19,7 @@ abstract class AuthService {
 
   Future<String> userName();
 
-  String get userId;
+  int get userId;
 
   Future<u.User?> currentUser();
 
@@ -89,9 +89,7 @@ class AuthServiceMock implements AuthService {
 
     // Create a new user and add to the "database"
     final newUser = u.User(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        email: email);
+        id: DateTime.now().millisecondsSinceEpoch, name: name, email: email);
     _users[email] = newUser;
 
     return null;
@@ -105,7 +103,7 @@ class AuthServiceMock implements AuthService {
 
   @override
   // TODO: implement userId
-  String get userId => _currentUser!.id;
+  int get userId => _currentUser!.id;
 
   @override
   Future<u.User?> currentUser() async {
@@ -132,10 +130,9 @@ class FirebaseAuthService implements AuthService {
   String get userEmail => firebaseAuth.currentUser!.email!;
 
   @override
+  //TODO CHANGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   Future<String> userName() async {
-    return userService
-        .getUser(firebaseAuth.currentUser!.uid)
-        .then((value) => value!.name);
+    return userService.getUser(0).then((value) => value!.name);
   }
 
   @override
@@ -198,10 +195,10 @@ class FirebaseAuthService implements AuthService {
   Future<void> signOut() => firebaseAuth.signOut();
 
   @override
-  String get userId => firebaseAuth.currentUser!.uid;
-
+  // TODO CHANGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  int get userId => 0;
   @override
   Future<u.User?> currentUser() {
-    return userService.getUser(firebaseAuth.currentUser!.uid);
+    return userService.getUser(0);
   }
 }

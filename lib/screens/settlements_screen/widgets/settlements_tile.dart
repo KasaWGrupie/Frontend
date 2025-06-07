@@ -28,11 +28,11 @@ class SettlementTile extends StatelessWidget {
         (g) => g.id == groupId,
         // TODO delete after backend integration
         orElse: () => Group(
-          id: 'unknown',
+          id: 0,
           name: 'Unknown Group',
           currency: CurrencyEnum.eur,
           status: GroupStatus.active,
-          adminId: '',
+          adminId: -1,
           membersId: [],
           invitationCode: '',
         ),
@@ -46,11 +46,11 @@ class SettlementTile extends StatelessWidget {
     final group = groups.firstWhere(
       (g) => g.id == settlement.groupIds.first,
       orElse: () => Group(
-        id: 'unknown',
+        id: 0,
         name: 'Unknown Group',
         currency: CurrencyEnum.eur,
         status: GroupStatus.active,
-        adminId: '',
+        adminId: -1,
         membersId: [],
         invitationCode: '',
       ),

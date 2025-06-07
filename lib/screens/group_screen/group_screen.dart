@@ -13,7 +13,7 @@ import 'package:kasa_w_grupie/services/users_service.dart';
 class GroupScreen extends StatelessWidget {
   const GroupScreen({required this.groupId, super.key});
 
-  final String groupId;
+  final int groupId;
 
   @override
   Widget build(BuildContext context) {

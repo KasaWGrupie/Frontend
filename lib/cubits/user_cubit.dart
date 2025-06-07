@@ -22,7 +22,7 @@ class UserCubit extends Cubit<UserState> {
   UserCubit(this.userService) : super(UserLoading());
 
   // Fetch user by id
-  Future<void> fetchUserById(String userId) async {
+  Future<void> fetchUserById(int userId) async {
     try {
       emit(UserLoading());
       final user = await userService.getUser(userId);

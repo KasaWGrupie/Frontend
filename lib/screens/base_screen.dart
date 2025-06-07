@@ -9,10 +9,7 @@ class BaseScreen extends StatelessWidget {
     this.floatingActionButton,
     this.appBarBottom,
     this.appBarActions,
-<<<<<<< HEAD
-=======
     this.backgroundColor,
->>>>>>> develop
     super.key,
   });
 
@@ -22,11 +19,7 @@ class BaseScreen extends StatelessWidget {
   final Widget? floatingActionButton;
   final PreferredSizeWidget? appBarBottom;
   final List<Widget>? appBarActions;
-<<<<<<< HEAD
-=======
   final Color? backgroundColor;
-
->>>>>>> develop
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +27,6 @@ class BaseScreen extends StatelessWidget {
       backgroundColor:
           backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: floatingActionButton,
-<<<<<<< HEAD
-      appBar: AppBar(
-        title: Text(title),
-        bottom: appBarBottom,
-        actions: appBarActions,
-      ),
-=======
       appBar: customAppBar ??
           (title != null
               ? AppBar(
@@ -49,7 +35,6 @@ class BaseScreen extends StatelessWidget {
                   actions: appBarActions,
                 )
               : null),
->>>>>>> develop
       body: child,
       bottomNavigationBar: BottomAppBar(
         child: Row(

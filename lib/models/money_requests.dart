@@ -3,11 +3,11 @@ import 'package:kasa_w_grupie/models/group.dart';
 enum MoneyRequestStatus { pending, cancelled, paid, closed, rejected }
 
 class MoneyRequest {
-  late final String id;
-  late final String senderId;
-  late final String recipientId;
+  late final int id;
+  late final int senderId;
+  late final int recipientId;
   late final double moneyValue;
-  late final List<String> groups;
+  late final List<int> groups;
   late final MoneyRequestStatus status;
   late final DateTime? finalizedAt;
   late final CurrencyEnum currency;
@@ -24,11 +24,11 @@ class MoneyRequest {
   });
 
   MoneyRequest.fromJson(Map<String, Object?> json) {
-    id = json["id"]! as String;
-    senderId = json['senderId']! as String;
-    recipientId = json['recipientId']! as String;
+    id = json["id"]! as int;
+    senderId = json['senderId']! as int;
+    recipientId = json['recipientId']! as int;
     moneyValue = double.parse(json['moneyValue']! as String);
-    groups = List<String>.from(json['groups'] as List);
+    groups = List<int>.from(json['groups'] as List);
     status = MoneyRequestStatus.values.firstWhere(
       (e) => e.name == json['status'],
       orElse: () => MoneyRequestStatus.pending,

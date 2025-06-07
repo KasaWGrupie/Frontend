@@ -2,13 +2,13 @@ class User {
   User({required this.name, required this.id, required this.email});
   User.fromJson(Map<String, Object> json) {
     name = json['name']! as String;
-    id = json['id']! as String;
+    id = json['id']! as int;
     email = json['email']! as String;
   }
 
   late final String name;
   late final String email;
-  late final String id;
+  late final int id;
 
   Map<String, Object> toJson() {
     return {
@@ -16,23 +16,5 @@ class User {
       'id': id,
       'email': email,
     };
-  }
-
-  List<User> getFriends() {
-    return [
-      User(id: "1", name: "Alice Johnson", email: "alice@example.com"),
-      User(id: "2", name: "Bob Smith", email: "bob@example.com"),
-      User(id: "3", name: "Charlie Brown", email: "charlie@example.com"),
-      User(id: "4", name: "Alice Johnson", email: "alice@example.com"),
-      User(id: "5", name: "Bob Smith", email: "bob@example.com"),
-      User(id: "6", name: "Charlie Brown", email: "charlie@example.com"),
-    ];
-  }
-
-  List<User> getPendingRequests() {
-    return [
-      User(id: "1", name: "Alice Smith", email: "alice@example.com"),
-      User(id: "2", name: "Bob Budowniczy", email: "bob@example.com"),
-    ];
   }
 }

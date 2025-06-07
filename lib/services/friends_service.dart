@@ -10,17 +10,17 @@ abstract class FriendsService {
   Future<List<User>> getFriends();
   Future<List<User>> getFriendRequests();
   Future<List<User>> getSentRequests();
-  Future<void> acceptFriendRequest(String friendId);
-  Future<void> declineFriendRequest(String friendId);
+  Future<void> acceptFriendRequest(int friendId);
+  Future<void> declineFriendRequest(int friendId);
   Future<User?> getUserByEmail(String email);
   Future<void> sendFriendRequest(String email);
-  Future<void> withdrawFriendRequest(String friendId);
-  Future<void> removeFriend(String targetUserId);
-  bool isAlreadyFriend(String targetUserId);
-  bool isRequestSentByUser(String targetUserId);
-  bool isRequestReceived(String targetUserId);
-  Future<Map<String, dynamic>> getUserBalances(String userId);
-  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(String userId);
+  Future<void> withdrawFriendRequest(int friendId);
+  Future<void> removeFriend(int targetUserId);
+  bool isAlreadyFriend(int targetUserId);
+  bool isRequestSentByUser(int targetUserId);
+  bool isRequestReceived(int targetUserId);
+  Future<Map<String, dynamic>> getUserBalances(int userId);
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(int userId);
 }
 
 class FriendsServiceApi implements FriendsService {
@@ -29,7 +29,7 @@ class FriendsServiceApi implements FriendsService {
   FriendsServiceApi({required this.authService});
 
   String get baseUrl => ApiConfig.baseUrl;
-  String get currentUserId => authService.userId;
+  int get currentUserId => authService.userId;
 
   @override
   Future<List<User>> getFriends() async {
@@ -49,31 +49,29 @@ class FriendsServiceApi implements FriendsService {
   @override
   Future<List<User>> getSentRequests() => throw UnimplementedError();
   @override
-  Future<void> acceptFriendRequest(String friendId) =>
-      throw UnimplementedError();
+  Future<void> acceptFriendRequest(int friendId) => throw UnimplementedError();
   @override
-  Future<void> declineFriendRequest(String friendId) =>
-      throw UnimplementedError();
+  Future<void> declineFriendRequest(int friendId) => throw UnimplementedError();
   @override
   Future<User?> getUserByEmail(String email) => throw UnimplementedError();
   @override
   Future<void> sendFriendRequest(String email) => throw UnimplementedError();
   @override
-  Future<void> withdrawFriendRequest(String friendId) =>
+  Future<void> withdrawFriendRequest(int friendId) =>
       throw UnimplementedError();
   @override
-  Future<void> removeFriend(String targetUserId) => throw UnimplementedError();
+  Future<void> removeFriend(int targetUserId) => throw UnimplementedError();
   @override
-  bool isAlreadyFriend(String targetUserId) => throw UnimplementedError();
+  bool isAlreadyFriend(int targetUserId) => throw UnimplementedError();
   @override
-  bool isRequestSentByUser(String targetUserId) => throw UnimplementedError();
+  bool isRequestSentByUser(int targetUserId) => throw UnimplementedError();
   @override
-  bool isRequestReceived(String targetUserId) => throw UnimplementedError();
+  bool isRequestReceived(int targetUserId) => throw UnimplementedError();
   @override
-  Future<Map<String, dynamic>> getUserBalances(String userId) =>
+  Future<Map<String, dynamic>> getUserBalances(int userId) =>
       throw UnimplementedError();
   @override
-  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(String userId) =>
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(int userId) =>
       throw UnimplementedError();
 }
 
@@ -82,49 +80,49 @@ class MockFriendsService implements FriendsService {
 
   MockFriendsService({required this.authService});
 
-  String get currentUserId => authService.userId;
+  int get currentUserId => authService.userId;
 
   // Mock users
   final List<User> mockUsers = [
-    User(id: "1", name: "John Doe", email: "john@example.com"),
-    User(id: "2", name: "Jane Smith", email: "jane@example.com"),
-    User(id: "3", name: "Alice Brown", email: "alice@example.com"),
-    User(id: "4", name: "Bob White", email: "bob@example.com"),
-    User(id: "5", name: "Johnny Depp", email: "john2@example.com"),
-    User(id: "6", name: "Jane Austin", email: "jane2@example.com"),
-    User(id: "7", name: "Alice Wonderland", email: "alice2@example.com"),
-    User(id: "8", name: "Bob Budowniczy", email: "bob2@example.com"),
-    User(id: "9", name: "Johnny Black", email: "john3@example.com"),
-    User(id: "10", name: "Jane Juice", email: "jane3@example.com"),
-    User(id: "11", name: "Alice Wood", email: "alice3@example.com"),
-    User(id: "12", name: "Bob Builder", email: "bob3@example.com"),
-    User(id: "13", name: "John Snow", email: "johnSnow@example.com"),
+    User(id: 1, name: "John Doe", email: "john@example.com"),
+    User(id: 2, name: "Jane Smith", email: "jane@example.com"),
+    User(id: 3, name: "Alice Brown", email: "alice@example.com"),
+    User(id: 4, name: "Bob White", email: "bob@example.com"),
+    User(id: 5, name: "Johnny Depp", email: "john2@example.com"),
+    User(id: 6, name: "Jane Austin", email: "jane2@example.com"),
+    User(id: 7, name: "Alice Wonderland", email: "alice2@example.com"),
+    User(id: 8, name: "Bob Budowniczy", email: "bob2@example.com"),
+    User(id: 9, name: "Johnny Black", email: "john3@example.com"),
+    User(id: 10, name: "Jane Juice", email: "jane3@example.com"),
+    User(id: 11, name: "Alice Wood", email: "alice3@example.com"),
+    User(id: 12, name: "Bob Builder", email: "bob3@example.com"),
+    User(id: 13, name: "John Snow", email: "johnSnow@example.com"),
   ];
 
   // Mock friendships for logged-in user
-  final List<String> friendships = ["2", "3", "4"];
+  final List<int> friendships = [2, 3, 4];
 
   // Mock pending friend requests for logged-in user
-  final List<String> friendRequests = [
-    "5",
-    "6",
-    "7",
-    "8",
+  final List<int> friendRequests = [
+    5,
+    6,
+    7,
+    8,
   ];
 
-  final List<String> sentByUserRequests = [
-    "10",
-    "11",
+  final List<int> sentByUserRequests = [
+    10,
+    11,
   ];
 
-  final Map<String, Map<bool, double>> balances = {
-    "1": {true: 600.0},
-    "2": {false: 123.1},
-    "3": {true: 120.4},
+  final Map<int, Map<bool, double>> balances = {
+    1: {true: 600.0},
+    2: {false: 123.1},
+    3: {true: 120.4},
   };
 
-  final Map<String, Map<String, Map<bool, double>>> balancesPerGroupPerUser = {
-    "1": {
+  final Map<int, Map<String, Map<bool, double>>> balancesPerGroupPerUser = {
+    1: {
       "Trip one": {true: 100.0},
       "Trip two": {true: 150.0},
       "Trip three": {false: 50.0},
@@ -135,13 +133,13 @@ class MockFriendsService implements FriendsService {
       "Trip eight": {true: 150.0},
       "Trip nine": {false: 50.0},
     },
-    "2": {
+    2: {
       "Trip one": {false: 23.1},
       "Trip three": {false: 50.0},
       "Trip four": {true: 100.0},
       "Trip five": {false: 150.0},
     },
-    "3": {
+    3: {
       "Trip two": {true: 120.4}
     },
   };
@@ -182,7 +180,7 @@ class MockFriendsService implements FriendsService {
 
   // Accept friend request
   @override
-  Future<void> acceptFriendRequest(String friendId) async {
+  Future<void> acceptFriendRequest(int friendId) async {
     await Future.delayed(Duration(milliseconds: 100));
 
     // Since this is only a mock service we add new friend only for currently
@@ -194,7 +192,7 @@ class MockFriendsService implements FriendsService {
 
   // Decline friend request
   @override
-  Future<void> declineFriendRequest(String friendId) async {
+  Future<void> declineFriendRequest(int friendId) async {
     await Future.delayed(Duration(milliseconds: 100));
     friendRequests.remove(friendId);
   }
@@ -224,36 +222,36 @@ class MockFriendsService implements FriendsService {
 
   // Withdraw friend request sent by logged-in user
   @override
-  Future<void> withdrawFriendRequest(String friendId) async {
+  Future<void> withdrawFriendRequest(int friendId) async {
     await Future.delayed(Duration(milliseconds: 100));
     sentByUserRequests.remove(friendId);
   }
 
   // Delete user from logged-in user friends list
   @override
-  Future<void> removeFriend(String targetUserId) async {
+  Future<void> removeFriend(int targetUserId) async {
     await Future.delayed(Duration(milliseconds: 100));
 
     friendships.removeWhere((user) => user == targetUserId);
   }
 
   @override
-  bool isAlreadyFriend(String targetUserId) {
+  bool isAlreadyFriend(int targetUserId) {
     return friendships.any((user) => user == targetUserId);
   }
 
   @override
-  bool isRequestSentByUser(String targetUserId) {
+  bool isRequestSentByUser(int targetUserId) {
     return sentByUserRequests.any((user) => user == targetUserId);
   }
 
   @override
-  bool isRequestReceived(String targetUserId) {
+  bool isRequestReceived(int targetUserId) {
     return friendRequests.any((user) => user == targetUserId);
   }
 
   @override
-  Future<Map<String, dynamic>> getUserBalances(String userId) async {
+  Future<Map<String, dynamic>> getUserBalances(int userId) async {
     await Future.delayed(const Duration(seconds: 1));
     if (balances.containsKey(userId)) {
       var entry = balances[userId]!;
@@ -268,7 +266,7 @@ class MockFriendsService implements FriendsService {
 
   @override
   Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(
-      String userId) async {
+      int userId) async {
     await Future.delayed(Duration(milliseconds: 250));
 
     List<Map<String, dynamic>> balancesList = [];

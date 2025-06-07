@@ -68,14 +68,16 @@ final GoRouter _router = GoRouter(
               GoRoute(
                 path: ':groupId',
                 builder: (context, state) => GroupScreen(
-                  groupId: state.pathParameters['groupId'] ?? "0",
+                  groupId:
+                      int.tryParse(state.pathParameters['groupId'] ?? '') ?? 0,
                 ),
               )
             ]),
         GoRoute(
           path: 'editGroup/:groupId',
           builder: (context, state) {
-            final groupId = state.pathParameters['groupId'] ?? "0";
+            int groupId =
+                int.tryParse(state.pathParameters['groupId'] ?? '') ?? 0;
 
             return BlocProvider(
               create: (context) => EditGroupCubit(
@@ -173,7 +175,7 @@ class _AppState extends State<_App> {
                   create: (context) => MoneyTransactionServiceMock(
                       authService: context.read<AuthService>())),
               Provider<FriendsService>(
-                create: (context) => FriendsServiceApi(
+                create: (context) => MockFriendsService(
                   authService: context.read<AuthService>(),
                 ),
               ),

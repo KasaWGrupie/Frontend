@@ -1,6 +1,6 @@
 class Settlement {
-  final String from;
-  final String to;
+  final int from;
+  final int to;
   final double amount;
 
   Settlement({

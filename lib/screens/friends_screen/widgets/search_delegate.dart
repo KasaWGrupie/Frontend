@@ -7,7 +7,7 @@ import 'package:kasa_w_grupie/services/friends_service.dart';
 
 class FriendSearchDelegate extends SearchDelegate<User?> {
   final FriendsService friendsService;
-  final String currentUserId;
+  final int currentUserId;
   final FriendsCubit friendsCubit;
 
   FriendSearchDelegate({

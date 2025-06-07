@@ -12,7 +12,7 @@ import 'package:kasa_w_grupie/models/friend.dart';
 import 'package:kasa_w_grupie/screens/edit_group_screen/widgets/read_only_currency_tile.dart';
 
 class EditGroupScreen extends StatefulWidget {
-  final String groupId;
+  final int groupId;
 
   const EditGroupScreen({super.key, required this.groupId});
 

@@ -29,6 +29,8 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   SplitType _selectedSplitType = SplitType.equal;
   Map<String, double> _splitDetails = {};
   final Map<String, bool> _participatingMembers = {};
+  String? _error;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -88,11 +90,41 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                       key: _formKey,
                       child: ListView(
                         children: [
+                          // Header Card
+                          Card(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Edit Expense Details',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Update the expense details and split method.',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Name field
                           TextFormField(
                             controller: _nameController,
                             decoration: const InputDecoration(
                               labelText: 'Expense Name',
                               border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.label),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -105,11 +137,14 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                                 .updateName(value),
                           ),
                           const SizedBox(height: 16),
+
+                          // Amount field
                           TextFormField(
                             controller: _amountController,
                             decoration: const InputDecoration(
                               labelText: 'Amount',
                               border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.attach_money),
                             ),
                             keyboardType: TextInputType.number,
                             validator: (value) {
@@ -129,11 +164,14 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
+
+                          // Payer dropdown
                           DropdownButtonFormField<String>(
                             value: _selectedPayer,
                             decoration: const InputDecoration(
                               labelText: 'Payer',
                               border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.person),
                             ),
                             items: members.map((User member) {
                               return DropdownMenuItem(
@@ -158,165 +196,300 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
+
+                          // Description field
                           TextFormField(
                             controller: _descriptionController,
                             decoration: const InputDecoration(
                               labelText: 'Description',
                               border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.description),
+                              hintText: 'Optional notes about this expense',
                             ),
-                            maxLines: 3,
+                            maxLines: 2,
                             onChanged: (value) => context
                                 .read<EditExpenseCubit>()
                                 .updateDescription(value),
                           ),
                           const SizedBox(height: 16),
-                          DropdownButtonFormField<SplitType>(
-                            value: _selectedSplitType,
-                            decoration: const InputDecoration(
-                              labelText: 'Split Type',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: SplitType.values.map((type) {
-                              return DropdownMenuItem(
-                                value: type,
-                                child: Text(type.toString().split('.').last),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedSplitType = value!;
 
-                                // Initialize participating members for all group members
-                                if (_participatingMembers.isEmpty) {
-                                  for (var member in members) {
-                                    _participatingMembers[member.id] = true;
-                                  }
-                                }
-
-                                if (_selectedSplitType == SplitType.byAmount ||
-                                    _selectedSplitType ==
-                                        SplitType.byPercentage) {
-                                  final defaultValue =
-                                      _selectedSplitType == SplitType.byAmount
-                                          ? (double.tryParse(
-                                                  _amountController.text) ??
-                                              0.0) / members.length
-                                          : 100.0 / members.length;
-
-                                  _splitDetails.clear();
-                                  for (var member in members) {
-                                    _splitDetails[member.id] = defaultValue;
-                                  }
-                                } else {
-                                  _splitDetails.clear();
-                                }
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          if (_selectedSplitType == SplitType.equal)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Participating Members',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                ...members.map((User member) {
-                                  return CheckboxListTile(
-                                    title: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundImage:
-                                              NetworkImage(member.pictureUrl),
-                                          radius: 16,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(member.name),
-                                      ],
+                          // Split type selection
+                          Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Split Method',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
                                     ),
-                                    value: _participatingMembers[member.id] ??
-                                        false,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DropdownButtonFormField<SplitType>(
+                                    value: _selectedSplitType,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Split Type',
+                                      border: OutlineInputBorder(),
+                                      prefixIcon: Icon(Icons.pie_chart),
+                                    ),
+                                    items: SplitType.values.map((type) {
+                                      return DropdownMenuItem(
+                                        value: type,
+                                        child: Text(
+                                            type.toString().split('.').last),
+                                      );
+                                    }).toList(),
                                     onChanged: (value) {
                                       setState(() {
-                                        _participatingMembers[member.id] =
-                                            value!;
+                                        _selectedSplitType = value!;
+
+                                        // Initialize participating members for all group members
+                                        if (_participatingMembers.isEmpty) {
+                                          for (var member in members) {
+                                            _participatingMembers[member.id] =
+                                                true;
+                                          }
+                                        }
+
+                                        if (_selectedSplitType ==
+                                                SplitType.byAmount ||
+                                            _selectedSplitType ==
+                                                SplitType.byPercentage) {
+                                          final defaultValue =
+                                              _selectedSplitType ==
+                                                      SplitType.byAmount
+                                                  ? (double.tryParse(
+                                                              _amountController
+                                                                  .text) ??
+                                                          0.0) /
+                                                      members.length
+                                                  : 100.0 / members.length;
+
+                                          _splitDetails.clear();
+                                          for (var member in members) {
+                                            _splitDetails[member.id] =
+                                                defaultValue;
+                                          }
+                                        } else {
+                                          _splitDetails.clear();
+                                        }
                                       });
                                     },
-                                  );
-                                }),
-                              ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Split details based on selected type
+                          if (_selectedSplitType == SplitType.equal)
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Participating Members',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Select who is sharing this expense equally',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ...members.map((User member) {
+                                      return CheckboxListTile(
+                                        title: Row(
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundImage: NetworkImage(
+                                                  member.pictureUrl),
+                                              radius: 16,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(member.name),
+                                          ],
+                                        ),
+                                        value:
+                                            _participatingMembers[member.id] ??
+                                                false,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _participatingMembers[member.id] =
+                                                value!;
+                                          });
+                                        },
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
                             ),
                           if (_selectedSplitType != SplitType.equal)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Split Details',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                ...members.map((User member) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0),
-                                    child: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundImage:
-                                              NetworkImage(member.pictureUrl),
-                                          radius: 16,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(member.name),
-                                        ),
-                                        Expanded(
-                                          child: TextFormField(
-                                            initialValue:
-                                                _splitDetails[member.id]
-                                                        ?.toString() ??
-                                                    '',
-                                            keyboardType: TextInputType.number,
-                                            decoration: InputDecoration(
-                                              labelText: _selectedSplitType ==
-                                                      SplitType.byAmount
-                                                  ? 'Amount'
-                                                  : 'Percentage',
-                                              border:
-                                                  const OutlineInputBorder(),
-                                            ),
-                                            onChanged: (value) {
-                                              setState(() {
-                                                _splitDetails[member.id] =
-                                                    double.tryParse(value) ??
-                                                        0.0;
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      ],
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _selectedSplitType == SplitType.byAmount
+                                          ? 'Split by Amount'
+                                          : 'Split by Percentage',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
-                                  );
-                                }),
-                              ],
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      _selectedSplitType == SplitType.byAmount
+                                          ? 'Specify how much each person pays'
+                                          : 'Specify percentage each person contributes',
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ...members.map((User member) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8.0),
+                                        child: Row(
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundImage: NetworkImage(
+                                                  member.pictureUrl),
+                                              radius: 16,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(member.name),
+                                            ),
+                                            Expanded(
+                                              child: TextFormField(
+                                                initialValue:
+                                                    _splitDetails[member.id]
+                                                            ?.toString() ??
+                                                        '',
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                decoration: InputDecoration(
+                                                  labelText:
+                                                      _selectedSplitType ==
+                                                              SplitType.byAmount
+                                                          ? 'Amount'
+                                                          : 'Percentage',
+                                                  border:
+                                                      const OutlineInputBorder(),
+                                                  suffixText:
+                                                      _selectedSplitType ==
+                                                              SplitType
+                                                                  .byPercentage
+                                                          ? '%'
+                                                          : null,
+                                                ),
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    _splitDetails[member.id] =
+                                                        double.tryParse(
+                                                                value) ??
+                                                            0.0;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
                             ),
+
                           const SizedBox(height: 16),
+
+                          // Error display
+                          if (_error != null)
+                            Container(
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                border: Border.all(color: Colors.red.shade200),
+                                borderRadius: BorderRadius.circular(4.0),
+                              ),
+                              child: Text(
+                                _error!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+
+                          const SizedBox(height: 16),
+
+                          // Save button
                           ElevatedButton(
-                            onPressed: () async {
-                              final result = await context
-                                  .read<EditExpenseCubit>()
-                                  .saveChanges();
-                              if (result == null) {
-                                Navigator.of(context).pop();
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(result)),
-                                );
-                              }
-                            },
-                            child: const Text('Save Changes'),
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _isLoading = true;
+                                      _error = null;
+                                    });
+
+                                    // Validate form
+                                    if (!_formKey.currentState!.validate()) {
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+                                      return;
+                                    }
+
+                                    // Update the expense using the cubit
+                                    final result = await context
+                                        .read<EditExpenseCubit>()
+                                        .saveChanges();
+
+                                    // Handle result
+                                    if (result == null) {
+                                      // Success - Navigate back
+                                      Navigator.of(context).pop();
+                                    } else {
+                                      setState(() {
+                                        _error = result;
+                                        _isLoading = false;
+                                      });
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.save),
+                                      SizedBox(width: 8),
+                                      Text('Save Changes'),
+                                    ],
+                                  ),
                           ),
                         ],
                       ),

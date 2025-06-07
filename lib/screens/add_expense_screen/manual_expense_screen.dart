@@ -31,8 +31,8 @@ class _ManualExpenseScreenState extends State<ManualExpenseScreen> {
   final TextEditingController _descriptionController = TextEditingController();
 
   String? error;
-  String? _selectedPayer;
-  final Map<String, bool> _participatingMembers =
+  int? _selectedPayer;
+  final Map<int, bool> _participatingMembers =
       {}; // Tracks participation for "Equal" split
   ExpenseSplit? _splitDetails;
   bool _isLoading = false;
@@ -153,7 +153,7 @@ class _ManualExpenseScreenState extends State<ManualExpenseScreen> {
         const SizedBox(height: 16),
 
         // Payer dropdown
-        DropdownButtonFormField<String>(
+        DropdownButtonFormField<int>(
           value: _selectedPayer,
           decoration: const InputDecoration(
             labelText: 'Payer',

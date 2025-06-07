@@ -14,7 +14,7 @@ class Expense {
   String name;
   DateTime date;
   double amount;
-  String payer;
+  int payer;
   ExpenseSplit split;
   String? description;
 
@@ -24,7 +24,7 @@ class Expense {
     String? pictureUrl,
     DateTime? date,
     double? amount,
-    String? payer,
+    int? payer,
     ExpenseSplit? split,
     String? description,
   }) {
@@ -43,8 +43,8 @@ class Expense {
 
 class ExpenseSplit {
   final SplitType type;
-  final Map<String, double>? amounts; // For "By Amount" and "By Percentage"
-  final List<String> participants; // List of participant IDs
+  final Map<int, double>? amounts; // For "By Amount" and "By Percentage"
+  final List<int> participants; // List of participant IDs
 
   // Constructor for Equal Split
   ExpenseSplit.equal({required this.participants})
@@ -52,17 +52,17 @@ class ExpenseSplit {
         amounts = null;
 
   // Constructor for Split By Amount
-  ExpenseSplit.byAmount(Map<String, double> this.amounts,
+  ExpenseSplit.byAmount(Map<int, double> this.amounts,
       {required this.participants})
       : type = SplitType.byAmount;
 
   // Constructor for Split By Percentage
-  ExpenseSplit.byPercentage(Map<String, double> percentages,
+  ExpenseSplit.byPercentage(Map<int, double> percentages,
       {required this.participants})
       : type = SplitType.byPercentage,
         amounts = percentages;
 
-  Map<String, double>? get details => amounts;
+  Map<int, double>? get details => amounts;
 }
 
 enum SplitType {

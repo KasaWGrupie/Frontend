@@ -34,7 +34,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   ExpenseType _expenseType = ExpenseType.manual; // Default to manual
 
   // Simplified state - removing duplicated state that's managed in child component
-  final Map<String, bool> _participatingMembers = {};
+  final Map<int, bool> _participatingMembers = {};
 
   @override
   void initState() {

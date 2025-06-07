@@ -26,7 +26,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _amountController;
   late final TextEditingController _descriptionController;
-  String? _selectedPayer;
+  int? _selectedPayer;
   SplitType _selectedSplitType = SplitType.equal;
   String? _error;
   bool _isLoading = false;
@@ -155,7 +155,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                           const SizedBox(height: 16),
 
                           // Payer dropdown
-                          DropdownButtonFormField<String>(
+                          DropdownButtonFormField<int>(
                             value: _selectedPayer,
                             decoration: const InputDecoration(
                               labelText: 'Payer',

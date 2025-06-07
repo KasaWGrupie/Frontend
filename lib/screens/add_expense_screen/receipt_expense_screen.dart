@@ -38,7 +38,7 @@ class _ReceiptExpenseScreenState extends State<ReceiptExpenseScreen> {
   final TextEditingController _descriptionController = TextEditingController();
 
   String? error;
-  String? _selectedPayer;
+  int? _selectedPayer;
 
   // Receipt state
   XFile? _selectedImage;
@@ -265,7 +265,7 @@ class _ReceiptExpenseScreenState extends State<ReceiptExpenseScreen> {
               ),
 
               // Payer dropdown for all receipt items
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<int>(
                 value: _selectedPayer,
                 decoration: const InputDecoration(
                   labelText: 'Payer',

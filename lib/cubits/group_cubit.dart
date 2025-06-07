@@ -72,6 +72,7 @@ class GroupCubit extends Cubit<GroupState> {
       Group group = await groupService.getGroupById(groupId);
       final balances = await groupService.getBalances(groupId);
       final settlements = calculateSettlements(balances);
+
       final members = <User>[];
       for (var userId in group.membersId) {
         var user = await usersService.getUser(userId);

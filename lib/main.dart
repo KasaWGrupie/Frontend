@@ -81,6 +81,24 @@ final GoRouter _router = GoRouter(
               ),
               routes: [
                 GoRoute(
+                  path: 'new_expense',
+                  builder: (context, state) {
+                    final groupId =
+                        int.tryParse(state.pathParameters['groupId']!) ?? 0;
+                    return BlocProvider<GroupCubit>(
+                      create: (context) => GroupCubit(
+                        groupId: groupId,
+                        groupService: context.read(),
+                        usersService: context.read(),
+                        authService: context.read<AuthService>(),
+                      ),
+                      child: AddExpenseScreen(
+                        expenseService: context.read(),
+                      ),
+                    );
+                  },
+                ),
+                GoRoute(
                   path: 'requests',
                   name: 'groupRequests',
                   builder: (context, state) {

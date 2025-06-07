@@ -21,7 +21,7 @@ class EditExpenseCubit extends Cubit<Expense> {
     emit(state.copyWith(description: description));
   }
 
-  void updatePayer(String payer) {
+  void updatePayer(int payer) {
     emit(state.copyWith(payer: payer));
   }
 

@@ -30,13 +30,8 @@ class GroupServiceMock implements GroupService {
       name: "Wycieczka Marki",
       currency: CurrencyEnum.pln,
       status: GroupStatus.active,
-      adminId: 1,
-      membersId: [
-        1,
-        2,
-        6,
-        7,
-      ],
+      adminId: 6,
+      membersId: [6],
       invitationCode: "fjh4390h094",
     ),
   ];
@@ -48,7 +43,7 @@ class GroupServiceMock implements GroupService {
           "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
       date: DateTime.now(),
       amount: 100,
-      payer: "1",
+      payer: 6,
       split: ExpenseSplit.equal(participants: []),
       name: "Jedzenie",
     ),
@@ -58,7 +53,7 @@ class GroupServiceMock implements GroupService {
           "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
       date: DateTime.now().subtract(const Duration(days: 1)),
       amount: 100,
-      payer: "2",
+      payer: 6,
       split: ExpenseSplit.equal(participants: []),
       name: "Paliwo",
     ),
@@ -68,7 +63,7 @@ class GroupServiceMock implements GroupService {
           "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
       date: DateTime.now(),
       amount: 100,
-      payer: "1",
+      payer: 6,
       split: ExpenseSplit.equal(participants: []),
       name: "Spanie",
     ),
@@ -133,7 +128,7 @@ class GroupServiceMock implements GroupService {
   @override
   Future<List<User>> getUsersForGroup(int groupId) async {
     // For now return the same set of users
-    return Future.value(usersPerGroups["0"]);
+    return Future.value(usersPerGroups[0]);
   }
 
   // Get a group by its ID
@@ -152,8 +147,8 @@ class GroupServiceMock implements GroupService {
 
       if (index != -1) {
         final oldGroup = allGroups[index];
-        final oldMembers = Set<String>.from(oldGroup.membersId);
-        final newMembers = Set<String>.from(group.membersId);
+        final oldMembers = Set<int>.from(oldGroup.membersId);
+        final newMembers = Set<int>.from(group.membersId);
 
         final removedMembers = oldMembers.difference(newMembers);
 

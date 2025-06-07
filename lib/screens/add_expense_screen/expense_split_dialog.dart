@@ -18,8 +18,8 @@ class ExpenseSplitDialog extends StatefulWidget {
 
 class _ExpenseSplitDialogState extends State<ExpenseSplitDialog> {
   SplitType _selectedSplitType = SplitType.equal;
-  Map<String, double> _splitDetails = {};
-  final Map<String, bool> _participatingMembers =
+  Map<int, double> _splitDetails = {};
+  final Map<int, bool> _participatingMembers =
       {}; // Tracks participation for "Equal" split
 
   String? _errorMessage;
@@ -104,7 +104,7 @@ class _ExpenseSplitDialogState extends State<ExpenseSplitDialog> {
                                 newSplitType == SplitType.byAmount))) {
                       // Store the old split details temporarily
                       final oldSplitDetails =
-                          Map<String, double>.from(_splitDetails);
+                          Map<int, double>.from(_splitDetails);
                       final totalAmount = widget.totalAmount;
 
                       // Convert from amount to percentage

@@ -1,11 +1,11 @@
 import 'package:kasa_w_grupie/models/expense.dart';
 
 class NewExpense {
-  String groupId;
+  int groupId;
   String? name;
   double? amount;
   DateTime? date;
-  String? payer;
+  int? payer;
   String? description;
   ExpenseSplit? split;
 

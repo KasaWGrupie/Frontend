@@ -13,15 +13,24 @@ abstract class UsersService {
     required String name,
     required String email,
     File? profilePicture,
-    required String idToken,
   });
 }
 
 class UsersServiceApi implements UsersService {
+  // Future<Map<String, String>> getAuthHeaders() async {
+  //   String token = await authService.userIdToken();
+  //   return {
+  //     'Authorization': 'Bearer $token',
+  //     'Accept': 'application/json',
+  //   };
+  // }
+
   @override
   Future<User?> getUser(int uid) async {
+    final headers = await getAuthHeaders();
+
     final url = Uri.parse('${ApiConfig.baseUrl}/users/$uid');
-    final response = await http.get(url);
+    final response = await http.get(url, headers: headers);
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
@@ -35,8 +44,10 @@ class UsersServiceApi implements UsersService {
 
   @override
   Future<User?> getUserByEmail(String email) async {
+    final headers = await getAuthHeaders();
+
     final url = Uri.parse('${ApiConfig.baseUrl}/users/email/$email');
-    final response = await http.get(url);
+    final response = await http.get(url, headers: headers);
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
@@ -53,12 +64,11 @@ class UsersServiceApi implements UsersService {
     required String name,
     required String email,
     File? profilePicture,
-    required String idToken,
   }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/users');
-
+    String token = await authService.userIdToken();
     final request = http.MultipartRequest('POST', url)
-      ..headers['Authorization'] = 'Bearer $idToken'
+      ..headers['Authorization'] = 'Bearer $token'
       ..headers['Accept'] = '*/*';
 
     final dtoMap = {

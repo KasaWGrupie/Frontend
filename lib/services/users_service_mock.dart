@@ -44,7 +44,6 @@ class UsersServiceMock implements UsersService {
     required String name,
     required String email,
     File? profilePicture,
-    required String idToken,
   }) async {
     return;
   }

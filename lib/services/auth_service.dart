@@ -24,6 +24,7 @@ abstract class AuthService {
   Future<u.User?> currentUser();
 
   Future<SignInResult> signInWithEmail(String email, String password);
+  Future<String> userIdToken();
 
   // Returns error message in case of error, null otherwise
   Future<String?> signUpWithEmail(
@@ -62,6 +63,11 @@ class AuthServiceMock implements AuthService {
       return _currentUser!.name;
     }
     return '';
+  }
+
+  @override
+  Future<String> userIdToken() async {
+    return "1";
   }
 
   @override
@@ -155,6 +161,24 @@ class FirebaseAuthService implements AuthService {
     return _cachedUser;
   }
 
+  String? _cachedToken;
+
+  @override
+  Future<String> userIdToken() async {
+    if (_cachedToken != null) {
+      return _cachedToken!;
+    }
+    final user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception("User not signed in");
+    }
+    _cachedToken = await user.getIdToken();
+    if (_cachedToken == null) {
+      throw Exception("Couldn't retrieve user ID token");
+    }
+    return _cachedToken!;
+  }
+
   @override
   Future<SignInResult> signInWithEmail(String email, String password) async {
     try {
@@ -215,7 +239,6 @@ class FirebaseAuthService implements AuthService {
           name: name,
           email: user.email!,
           profilePicture: null,
-          idToken: token,
         );
       } else {
         throw Exception("Couldn't retrive authorization token");

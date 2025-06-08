@@ -164,9 +164,6 @@ class _AppState extends State<_App> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return MultiProvider(providers: [
-              Provider<UsersService>(
-                create: (context) => UsersServiceApi(),
-              ),
               Provider<AuthService>(
                 create: (context) => FirebaseAuthService(
                     userService: context.read(),
@@ -176,6 +173,9 @@ class _AppState extends State<_App> {
                 create: (context) => AuthCubit(
                   authService: context.read(),
                 ),
+              ),
+              Provider<UsersService>(
+                create: (context) => UsersServiceApi(),
               ),
               BlocProvider<AddGroupCubit>(
                 create: (context) => AddGroupCubit(

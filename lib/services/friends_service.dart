@@ -197,11 +197,44 @@ class FriendsServiceApi implements FriendsService {
   }
 
   @override
-  Future<Map<String, dynamic>> getUserBalances(int userId) =>
-      throw UnimplementedError();
+  Future<Map<String, dynamic>> getUserBalances(int userId) async {
+    final url = Uri.parse('$baseUrl/users/$userId/balances');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonBody = json.decode(response.body);
+
+      if (jsonBody['isSuccess'] == true && jsonBody['value'] != null) {
+        return Map<String, dynamic>.from(jsonBody['value']);
+      } else {
+        throw Exception(
+            'Invalid response: ${jsonBody['errors'] ?? 'Unknown error'}');
+      }
+    } else {
+      throw Exception('Failed to load user balances: ${response.statusCode}');
+    }
+  }
+
   @override
-  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(int userId) =>
-      throw UnimplementedError();
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(
+      int userId) async {
+    final url = Uri.parse('$baseUrl/users/$currentUserId/balances/$userId');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonBody = json.decode(response.body);
+
+      if (jsonBody['isSuccess'] == true && jsonBody['value'] != null) {
+        return List<Map<String, dynamic>>.from(jsonBody['value']['balances']);
+      } else {
+        throw Exception('Invalid response structure');
+      }
+    } else {
+      throw Exception('Failed to load balances: ${response.statusCode}');
+    }
+  }
 
   @override
   Future<List<User>> searchUsersByEmail(String query) async {

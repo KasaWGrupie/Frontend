@@ -22,8 +22,8 @@ class SentRequestsTab extends StatelessWidget {
               final friend = state.sentRequests[index];
               return ListTile(
                 leading: CircleAvatar(child: Icon(Icons.person)),
-                title: Text(friend.name),
-                subtitle: Text(friend.email),
+                title: Text(friend.user.name),
+                subtitle: Text(friend.user.email),
                 trailing: CircleAvatar(
                   radius: 20,
                   backgroundColor: Colors.orangeAccent,
@@ -56,12 +56,12 @@ class SentRequestsTab extends StatelessWidget {
         return AlertDialog(
           title: Text("Withdraw Friend Request"),
           content: Text(
-              "Are you sure you want to withdraw your friend request to ${friend.name}?"),
+              "Are you sure you want to withdraw your friend request to ${friend.user.name}?"),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                friendsCubit.withdrawFriendRequest(friend.id);
+                friendsCubit.withdrawFriendRequest(friend.user.id);
               },
               child: Text("Yes"),
             ),

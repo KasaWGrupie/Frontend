@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:kasa_w_grupie/config/api_config.dart';
+import 'package:kasa_w_grupie/models/friend_request_user.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
@@ -9,12 +10,12 @@ import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class FriendsService {
   Future<List<User>> getFriends();
-  Future<List<User>> getFriendRequests();
-  Future<List<User>> getSentRequests();
-  Future<void> acceptFriendRequest(int friendId);
-  Future<void> declineFriendRequest(int friendId);
+  Future<List<FriendRequestUser>> getFriendRequests();
+  Future<List<FriendRequestUser>> getSentRequests();
+  Future<void> acceptFriendRequest(int requestId);
+  Future<void> declineFriendRequest(int requestId);
   Future<void> sendFriendRequest(String email);
-  Future<void> withdrawFriendRequest(int friendId);
+  Future<void> withdrawFriendRequest(int requestId);
   Future<void> removeFriend(int targetUserId);
   bool isAlreadyFriend(int targetUserId);
   bool isRequestSentByUser(int targetUserId);
@@ -49,17 +50,76 @@ class FriendsServiceApi implements FriendsService {
   }
 
   @override
-  Future<List<User>> getFriendRequests() => throw UnimplementedError();
+  Future<List<FriendRequestUser>> getFriendRequests() async {
+    final url = Uri.parse('$baseUrl/users/$currentUserId/friendRequests');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      final List<FriendRequestUser> requestUsers = [];
+
+      for (final request in data) {
+        if (request['senderId'] != currentUserId) {
+          int friendId = request['senderId'];
+          final user = await usersService.getUser(friendId);
+          if (user != null) {
+            requestUsers.add(FriendRequestUser(
+              user: user,
+              requestId: request['id'],
+            ));
+          }
+        }
+      }
+
+      return requestUsers;
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      throw Exception('Failed to load friend requests');
+    }
+  }
+
   @override
-  Future<List<User>> getSentRequests() => throw UnimplementedError();
+  Future<List<FriendRequestUser>> getSentRequests() async {
+    final url = Uri.parse('$baseUrl/users/$currentUserId/friendRequests');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      final List<FriendRequestUser> sentRequestUsers = [];
+
+      for (final request in data) {
+        if (request['receiverId'] != currentUserId) {
+          int friendId = request['receiverId'];
+          final user = await usersService.getUser(friendId);
+          if (user != null) {
+            sentRequestUsers.add(FriendRequestUser(
+              user: user,
+              requestId: request['id'],
+            ));
+          }
+        }
+      }
+
+      return sentRequestUsers;
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      throw Exception('Failed to load friend requests');
+    }
+  }
+
   @override
-  Future<void> acceptFriendRequest(int friendId) => throw UnimplementedError();
+  Future<void> acceptFriendRequest(int requestId) => throw UnimplementedError();
   @override
-  Future<void> declineFriendRequest(int friendId) => throw UnimplementedError();
+  Future<void> declineFriendRequest(int requestId) =>
+      throw UnimplementedError();
   @override
   Future<void> sendFriendRequest(String email) => throw UnimplementedError();
   @override
-  Future<void> withdrawFriendRequest(int friendId) =>
+  Future<void> withdrawFriendRequest(int requestId) =>
       throw UnimplementedError();
   @override
   Future<void> removeFriend(int targetUserId) => throw UnimplementedError();
@@ -109,16 +169,16 @@ class MockFriendsService implements FriendsService {
   final List<int> friendships = [2, 3, 4];
 
   // Mock pending friend requests for logged-in user
-  final List<int> friendRequests = [
-    5,
-    6,
-    7,
-    8,
+  final List<Map<String, dynamic>> friendRequests = [
+    {"userId": 5, "requestId": 100},
+    {"userId": 6, "requestId": 101},
+    {"userId": 7, "requestId": 102},
+    {"userId": 8, "requestId": 103},
   ];
 
-  final List<int> sentByUserRequests = [
-    10,
-    11,
+  final List<Map<String, dynamic>> sentByUserRequests = [
+    {"userId": 10, "requestId": 200},
+    {"userId": 11, "requestId": 201},
   ];
 
   final Map<int, Map<bool, double>> balances = {
@@ -171,36 +231,38 @@ class MockFriendsService implements FriendsService {
 
   // Fetch incoming friend requests for the logged-in user
   @override
-  Future<List<User>> getFriendRequests() async {
+  Future<List<FriendRequestUser>> getFriendRequests() async {
     await Future.delayed(Duration(milliseconds: 250));
-    return mockUsers.where((user) => friendRequests.contains(user.id)).toList();
+    return friendRequests.map((request) {
+      final user = mockUsers.firstWhere((u) => u.id == request['userId']);
+      return FriendRequestUser(user: user, requestId: request['requestId']);
+    }).toList();
   }
 
   @override
-  Future<List<User>> getSentRequests() async {
+  Future<List<FriendRequestUser>> getSentRequests() async {
     await Future.delayed(Duration(milliseconds: 250));
-    return mockUsers
-        .where((user) => sentByUserRequests.contains(user.id))
-        .toList();
+    return sentByUserRequests.map((request) {
+      final user = mockUsers.firstWhere((u) => u.id == request['userId']);
+      return FriendRequestUser(user: user, requestId: request['requestId']);
+    }).toList();
   }
 
   // Accept friend request
   @override
-  Future<void> acceptFriendRequest(int friendId) async {
+  Future<void> acceptFriendRequest(int requestId) async {
     await Future.delayed(Duration(milliseconds: 100));
-
-    // Since this is only a mock service we add new friend only for currently
-    // logged user, in future it will be changed
-
-    friendRequests.remove(friendId);
-    friendships.add(friendId);
+    final request =
+        friendRequests.firstWhere((r) => r['requestId'] == requestId);
+    friendships.add(request['userId']);
+    friendRequests.removeWhere((r) => r['requestId'] == requestId);
   }
 
   // Decline friend request
   @override
-  Future<void> declineFriendRequest(int friendId) async {
+  Future<void> declineFriendRequest(int requestId) async {
     await Future.delayed(Duration(milliseconds: 100));
-    friendRequests.remove(friendId);
+    friendRequests.removeWhere((request) => request['requestId'] == requestId);
   }
 
   // Send a friend request to another user by their email
@@ -211,7 +273,14 @@ class MockFriendsService implements FriendsService {
     User? user = await usersService.getUserByEmail(email);
 
     if (user != null && user.id != currentUserId) {
-      sentByUserRequests.add(user.id);
+      // Prevent duplicates
+      if (!sentByUserRequests.any((r) => r['userId'] == user.id)) {
+        final int newRequestId = DateTime.now().millisecondsSinceEpoch;
+        sentByUserRequests.add({
+          'userId': user.id,
+          'requestId': newRequestId,
+        });
+      }
     } else {
       throw Exception("User not found or invalid request.");
     }
@@ -219,9 +288,9 @@ class MockFriendsService implements FriendsService {
 
   // Withdraw friend request sent by logged-in user
   @override
-  Future<void> withdrawFriendRequest(int friendId) async {
+  Future<void> withdrawFriendRequest(int requestId) async {
     await Future.delayed(Duration(milliseconds: 100));
-    sentByUserRequests.remove(friendId);
+    sentByUserRequests.removeWhere((r) => r['requestId'] == requestId);
   }
 
   // Delete user from logged-in user friends list
@@ -239,12 +308,12 @@ class MockFriendsService implements FriendsService {
 
   @override
   bool isRequestSentByUser(int targetUserId) {
-    return sentByUserRequests.any((user) => user == targetUserId);
+    return sentByUserRequests.any((r) => r['userId'] == targetUserId);
   }
 
   @override
   bool isRequestReceived(int targetUserId) {
-    return friendRequests.any((user) => user == targetUserId);
+    return friendRequests.any((r) => r['userId'] == targetUserId);
   }
 
   @override

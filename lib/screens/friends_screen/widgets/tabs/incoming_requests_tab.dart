@@ -22,8 +22,8 @@ class IncomingRequestsTab extends StatelessWidget {
               final request = state.friendRequests[index];
               return ListTile(
                 leading: CircleAvatar(child: Icon(Icons.person)),
-                title: Text(request.name),
-                subtitle: Text(request.email),
+                title: Text(request.user.name),
+                subtitle: Text(request.user.email),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -34,7 +34,7 @@ class IncomingRequestsTab extends StatelessWidget {
                         onPressed: () {
                           context
                               .read<FriendsCubit>()
-                              .acceptFriendRequest(request.id);
+                              .acceptFriendRequest(request.requestId);
                         },
                         icon: Icon(Icons.check, color: Colors.white),
                       ),
@@ -47,7 +47,7 @@ class IncomingRequestsTab extends StatelessWidget {
                         onPressed: () {
                           context
                               .read<FriendsCubit>()
-                              .declineFriendRequest(request.id);
+                              .declineFriendRequest(request.requestId);
                         },
                         icon: Icon(Icons.close, color: Colors.white),
                       ),

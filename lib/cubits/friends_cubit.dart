@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kasa_w_grupie/models/friend_request_user.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 
@@ -10,8 +11,8 @@ class FriendsLoading extends FriendsState {}
 
 class FriendsLoaded extends FriendsState {
   final List<User> friends;
-  final List<User> friendRequests;
-  final List<User> sentRequests;
+  final List<FriendRequestUser> friendRequests;
+  final List<FriendRequestUser> sentRequests;
 
   FriendsLoaded({
     required this.friends,

@@ -1,11 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 class RegisterCubit extends Cubit<RegisterState> {
-  RegisterCubit({required this.authService})
+  RegisterCubit({required this.authService, required this.usersService})
       : super(const RegisterState.initial());
 
   final AuthService authService;
+  final UsersService usersService;
 
   Future<void> registerWithEmail(
     String email,
@@ -13,13 +15,26 @@ class RegisterCubit extends Cubit<RegisterState> {
     String name,
   ) async {
     emit(const RegisterState.loading());
-    await Future<void>.delayed(const Duration(seconds: 1));
 
     try {
       final result = await authService.signUpWithEmail(email, password, name);
       if (result != null) {
         emit(RegisterState.error(result));
+        return;
+      }
+      final loginResult = await authService.signInWithEmail(email, password);
+
+      if (loginResult != SignInResult.success) {
+        emit(RegisterState.error("Failed to log in after registration."));
+        return;
       } else {
+        await usersService.createUser(name: name, email: email);
+        final user = await usersService.getCurrentUser();
+        if (user == null) {
+          emit(RegisterState.error('Failed to create user profile.'));
+          return;
+        }
+        await authService.signOut(); // Sign out after registration
         emit(const RegisterState.success());
       }
     } catch (err) {

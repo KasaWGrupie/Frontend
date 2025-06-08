@@ -9,13 +9,13 @@ import 'package:kasa_w_grupie/services/users_service.dart';
 class FriendSearchDelegate extends SearchDelegate<User?> {
   final UsersService usersService;
   final FriendsService friendsService;
-  final int currentUserId;
+  final String currentUserEmail;
   final FriendsCubit friendsCubit;
 
   FriendSearchDelegate({
     required this.usersService,
     required this.friendsService,
-    required this.currentUserId,
+    required this.currentUserEmail,
     required this.friendsCubit,
   });
 
@@ -65,7 +65,7 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
         }
 
         // Skip showing the current user
-        if (user.id == currentUserId) {
+        if (user.email == currentUserEmail) {
           return Center(child: Text('This is your account'));
         }
 

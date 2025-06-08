@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit({required this.authService}) : super(authService.stateFromAuth) {
+  AuthCubit({required this.authService, required this.usersService})
+      : super(authService.stateFromAuth) {
     _sub = authService.isSignedInStream.listen((isSignedIn) {
       emit(authService.stateFromAuth);
     });
@@ -14,6 +16,7 @@ class AuthCubit extends Cubit<AuthState> {
   bool isSignedIn() => state is SignedInState;
 
   final AuthService authService;
+  final UsersService usersService;
   StreamSubscription<bool>? _sub;
 
   Future<void> signInWithEmail(String email, String password) async {
@@ -40,9 +43,8 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<String> get userName async => authService.userName();
-
-  int get userUid => authService.userId;
+  Future<String> get userName async =>
+      usersService.getCurrentUser().then((user) => user?.name ?? '');
 
   Future<void> signOut() async {
     await authService.signOut();

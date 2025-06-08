@@ -226,7 +226,7 @@ class FirebaseAuthService implements AuthService {
           idToken: token,
         );
       } else {
-        throw Exception("Couldn't retrive authorization token");
+        throw Exception("Couldn't retrieve authorization token");
       }
 
       return null;

@@ -29,13 +29,13 @@ class GroupServiceApi implements GroupService {
   GroupServiceApi({required this.authService});
 
   @override
-  Future<String?> addGroup(NewGroup group)async {
+  Future<String?> addGroup(NewGroup group) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/groups');
     final idToken = await authService.userIdToken();
 
     final request = http.MultipartRequest('POST', url)
       ..headers['Authorization'] = 'Bearer $idToken';
-      // ..headers['Accept'] = '*/*';
+    // ..headers['Accept'] = '*/*';
 
     final dtoMap = {
       'name': name,
@@ -65,9 +65,66 @@ class GroupServiceApi implements GroupService {
     }
     throw Exception("Creating new account failed");
   }
+
+  @override
+  Future<Map<int, double>> getBalances(int groupId) {
+    // TODO: implement getBalances
+    throw UnimplementedError();
   }
 
+  @override
+  Future<List<Expense>> getExpensesForGroup(int groupId) {
+    // TODO: implement getExpensesForGroup
+    throw UnimplementedError();
+  }
 
+  @override
+  Future<Group> getGroupById(int groupId) {
+    // TODO: implement getGroupById
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Group>> getGroupsForUser() {
+    // TODO: implement getGroupsForUser
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<GroupJoinRequest>> getJoinRequests(int groupId) {
+    // TODO: implement getJoinRequests
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<User>> getUsersForGroup(int groupId) {
+    // TODO: implement getUsersForGroup
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> joinGroupByCode(String code) {
+    // TODO: implement joinGroupByCode
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> respondToJoinRequest(int groupId, int requestId, bool accept) {
+    // TODO: implement respondToJoinRequest
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> updateGroup(Group group) {
+    // TODO: implement updateGroup
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> updateGroupStatus(int groupId, bool isActive) {
+    // TODO: implement updateGroupStatus
+    throw UnimplementedError();
+  }
 }
 
 class GroupServiceMock implements GroupService {
@@ -148,12 +205,12 @@ class GroupServiceMock implements GroupService {
   Future<String?> addGroup(NewGroup group) async {
     try {
       allGroups.add(Group(
-        id: allGroups.length, 
+        id: allGroups.length,
         name: group.name,
         description: group.description,
         currency: group.currency,
         status: GroupStatus.active,
-        adminId: 6, 
+        adminId: 6,
         membersId: group.membersId,
         invitationCode: group.invitationCode,
       ));

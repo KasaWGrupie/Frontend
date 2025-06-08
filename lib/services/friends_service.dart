@@ -5,6 +5,7 @@ import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/friend_request_user.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class FriendsService {
@@ -25,12 +26,23 @@ abstract class FriendsService {
 
 class FriendsServiceApi implements FriendsService {
   final UsersService usersService;
+  final AuthService authService;
 
   FriendsServiceApi({
     required this.usersService,
+    required this.authService,
   });
 
   String get baseUrl => ApiConfig.baseUrl;
+
+  Future<Map<String, String>> getAuthHeaders() async {
+    final idToken = await authService.userIdToken();
+    return {
+      'Authorization': 'Bearer $idToken',
+      'Accept': '*/*',
+      'Content-Type': 'application/json',
+    };
+  }
 
   @override
   Future<List<User>> getFriends() async {
@@ -40,7 +52,7 @@ class FriendsServiceApi implements FriendsService {
     }
     final currentUserId = currentUser.id;
     final url = Uri.parse('${ApiConfig.baseUrl}/users/friends/$currentUserId');
-    final response = await http.get(url);
+    final response = await http.get(url, headers: await getAuthHeaders());
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -57,8 +69,9 @@ class FriendsServiceApi implements FriendsService {
       throw Exception('User not logged in');
     }
 
-    final url = Uri.parse('$baseUrl/users/${currentUser.id}}/friendRequests');
-    final response = await http.get(url);
+    final url =
+        Uri.parse('$baseUrl/users/${currentUser.id}/receivedFriendRequests');
+    final response = await http.get(url, headers: await getAuthHeaders());
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -66,15 +79,13 @@ class FriendsServiceApi implements FriendsService {
       final List<FriendRequestUser> requestUsers = [];
 
       for (final request in data) {
-        if (request['senderId'] != currentUser.id) {
-          int friendId = request['senderId'];
-          final user = await usersService.getUser(friendId);
-          if (user != null) {
-            requestUsers.add(FriendRequestUser(
-              user: user,
-              requestId: request['id'],
-            ));
-          }
+        int friendId = request['senderId'];
+        final user = await usersService.getUser(friendId);
+        if (user != null) {
+          requestUsers.add(FriendRequestUser(
+            user: user,
+            requestId: request['id'],
+          ));
         }
       }
 
@@ -87,15 +98,15 @@ class FriendsServiceApi implements FriendsService {
   }
 
   @override
-  //TODO change api request
   Future<List<FriendRequestUser>> getSentRequests() async {
     final currentUser = await usersService.getCurrentUser();
     if (currentUser == null) {
       throw Exception('User not logged in');
     }
 
-    final url = Uri.parse('$baseUrl/users/${currentUser.id}/friendRequests');
-    final response = await http.get(url);
+    final url =
+        Uri.parse('$baseUrl/users/${currentUser.id}/sentFriendRequests');
+    final response = await http.get(url, headers: await getAuthHeaders());
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -103,15 +114,13 @@ class FriendsServiceApi implements FriendsService {
       final List<FriendRequestUser> sentRequestUsers = [];
 
       for (final request in data) {
-        if (request['receiverId'] != currentUser.id) {
-          int friendId = request['receiverId'];
-          final user = await usersService.getUser(friendId);
-          if (user != null) {
-            sentRequestUsers.add(FriendRequestUser(
-              user: user,
-              requestId: request['id'],
-            ));
-          }
+        int friendId = request['receiverId'];
+        final user = await usersService.getUser(friendId);
+        if (user != null) {
+          sentRequestUsers.add(FriendRequestUser(
+            user: user,
+            requestId: request['id'],
+          ));
         }
       }
 
@@ -129,7 +138,7 @@ class FriendsServiceApi implements FriendsService {
 
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: await getAuthHeaders(),
       body: jsonEncode({
         'status': 'Confirmed',
       }),
@@ -146,7 +155,7 @@ class FriendsServiceApi implements FriendsService {
 
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: await getAuthHeaders(),
       body: jsonEncode({'status': 'Rejected'}),
     );
 
@@ -179,7 +188,7 @@ class FriendsServiceApi implements FriendsService {
 
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: await getAuthHeaders(),
       body: body,
     );
 
@@ -213,18 +222,47 @@ class FriendsServiceApi implements FriendsService {
 
   @override
   Future<Map<String, dynamic>> getUserBalances(int userId) async {
-    final url = Uri.parse('$baseUrl/users/$userId/balances');
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+    final currentUserId = currentUser.id;
 
-    final response = await http.get(url);
+    final url = Uri.parse('$baseUrl/users/$currentUserId/balances');
+
+    final response = await http.get(url, headers: await getAuthHeaders());
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonBody = json.decode(response.body);
 
-      if (jsonBody['isSuccess'] == true && jsonBody['value'] != null) {
-        return Map<String, dynamic>.from(jsonBody['value']);
+      if (jsonBody['owedByOthers'] is List &&
+          jsonBody['owesToOthers'] is List) {
+        final owedByOthers = jsonBody['owedByOthers'] as List;
+        final owesToOthers = jsonBody['owesToOthers'] as List;
+
+        double totalOwedToUser = 0.0;
+        double totalUserOwes = 0.0;
+
+        for (var item in owedByOthers) {
+          if (item['userId'] == userId) {
+            totalOwedToUser += (item['amount'] ?? 0).toDouble();
+          }
+        }
+
+        for (var item in owesToOthers) {
+          if (item['userId'] == userId) {
+            totalUserOwes += (item['amount'] ?? 0).toDouble();
+          }
+        }
+
+        final net = totalOwedToUser - totalUserOwes;
+
+        return {
+          "isOwedToUser": net >= 0,
+          "amount": net.abs(),
+        };
       } else {
-        throw Exception(
-            'Invalid response: ${jsonBody['errors'] ?? 'Unknown error'}');
+        throw Exception('Invalid response format');
       }
     } else {
       throw Exception('Failed to load user balances: ${response.statusCode}');
@@ -240,13 +278,13 @@ class FriendsServiceApi implements FriendsService {
     }
     final url = Uri.parse('$baseUrl/users/${currentUser.id}/balances/$userId');
 
-    final response = await http.get(url);
+    final response = await http.get(url, headers: await getAuthHeaders());
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonBody = json.decode(response.body);
 
-      if (jsonBody['isSuccess'] == true && jsonBody['value'] != null) {
-        return List<Map<String, dynamic>>.from(jsonBody['value']['balances']);
+      if (jsonBody['balances'] is List) {
+        return List<Map<String, dynamic>>.from(jsonBody['balances']);
       } else {
         throw Exception('Invalid response structure');
       }
@@ -259,7 +297,7 @@ class FriendsServiceApi implements FriendsService {
   Future<List<User>> searchUsersByEmail(String query) async {
     final url = Uri.parse('$baseUrl/users/email/search/$query');
 
-    final response = await http.get(url);
+    final response = await http.get(url, headers: await getAuthHeaders());
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = jsonDecode(response.body);

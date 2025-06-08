@@ -252,8 +252,9 @@ class _AppState extends State<_App> {
                   ),
                 ),
                 Provider<FriendsService>(
-                  create: (context) => MockFriendsService(
+                  create: (context) => FriendsServiceApi(
                     usersService: context.read<UsersService>(),
+                    authService: context.read<AuthService>(),
                   ),
                 ),
                 BlocProvider<UserCubit>(

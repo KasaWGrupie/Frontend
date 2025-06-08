@@ -130,9 +130,9 @@ class UserProfilePreview extends StatelessWidget {
           );
         } else if (hasSentRequestResult) {
           return ElevatedButton.icon(
-            onPressed: () => friendsCubit.withdrawFriendRequest(user.id),
+            onPressed: () => (),
             icon: const Icon(Icons.cancel),
-            label: const Text('Cancel Request'),
+            label: const Text('You\'ve sent request'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orangeAccent,
             ),
@@ -142,20 +142,11 @@ class UserProfilePreview extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton.icon(
-                onPressed: () => friendsCubit.acceptFriendRequest(user.id),
-                icon: const Icon(Icons.check),
-                label: const Text('Accept'),
+                onPressed: () => (),
+                icon: const Icon(Icons.pending),
+                label: const Text('This user sent you an invite'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 119, 180, 121),
-                ),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton.icon(
-                onPressed: () => friendsCubit.declineFriendRequest(user.id),
-                icon: const Icon(Icons.close),
-                label: const Text('Reject'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 231, 79, 79),
                 ),
               ),
             ],

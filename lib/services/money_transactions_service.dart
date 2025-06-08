@@ -2,6 +2,7 @@ import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/money_requests.dart';
 import 'package:kasa_w_grupie/models/money_transfer.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class MoneyTransactionService {
   Future<List<MoneyRequest>> getMoneyRequestsForUser();
@@ -12,17 +13,19 @@ abstract class MoneyTransactionService {
 }
 
 class MoneyTransactionServiceMock implements MoneyTransactionService {
-  final AuthService authService;
+  final UsersService usersService;
   late final List<MoneyRequest> allMoneyRequests;
   late final List<MoneyTransfer> allMoneyTransfers;
 
-  MoneyTransactionServiceMock({required this.authService}) {
+  MoneyTransactionServiceMock({
+    required this.usersService,
+  }) {
     initializeRequests();
     initializeTransfers();
   }
 
   Future<void> initializeTransfers() async {
-    final user = await authService.currentUser();
+    final user = await usersService.getCurrentUser();
     if (user == null) {
       allMoneyTransfers = [];
       return;
@@ -75,7 +78,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
   }
 
   Future<void> initializeRequests() async {
-    final user = await authService.currentUser();
+    final user = await usersService.getCurrentUser();
     if (user == null) {
       allMoneyRequests = [];
       return;
@@ -139,7 +142,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
 
   @override
   Future<List<MoneyRequest>> getMoneyRequestsForUser() async {
-    final user = await authService.currentUser();
+    final user = await usersService.getCurrentUser();
     if (user == null) return [];
 
     return allMoneyRequests
@@ -150,7 +153,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
 
   @override
   Future<List<MoneyRequest>> getRejectedMoneyRequestsForUser() async {
-    final user = await authService.currentUser();
+    final user = await usersService.getCurrentUser();
     if (user == null) return [];
 
     return allMoneyRequests
@@ -161,7 +164,7 @@ class MoneyTransactionServiceMock implements MoneyTransactionService {
 
   @override
   Future<List<MoneyTransfer>> getMoneyTransfersForUser() async {
-    final user = await authService.currentUser();
+    final user = await usersService.getCurrentUser();
     if (user == null) return [];
 
     return allMoneyTransfers

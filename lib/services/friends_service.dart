@@ -24,19 +24,21 @@ abstract class FriendsService {
 }
 
 class FriendsServiceApi implements FriendsService {
-  final AuthService authService;
   final UsersService usersService;
 
   FriendsServiceApi({
-    required this.authService,
     required this.usersService,
   });
 
   String get baseUrl => ApiConfig.baseUrl;
-  int get currentUserId => authService.userId;
 
   @override
   Future<List<User>> getFriends() async {
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+    final currentUserId = currentUser.id;
     final url = Uri.parse('${ApiConfig.baseUrl}/users/friends/$currentUserId');
     final response = await http.get(url);
 
@@ -78,15 +80,11 @@ class FriendsServiceApi implements FriendsService {
 }
 
 class MockFriendsService implements FriendsService {
-  final AuthService authService;
   final UsersService usersService;
 
   MockFriendsService({
-    required this.authService,
     required this.usersService,
   });
-
-  int get currentUserId => authService.userId;
 
   // Mock users
   final List<User> mockUsers = [
@@ -210,7 +208,7 @@ class MockFriendsService implements FriendsService {
 
     User? user = await usersService.getUserByEmail(email);
 
-    if (user != null && user.id != currentUserId) {
+    if (user != null) {
       sentByUserRequests.add(user.id);
     } else {
       throw Exception("User not found or invalid request.");

@@ -125,7 +125,7 @@ final GoRouter _router = GoRouter(
                       create: (context) => EditGroupCubit(
                         groupService: context.read<GroupService>(),
                         friendsService: context.read<FriendsService>(),
-                        authService: context.read<AuthService>(),
+                        usersService: context.read<UsersService>(),
                         groupId: groupId,
                       )..loadGroup(),
                       child: EditGroupScreen(groupId: groupId),
@@ -222,49 +222,38 @@ class _AppState extends State<_App> {
           if (snapshot.connectionState == ConnectionState.done) {
             return MultiProvider(
               providers: [
+                Provider<AuthService>(
+                  create: (context) =>
+                      FirebaseAuthService(firebaseAuth: FirebaseAuth.instance),
+                ),
                 Provider<UsersService>(
-                  create: (context) => UsersServiceApi(),
-                ),
-                Provider<AuthService>(
-                  create: (context) => FirebaseAuthService(
-                      userService: context.read(),
-                      firebaseAuth: FirebaseAuth.instance),
+                  create: (context) =>
+                      UsersServiceApi(authService: context.read()),
                 ),
                 BlocProvider<AuthCubit>(
                   create: (context) => AuthCubit(
                     authService: context.read(),
-                  ),
-                ),
-                Provider<AuthService>(
-                  create: (context) => FirebaseAuthService(
-                      userService: context.read(),
-                      firebaseAuth: FirebaseAuth.instance),
-                ),
-                BlocProvider<AuthCubit>(
-                  create: (context) => AuthCubit(
-                    authService: context.read(),
-                  ),
-                ),
-                BlocProvider<AddGroupCubit>(
-                  create: (context) => AddGroupCubit(
-                    groupService: GroupServiceMock(authService: context.read()),
-                  ),
-                ),
-                BlocProvider<UserCubit>(
-                  create: (context) => UserCubit(context.read<UsersService>()),
-                ),
-                Provider<MoneyTransactionService>(
-                    create: (context) => MoneyTransactionServiceMock(
-                        authService: context.read<AuthService>())),
-                Provider<FriendsService>(
-                  create: (context) => MockFriendsService(
-                    authService: context.read<AuthService>(),
                     usersService: context.read<UsersService>(),
                   ),
                 ),
                 Provider<GroupService>(
                   create: (context) => GroupServiceMock(
-                    authService: context.read(),
+                    usersService: context.read(),
+                  ),
+                ),
+                BlocProvider<AddGroupCubit>(
+                  create: (context) => AddGroupCubit(
+                    groupService: context.read<GroupService>(),
+                  ),
+                ),
+                Provider<MoneyTransactionService>(
+                  create: (context) => MoneyTransactionServiceMock(
+                    usersService: context.read(),
+                  ),
+                ),
+                Provider<FriendsService>(
+                  create: (context) => MockFriendsService(
+                    usersService: context.read<UsersService>(),
                   ),
                 ),
                 BlocProvider<UserCubit>(
@@ -272,15 +261,6 @@ class _AppState extends State<_App> {
                 ),
                 Provider<ExpenseService>(
                   create: (context) => MockExpenseService(),
-                ),
-                Provider<MoneyTransactionService>(
-                    create: (context) => MoneyTransactionServiceMock(
-                        authService: context.read<AuthService>())),
-                Provider<FriendsService>(
-                  create: (context) => MockFriendsService(
-                    usersService: context.read<UsersService>(),
-                    authService: context.read<AuthService>(),
-                  ),
                 ),
                 Provider<SettlementsService>(
                   create: (context) => SettlementsServiceMock(),

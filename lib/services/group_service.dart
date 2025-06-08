@@ -5,6 +5,7 @@ import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/group_join_request.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class GroupService {
   Future<String?> addGroup(NewGroup group);
@@ -128,7 +129,7 @@ class GroupServiceApi implements GroupService {
 }
 
 class GroupServiceMock implements GroupService {
-  final AuthService authService;
+  final UsersService usersService;
 
   final List<Group> allGroups = [
     Group(
@@ -199,7 +200,7 @@ class GroupServiceMock implements GroupService {
     ]
   };
 
-  GroupServiceMock({required this.authService});
+  GroupServiceMock({required this.usersService});
 
   @override
   Future<String?> addGroup(NewGroup group) async {
@@ -224,7 +225,7 @@ class GroupServiceMock implements GroupService {
   @override
   Future<List<Group>> getGroupsForUser() async {
     try {
-      final user = await authService.currentUser();
+      final user = await usersService.getCurrentUser();
 
       if (user == null) {
         return [];

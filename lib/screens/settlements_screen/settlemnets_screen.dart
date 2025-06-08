@@ -7,6 +7,7 @@ import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
 import 'package:kasa_w_grupie/cubits/settlements_cubit.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 class SettlementsScreen extends StatelessWidget {
   const SettlementsScreen({super.key});
@@ -17,7 +18,7 @@ class SettlementsScreen extends StatelessWidget {
       create: (context) => SettlementsCubit(
         moneyTransactionService: context.read<MoneyTransactionService>(),
         groupService: context.read<GroupService>(),
-        authService: context.read<AuthService>(),
+        usersService: context.read<UsersService>(),
       )..loadData(),
       child: DefaultTabController(
         length: 2,

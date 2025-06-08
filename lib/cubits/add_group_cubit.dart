@@ -17,21 +17,19 @@ class AddGroupCubit extends Cubit<AddGroupState> {
     required String invitationCode,
   }) async {
     emit(const AddGroupState.loading());
-    await Future<void>.delayed(const Duration(seconds: 1));
 
     try {
-      final group = Group(
-        id: DateTime.now().millisecondsSinceEpoch,
+      final newGroup = NewGroup(
         name: name,
         description: description,
         currency: currency,
-        status: GroupStatus.active,
-        adminId: adminId,
         membersId: members,
         invitationCode: invitationCode,
+        picture: null,
+        adminId: adminId,
       );
 
-      final result = await groupService.addGroup(group);
+      final result = await groupService.addGroup(newGroup);
 
       if (result != null) {
         emit(AddGroupState.error(result));

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 enum GroupStatus {
   active,
   closing,
@@ -9,6 +11,24 @@ enum CurrencyEnum {
   gbp,
   eur,
   usd,
+}
+
+class NewGroup {
+  late String name;
+  late String? description;
+  late final CurrencyEnum currency;
+  late List<int> membersId;
+  late final String adminEmail;
+  late final File? picture;
+
+  NewGroup({
+    required this.name,
+    this.description,
+    required this.currency,
+    required this.membersId,
+    this.picture,
+    required this.adminEmail,
+  });
 }
 
 class Group {

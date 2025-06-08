@@ -33,6 +33,8 @@ abstract class AuthService {
   );
 
   Future<void> signOut();
+
+  Future<String> userIdToken();
 }
 
 class AuthServiceMock implements AuthService {
@@ -108,6 +110,12 @@ class AuthServiceMock implements AuthService {
   @override
   Future<u.User?> currentUser() async {
     return _currentUser;
+  }
+
+  @override
+  Future<String> userIdToken() {
+    // TODO: implement userIdToken
+    throw UnimplementedError();
   }
 }
 
@@ -233,5 +241,23 @@ class FirebaseAuthService implements AuthService {
   Future<void> signOut() async {
     _cachedUser = null;
     await firebaseAuth.signOut();
+  }
+
+  String? _cachedToken;
+
+  @override
+  Future<String> userIdToken() async {
+    if (_cachedToken != null) {
+      return _cachedToken!;
+    }
+    final user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception("User not signed in");
+    }
+    _cachedToken = await user.getIdToken();
+    if (_cachedToken == null) {
+      throw Exception("Couldn't retrieve user ID token");
+    }
+    return _cachedToken!;
   }
 }

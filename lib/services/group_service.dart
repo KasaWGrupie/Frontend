@@ -1,3 +1,5 @@
+import 'package:http/http.dart' as http;
+import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/group_join_request.dart';
@@ -5,7 +7,7 @@ import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 
 abstract class GroupService {
-  Future<String?> addGroup(Group group);
+  Future<String?> addGroup(NewGroup group);
 
   Future<List<Group>> getGroupsForUser();
   Future<Group> getGroupById(int groupId);
@@ -19,6 +21,53 @@ abstract class GroupService {
   Future<String?> joinGroupByCode(String code);
   Future<List<GroupJoinRequest>> getJoinRequests(int groupId);
   Future<void> respondToJoinRequest(int groupId, int requestId, bool accept);
+}
+
+class GroupServiceApi implements GroupService {
+  final AuthService authService;
+
+  GroupServiceApi({required this.authService});
+
+  @override
+  Future<String?> addGroup(NewGroup group)async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/groups');
+    final idToken = await authService.userIdToken();
+
+    final request = http.MultipartRequest('POST', url)
+      ..headers['Authorization'] = 'Bearer $idToken';
+      // ..headers['Accept'] = '*/*';
+
+    final dtoMap = {
+      'name': name,
+      'email': email,
+    };
+
+    final dtoJson = jsonEncode(dtoMap);
+
+    request.fields['dto'] = dtoJson;
+
+    if (profilePicture != null) {
+      final pictureBytes = await profilePicture.readAsBytes();
+      final multipartFile = http.MultipartFile.fromBytes(
+        'profilePicture',
+        pictureBytes,
+        filename: 'avatar.jpg',
+        contentType: MediaType('image', 'jpeg'),
+      );
+
+      request.files.add(multipartFile);
+    }
+
+    final response = await http.Response.fromStream(await request.send());
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return;
+    }
+    throw Exception("Creating new account failed");
+  }
+  }
+
+
 }
 
 class GroupServiceMock implements GroupService {
@@ -96,9 +145,18 @@ class GroupServiceMock implements GroupService {
   GroupServiceMock({required this.authService});
 
   @override
-  Future<String?> addGroup(Group group) async {
+  Future<String?> addGroup(NewGroup group) async {
     try {
-      allGroups.add(group);
+      allGroups.add(Group(
+        id: allGroups.length, 
+        name: group.name,
+        description: group.description,
+        currency: group.currency,
+        status: GroupStatus.active,
+        adminId: 6, 
+        membersId: group.membersId,
+        invitationCode: group.invitationCode,
+      ));
 
       return null;
     } catch (e) {

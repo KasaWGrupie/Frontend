@@ -5,10 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
+import 'package:kasa_w_grupie/cubits/group_cubit.dart';
 import 'package:kasa_w_grupie/cubits/group_join_requests_cubit.dart';
 import 'package:kasa_w_grupie/cubits/user_cubit.dart';
 import 'package:kasa_w_grupie/firebase_options.dart';
 import 'package:kasa_w_grupie/cubits/edit_group_cubit.dart';
+import 'package:kasa_w_grupie/models/expense.dart';
+import 'package:kasa_w_grupie/screens/add_expense_screen/add_expense_screen.dart';
+import 'package:kasa_w_grupie/screens/edit_expense_screen.dart';
 import 'package:kasa_w_grupie/screens/edit_group_screen/edit_group_screen.dart';
 import 'package:kasa_w_grupie/screens/friends_screen/friends_screen.dart';
 import 'package:kasa_w_grupie/screens/group_screen/group_screen.dart';
@@ -23,9 +27,11 @@ import 'package:kasa_w_grupie/screens/home_screen.dart';
 
 import 'package:kasa_w_grupie/screens/add_group_screen/add_group_screen.dart';
 import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
+import 'package:kasa_w_grupie/services/expense_service.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
+import 'package:kasa_w_grupie/services/receipt_service.dart';
 import 'package:kasa_w_grupie/services/settlements_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
@@ -75,6 +81,24 @@ final GoRouter _router = GoRouter(
               ),
               routes: [
                 GoRoute(
+                  path: 'new_expense',
+                  builder: (context, state) {
+                    final groupId =
+                        int.tryParse(state.pathParameters['groupId']!) ?? 0;
+                    return BlocProvider<GroupCubit>(
+                      create: (context) => GroupCubit(
+                        groupId: groupId,
+                        groupService: context.read(),
+                        usersService: context.read(),
+                        authService: context.read<AuthService>(),
+                      ),
+                      child: AddExpenseScreen(
+                        expenseService: context.read(),
+                      ),
+                    );
+                  },
+                ),
+                GoRoute(
                   path: 'requests',
                   name: 'groupRequests',
                   builder: (context, state) {
@@ -120,6 +144,39 @@ final GoRouter _router = GoRouter(
           path: 'settlements',
           builder: (context, state) => const SettlementsScreen(),
         ),
+        GoRoute(
+          path: 'edit_expense/:expenseId',
+          builder: (context, state) {
+            final expenseId = state.pathParameters['expenseId'] ?? "0";
+            final expenseService = context.read<ExpenseService>();
+
+            return FutureBuilder<Expense?>(
+              future: expenseService.getExpenseById(expenseId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError || !snapshot.hasData) {
+                  return const Center(child: Text('Error loading expense'));
+                }
+
+                final expense = snapshot.data!;
+                return BlocProvider<GroupCubit>(
+                  create: (context) => GroupCubit(
+                    authService: context.read<AuthService>(),
+                    groupId: expense
+                        .id, // We should ideally get this from the expense
+                    groupService: context.read(),
+                    usersService: context.read(),
+                  )..fetch(),
+                  child: EditExpenseScreen(
+                    expenseService: expenseService,
+                    expense: expense,
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ],
     ),
   ],
@@ -163,45 +220,77 @@ class _AppState extends State<_App> {
         future: _initialization,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return MultiProvider(providers: [
-              Provider<UsersService>(
-                create: (context) => UsersServiceApi(),
-              ),
-              Provider<AuthService>(
-                create: (context) => FirebaseAuthService(
-                    userService: context.read(),
-                    firebaseAuth: FirebaseAuth.instance),
-              ),
-              BlocProvider<AuthCubit>(
-                create: (context) => AuthCubit(
-                  authService: context.read(),
+            return MultiProvider(
+              providers: [
+                Provider<UsersService>(
+                  create: (context) => UsersServiceApi(),
                 ),
-              ),
-              BlocProvider<AddGroupCubit>(
-                create: (context) => AddGroupCubit(
-                  groupService: GroupServiceMock(authService: context.read()),
+                Provider<AuthService>(
+                  create: (context) => FirebaseAuthService(
+                      userService: context.read(),
+                      firebaseAuth: FirebaseAuth.instance),
                 ),
-              ),
-              Provider<GroupService>(
-                create: (context) => GroupServiceMock(
-                  authService: context.read(),
+                BlocProvider<AuthCubit>(
+                  create: (context) => AuthCubit(
+                    authService: context.read(),
+                  ),
                 ),
-              ),
-              BlocProvider<UserCubit>(
-                create: (context) => UserCubit(context.read<UsersService>()),
-              ),
-              Provider<MoneyTransactionService>(
-                  create: (context) => MoneyTransactionServiceMock(
-                      authService: context.read<AuthService>())),
-              Provider<FriendsService>(
-                create: (context) => MockFriendsService(
-                  authService: context.read<AuthService>(),
-                  usersService: context.read<UsersService>(),
+                Provider<AuthService>(
+                  create: (context) => FirebaseAuthService(
+                      userService: context.read(),
+                      firebaseAuth: FirebaseAuth.instance),
                 ),
-              ),
-              Provider<SettlementsService>(
-                  create: (context) => SettlementsServiceMock()),
-            ], child: child!);
+                BlocProvider<AuthCubit>(
+                  create: (context) => AuthCubit(
+                    authService: context.read(),
+                  ),
+                ),
+                BlocProvider<AddGroupCubit>(
+                  create: (context) => AddGroupCubit(
+                    groupService: GroupServiceMock(authService: context.read()),
+                  ),
+                ),
+                BlocProvider<UserCubit>(
+                  create: (context) => UserCubit(context.read<UsersService>()),
+                ),
+                Provider<MoneyTransactionService>(
+                    create: (context) => MoneyTransactionServiceMock(
+                        authService: context.read<AuthService>())),
+                Provider<FriendsService>(
+                  create: (context) => MockFriendsService(
+                    authService: context.read<AuthService>(),
+                    usersService: context.read<UsersService>(),
+                  ),
+                ),
+                Provider<GroupService>(
+                  create: (context) => GroupServiceMock(
+                    authService: context.read(),
+                  ),
+                ),
+                BlocProvider<UserCubit>(
+                  create: (context) => UserCubit(context.read<UsersService>()),
+                ),
+                Provider<ExpenseService>(
+                  create: (context) => MockExpenseService(),
+                ),
+                Provider<MoneyTransactionService>(
+                    create: (context) => MoneyTransactionServiceMock(
+                        authService: context.read<AuthService>())),
+                Provider<FriendsService>(
+                  create: (context) => MockFriendsService(
+                    usersService: context.read<UsersService>(),
+                    authService: context.read<AuthService>(),
+                  ),
+                ),
+                Provider<SettlementsService>(
+                  create: (context) => SettlementsServiceMock(),
+                ),
+                Provider<ReceiptService>(
+                  create: (context) => MockReceiptParserService(),
+                ),
+              ],
+              child: child!,
+            );
           } else {
             return const Scaffold(
               body: Center(child: CircularProgressIndicator()),

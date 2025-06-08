@@ -18,7 +18,7 @@ class NewGroup {
   late String? description;
   late final CurrencyEnum currency;
   late List<int> membersId;
-  late final String adminEmail;
+  late final int adminId;
   late final File? picture;
 
   NewGroup({
@@ -27,7 +27,7 @@ class NewGroup {
     required this.currency,
     required this.membersId,
     this.picture,
-    required this.adminEmail,
+    required this.adminId,
   });
 }
 
@@ -40,6 +40,7 @@ class Group {
   late final int adminId;
   late List<int> membersId;
   late final String invitationCode;
+  late final String? pictureUrl;
 
   Group({
     required this.id,
@@ -66,8 +67,9 @@ class Group {
       orElse: () => GroupStatus.active,
     );
     adminId = json['adminId']! as int;
-    membersId = List<int>.from(json['membersId'] as List);
-    invitationCode = json['invitationCode']! as String;
+    membersId = List<int>.from(json['members'] as List);
+    invitationCode = json['invitationCode'] ?? "";
+    pictureUrl = json['pictureUrl'];
   }
 
   Map<String, Object> toJson() {
@@ -77,8 +79,10 @@ class Group {
       'currency': currency.name,
       'status': status.name,
       'adminId': adminId,
-      'membersId': membersId,
+      'members': membersId,
       'invitationCode': invitationCode,
+      'description': description ?? '',
+      'pictureUrl': pictureUrl ?? '',
     };
   }
 

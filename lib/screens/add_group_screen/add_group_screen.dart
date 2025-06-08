@@ -111,7 +111,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           child: ListView(
                             children: [
                               // Group photo field
-                              const GroupPhotoWithAddButton(),
+                              GroupPhotoWithAddButton(
+                                cubit: context.read(),
+                              ),
                               const SizedBox(height: 16),
 
                               // Group name field

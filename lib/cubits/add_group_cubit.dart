@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 
 class AddGroupCubit extends Cubit<AddGroupState> {
   final GroupService groupService;
+  File? groupPicture;
 
   AddGroupCubit({required this.groupService})
       : super(const AddGroupState.initial());
@@ -24,8 +27,7 @@ class AddGroupCubit extends Cubit<AddGroupState> {
         description: description,
         currency: currency,
         membersId: members,
-        invitationCode: invitationCode,
-        picture: null,
+        picture: groupPicture,
         adminId: adminId,
       );
 

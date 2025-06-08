@@ -237,8 +237,8 @@ class _AppState extends State<_App> {
                   ),
                 ),
                 Provider<GroupService>(
-                  create: (context) => GroupServiceMock(
-                    usersService: context.read(),
+                  create: (context) => GroupServiceApi(
+                    authService: context.read<AuthService>(),
                   ),
                 ),
                 BlocProvider<AddGroupCubit>(

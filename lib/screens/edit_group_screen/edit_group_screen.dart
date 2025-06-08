@@ -74,7 +74,9 @@ class EditGroupScreenState extends State<EditGroupScreen> {
                     child: ListView(
                       children: [
                         // Group Photo
-                        const GroupPhotoWithAddButton(),
+                        GroupPhotoWithAddButton(
+                          cubit: context.read(),
+                        ),
                         const SizedBox(height: 16),
 
                         // Group Name

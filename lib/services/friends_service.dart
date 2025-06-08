@@ -5,7 +5,6 @@ import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/friend_request_user.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
-import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class FriendsService {
@@ -25,19 +24,21 @@ abstract class FriendsService {
 }
 
 class FriendsServiceApi implements FriendsService {
-  final AuthService authService;
   final UsersService usersService;
 
   FriendsServiceApi({
-    required this.authService,
     required this.usersService,
   });
 
   String get baseUrl => ApiConfig.baseUrl;
-  int get currentUserId => authService.userId;
 
   @override
   Future<List<User>> getFriends() async {
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+    final currentUserId = currentUser.id;
     final url = Uri.parse('${ApiConfig.baseUrl}/users/friends/$currentUserId');
     final response = await http.get(url);
 
@@ -51,7 +52,12 @@ class FriendsServiceApi implements FriendsService {
 
   @override
   Future<List<FriendRequestUser>> getFriendRequests() async {
-    final url = Uri.parse('$baseUrl/users/$currentUserId/friendRequests');
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+
+    final url = Uri.parse('$baseUrl/users/${currentUser.id}}/friendRequests');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -60,7 +66,7 @@ class FriendsServiceApi implements FriendsService {
       final List<FriendRequestUser> requestUsers = [];
 
       for (final request in data) {
-        if (request['senderId'] != currentUserId) {
+        if (request['senderId'] != currentUser.id) {
           int friendId = request['senderId'];
           final user = await usersService.getUser(friendId);
           if (user != null) {
@@ -83,7 +89,12 @@ class FriendsServiceApi implements FriendsService {
   @override
   //TODO change api request
   Future<List<FriendRequestUser>> getSentRequests() async {
-    final url = Uri.parse('$baseUrl/users/$currentUserId/friendRequests');
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+
+    final url = Uri.parse('$baseUrl/users/${currentUser.id}/friendRequests');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -92,7 +103,7 @@ class FriendsServiceApi implements FriendsService {
       final List<FriendRequestUser> sentRequestUsers = [];
 
       for (final request in data) {
-        if (request['receiverId'] != currentUserId) {
+        if (request['receiverId'] != currentUser.id) {
           int friendId = request['receiverId'];
           final user = await usersService.getUser(friendId);
           if (user != null) {
@@ -146,7 +157,11 @@ class FriendsServiceApi implements FriendsService {
 
   @override
   Future<void> sendFriendRequest(String email) async {
-    final senderId = currentUserId;
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+    final senderId = currentUser.id;
     final receiver = await usersService.getUserByEmail(email);
 
     if (receiver == null) {
@@ -219,7 +234,11 @@ class FriendsServiceApi implements FriendsService {
   @override
   Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(
       int userId) async {
-    final url = Uri.parse('$baseUrl/users/$currentUserId/balances/$userId');
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+    final url = Uri.parse('$baseUrl/users/${currentUser.id}/balances/$userId');
 
     final response = await http.get(url);
 
@@ -253,15 +272,11 @@ class FriendsServiceApi implements FriendsService {
 }
 
 class MockFriendsService implements FriendsService {
-  final AuthService authService;
   final UsersService usersService;
 
   MockFriendsService({
-    required this.authService,
     required this.usersService,
   });
-
-  int get currentUserId => authService.userId;
 
   // Mock users
   final List<User> mockUsers = [
@@ -387,7 +402,7 @@ class MockFriendsService implements FriendsService {
 
     User? user = await usersService.getUserByEmail(email);
 
-    if (user != null && user.id != currentUserId) {
+    if (user != null) {
       // Prevent duplicates
       if (!sentByUserRequests.any((r) => r['userId'] == user.id)) {
         final int newRequestId = DateTime.now().millisecondsSinceEpoch;
@@ -396,6 +411,8 @@ class MockFriendsService implements FriendsService {
           'requestId': newRequestId,
         });
       }
+      // if (user != null) {
+      //   sentByUserRequests.add(user.id);
     } else {
       throw Exception("User not found or invalid request.");
     }

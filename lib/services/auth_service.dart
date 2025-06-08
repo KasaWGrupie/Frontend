@@ -1,6 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:kasa_w_grupie/models/user.dart' as u;
-import 'package:kasa_w_grupie/services/users_service.dart';
 
 enum SignInResult {
   invalidEmail,
@@ -15,16 +13,11 @@ abstract class AuthService {
 
   Stream<bool> get isSignedInStream;
 
+  Future<String> userIdToken();
+
   String get userEmail;
 
-  Future<String> userName();
-
-  int get userId;
-
-  Future<u.User?> currentUser();
-
   Future<SignInResult> signInWithEmail(String email, String password);
-  Future<String> userIdToken();
 
   // Returns error message in case of error, null otherwise
   Future<String?> signUpWithEmail(
@@ -36,97 +29,12 @@ abstract class AuthService {
   Future<void> signOut();
 }
 
-class AuthServiceMock implements AuthService {
-  final Map<String, u.User> _users = {};
-  u.User? _currentUser;
-  bool _isSignedIn = false;
-
-  @override
-  bool get isSignedIn => _isSignedIn;
-
-  @override
-  Stream<bool> get isSignedInStream async* {
-    yield _isSignedIn;
-  }
-
-  @override
-  String get userEmail {
-    if (_currentUser != null) {
-      return _currentUser!.email;
-    }
-    return '';
-  }
-
-  @override
-  Future<String> userName() async {
-    if (_currentUser != null) {
-      return _currentUser!.name;
-    }
-    return '';
-  }
-
-  @override
-  Future<String> userIdToken() async {
-    return "1";
-  }
-
-  @override
-  Future<SignInResult> signInWithEmail(String email, String password) async {
-    // Simulate a basic email-password match for demo
-    final user = _users[email];
-
-    if (user == null) {
-      return SignInResult.userNotFound;
-    }
-
-    // For simplicity, let's assume the password is always correct
-    _currentUser = user;
-    _isSignedIn = true;
-    return SignInResult.success;
-  }
-
-  @override
-  Future<String?> signUpWithEmail(
-      String email, String password, String name) async {
-    // Check if the email is already used
-    if (_users.containsKey(email)) {
-      return 'Email already in use';
-    }
-
-    // Create a new user and add to the "database"
-    final newUser = u.User(
-        id: DateTime.now().millisecondsSinceEpoch, name: name, email: email);
-    _users[email] = newUser;
-
-    return null;
-  }
-
-  @override
-  Future<void> signOut() async {
-    _currentUser = null;
-    _isSignedIn = false;
-  }
-
-  @override
-  // TODO: implement userId
-  int get userId => _currentUser!.id;
-
-  @override
-  Future<u.User?> currentUser() async {
-    return _currentUser;
-  }
-}
-
 class FirebaseAuthService implements AuthService {
   FirebaseAuthService({
-    required this.userService,
     required this.firebaseAuth,
   });
 
   final FirebaseAuth firebaseAuth;
-  final UsersService userService;
-
-  u.User? _cachedUser;
 
   @override
   bool get isSignedIn => firebaseAuth.currentUser != null;
@@ -139,47 +47,6 @@ class FirebaseAuthService implements AuthService {
   String get userEmail => firebaseAuth.currentUser?.email ?? '';
 
   @override
-  Future<String> userName() async {
-    final user = await currentUser();
-    return user?.name ?? '';
-  }
-
-  @override
-  int get userId {
-    if (_cachedUser != null) return _cachedUser!.id;
-    throw Exception("User not loaded yet.");
-  }
-
-  @override
-  Future<u.User?> currentUser() async {
-    if (_cachedUser != null) return _cachedUser;
-
-    final email = firebaseAuth.currentUser?.email;
-    if (email == null) return null;
-
-    _cachedUser = await userService.getUserByEmail(email);
-    return _cachedUser;
-  }
-
-  String? _cachedToken;
-
-  @override
-  Future<String> userIdToken() async {
-    if (_cachedToken != null) {
-      return _cachedToken!;
-    }
-    final user = firebaseAuth.currentUser;
-    if (user == null) {
-      throw Exception("User not signed in");
-    }
-    _cachedToken = await user.getIdToken();
-    if (_cachedToken == null) {
-      throw Exception("Couldn't retrieve user ID token");
-    }
-    return _cachedToken!;
-  }
-
-  @override
   Future<SignInResult> signInWithEmail(String email, String password) async {
     try {
       if (isSignedIn) {
@@ -190,9 +57,6 @@ class FirebaseAuthService implements AuthService {
         email: email,
         password: password,
       );
-
-      _cachedUser = await userService.getUserByEmail(email);
-      if (_cachedUser == null) return SignInResult.userNotFound;
 
       return SignInResult.success;
     } on FirebaseAuthException catch (e) {
@@ -211,6 +75,8 @@ class FirebaseAuthService implements AuthService {
       }
     }
   }
+
+  String? _cachedToken;
 
   @override
   Future<String?> signUpWithEmail(
@@ -231,18 +97,6 @@ class FirebaseAuthService implements AuthService {
       if (credential.user == null) {
         return 'Firebase auth failed';
       }
-      final user = credential.user!;
-      final token = await user.getIdToken();
-
-      if (token != null) {
-        await userService.createUser(
-          name: name,
-          email: user.email!,
-          profilePicture: null,
-        );
-      } else {
-        throw Exception("Couldn't retrive authorization token");
-      }
 
       return null;
     } on FirebaseAuthException catch (e) {
@@ -254,7 +108,23 @@ class FirebaseAuthService implements AuthService {
 
   @override
   Future<void> signOut() async {
-    _cachedUser = null;
+    _cachedToken = null; // Clear cached token on sign out
     await firebaseAuth.signOut();
+  }
+
+  @override
+  Future<String> userIdToken() async {
+    if (_cachedToken != null) {
+      return _cachedToken!;
+    }
+    final user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception("User not signed in");
+    }
+    _cachedToken = await user.getIdToken();
+    if (_cachedToken == null) {
+      throw Exception("Couldn't retrieve user ID token");
+    }
+    return _cachedToken!;
   }
 }

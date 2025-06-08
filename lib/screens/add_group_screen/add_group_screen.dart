@@ -9,12 +9,12 @@ import 'package:flutter/services.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/friends_list.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/invitation_code_tile.dart';
-import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/group_photo.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/currency_list.dart';
 import 'dart:math';
 
 import 'package:kasa_w_grupie/services/friends_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -38,9 +38,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   late final dynamic _getFriendsFuture;
 
   Future<List<Friend>> getFriends() async {
-    final authService = context.read<AuthService>();
+    final usersService = context.read<UsersService>();
     final friendService = context.read<FriendsService>();
-    currentUser = (await authService.currentUser())!;
+    currentUser = (await usersService.getCurrentUser())!;
     return parseUsersToFriends(await friendService.getFriends());
   }
 

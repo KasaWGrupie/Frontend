@@ -9,13 +9,13 @@ import 'package:kasa_w_grupie/services/users_service.dart';
 class FriendSearchDelegate extends SearchDelegate<User?> {
   final UsersService usersService;
   final FriendsService friendsService;
-  final int currentUserId;
+  final String currentUserEmail;
   final FriendsCubit friendsCubit;
 
   FriendSearchDelegate({
     required this.usersService,
     required this.friendsService,
-    required this.currentUserId,
+    required this.currentUserEmail,
     required this.friendsCubit,
   });
 
@@ -65,7 +65,7 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
         }
 
         // Skip showing the current user
-        if (user.id == currentUserId) {
+        if (user.email == currentUserEmail) {
           return Center(child: Text('This is your account'));
         }
 
@@ -99,9 +99,12 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
       );
     }
 
-    return FutureBuilder<List<User>>(
-      future: friendsService.searchUsersByEmail(searchText),
-      builder: (context, snapshot) {
+    return FutureBuilder(
+      future: Future.wait([
+        friendsService.searchUsersByEmail(searchText),
+        usersService.getCurrentUser(),
+      ]),
+      builder: (context, AsyncSnapshot<List<Object?>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
@@ -110,7 +113,8 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
 
-        final users = snapshot.data ?? [];
+        final users = snapshot.data?[0] as List<User>? ?? [];
+        final currentUser = snapshot.data?[1] as User?;
 
         if (users.isEmpty) {
           return Center(child: Text('No users found'));
@@ -121,16 +125,12 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
           itemBuilder: (context, index) {
             final user = users[index];
 
-            // Skip current user
-            if (user.id == currentUserId) {
+            if (user.id == currentUser?.id) {
               return SizedBox.shrink();
             }
 
             return ListTile(
               leading: Icon(Icons.person),
-              // leading: CircleAvatar(
-              //   backgroundImage: NetworkImage(user.profilePictureUrl ?? ''),
-              // ),
               title: Text(user.name),
               subtitle: Text(user.email),
               onTap: () {

@@ -63,7 +63,7 @@ class FriendsScreen extends StatelessWidget {
           delegate: FriendSearchDelegate(
             friendsService: friendsService,
             usersService: usersService,
-            currentUserId: authService.userId,
+            currentUserEmail: authService.userEmail,
             friendsCubit: friendsCubit,
           ),
         );

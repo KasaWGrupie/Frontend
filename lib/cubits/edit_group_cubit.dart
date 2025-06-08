@@ -2,21 +2,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/models/friend.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
-import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 class EditGroupCubit extends Cubit<EditGroupState> {
   final GroupService groupService;
   final FriendsService friendsService;
-  final AuthService authService;
+  final UsersService usersService;
   final int groupId;
 
   EditGroupCubit({
     required this.groupService,
     required this.groupId,
     required this.friendsService,
-    required this.authService,
+    required this.usersService,
   }) : super(EditGroupState.initial());
 
   Future<void> loadGroup() async {
@@ -24,7 +24,8 @@ class EditGroupCubit extends Cubit<EditGroupState> {
       final group = await groupService.getGroupById(groupId);
       final friends = await friendsService.getFriends();
       final groupMembers = await groupService.getUsersForGroup(groupId);
-      final currentUserId = authService.userId;
+      final currentUserId =
+          await usersService.getCurrentUser().then((user) => user!.id);
 
       final membersSet = group.membersId.toSet();
 

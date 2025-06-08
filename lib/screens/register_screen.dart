@@ -27,7 +27,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final authCubit = context.watch<AuthCubit>();
 
     return BlocProvider(
-      create: (context) => RegisterCubit(authService: authCubit.authService),
+      create: (context) => RegisterCubit(
+          authService: authCubit.authService,
+          usersService: authCubit.usersService),
       child: BaseScreen(
         title: 'Register',
         child: BlocListener<RegisterCubit, RegisterState>(

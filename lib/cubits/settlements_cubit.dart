@@ -3,22 +3,22 @@ import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/money_requests.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/screens/settlements_screen/widgets/settlement_item.dart';
-import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 class SettlementsCubit extends Cubit<SettlementsState> {
   final MoneyTransactionService _moneyTransactionService;
   final GroupService _groupService;
-  final AuthService _authService;
+  final UsersService _usersService;
 
   SettlementsCubit({
     required MoneyTransactionService moneyTransactionService,
     required GroupService groupService,
-    required AuthService authService,
+    required UsersService usersService,
   })  : _moneyTransactionService = moneyTransactionService,
         _groupService = groupService,
-        _authService = authService,
+        _usersService = usersService,
         super(SettlementsState.initial());
 
   Future<void> loadData() async {
@@ -30,7 +30,7 @@ class SettlementsCubit extends Cubit<SettlementsState> {
       final moneyTransfers =
           await _moneyTransactionService.getMoneyTransfersForUser();
       final groups = await _groupService.getGroupsForUser();
-      final user = await _authService.currentUser();
+      final user = await _usersService.getCurrentUser();
       final moneyRequests =
           await _moneyTransactionService.getMoneyRequestsForUser();
 

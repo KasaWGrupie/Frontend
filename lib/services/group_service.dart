@@ -2,7 +2,7 @@ import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/group_join_request.dart';
 import 'package:kasa_w_grupie/models/user.dart';
-import 'package:kasa_w_grupie/services/auth_service.dart';
+import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class GroupService {
   Future<String?> addGroup(Group group);
@@ -22,7 +22,7 @@ abstract class GroupService {
 }
 
 class GroupServiceMock implements GroupService {
-  final AuthService authService;
+  final UsersService usersService;
 
   final List<Group> allGroups = [
     Group(
@@ -30,13 +30,8 @@ class GroupServiceMock implements GroupService {
       name: "Wycieczka Marki",
       currency: CurrencyEnum.pln,
       status: GroupStatus.active,
-      adminId: 1,
-      membersId: [
-        1,
-        2,
-        6,
-        7,
-      ],
+      adminId: 6,
+      membersId: [6],
       invitationCode: "fjh4390h094",
     ),
   ];
@@ -48,8 +43,8 @@ class GroupServiceMock implements GroupService {
           "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
       date: DateTime.now(),
       amount: 100,
-      payer: "1",
-      split: ExpenseSplit(),
+      payer: 6,
+      split: ExpenseSplit.equal(participants: []),
       name: "Jedzenie",
     ),
     Expense(
@@ -58,8 +53,8 @@ class GroupServiceMock implements GroupService {
           "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
       date: DateTime.now().subtract(const Duration(days: 1)),
       amount: 100,
-      payer: "2",
-      split: ExpenseSplit(),
+      payer: 6,
+      split: ExpenseSplit.equal(participants: []),
       name: "Paliwo",
     ),
     Expense(
@@ -68,8 +63,8 @@ class GroupServiceMock implements GroupService {
           "https://cdn.pixabay.com/photo/2017/09/07/08/54/money-2724241__480.jpg",
       date: DateTime.now(),
       amount: 100,
-      payer: "1",
-      split: ExpenseSplit(),
+      payer: 6,
+      split: ExpenseSplit.equal(participants: []),
       name: "Spanie",
     ),
   ];
@@ -98,7 +93,7 @@ class GroupServiceMock implements GroupService {
     ]
   };
 
-  GroupServiceMock({required this.authService});
+  GroupServiceMock({required this.usersService});
 
   @override
   Future<String?> addGroup(Group group) async {
@@ -114,7 +109,7 @@ class GroupServiceMock implements GroupService {
   @override
   Future<List<Group>> getGroupsForUser() async {
     try {
-      final user = await authService.currentUser();
+      final user = await usersService.getCurrentUser();
 
       if (user == null) {
         return [];

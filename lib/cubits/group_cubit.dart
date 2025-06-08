@@ -72,6 +72,7 @@ class GroupCubit extends Cubit<GroupState> {
       Group group = await groupService.getGroupById(groupId);
       final balances = await groupService.getBalances(groupId);
       final settlements = calculateSettlements(balances);
+
       final members = <User>[];
       for (var userId in group.membersId) {
         var user = await usersService.getUser(userId);
@@ -82,6 +83,18 @@ class GroupCubit extends Cubit<GroupState> {
         members.add(user);
       }
 
+      int? userId = await usersService.getCurrentUser().then((user) {
+        if (user == null) {
+          emit(GroupError("User not found"));
+          return null;
+        }
+        return user.id;
+      });
+      if (userId == null) {
+        emit(GroupError("User not found"));
+        return;
+      }
+
       return emit(
         GroupLoaded(
           group: group,
@@ -89,7 +102,7 @@ class GroupCubit extends Cubit<GroupState> {
           balances: balances,
           settlements: settlements,
           members: members,
-          currentUserId: authService.userId,
+          currentUserId: userId,
         ),
       );
     } catch (e) {

@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/money_requests.dart';
 import 'package:kasa_w_grupie/models/money_transfer.dart';
@@ -9,6 +13,80 @@ abstract class MoneyTransactionService {
   Future<List<MoneyTransfer>> getMoneyTransfersForUser();
   Future<void> markAsPaid(int requestId);
   Future<void> rejectRequest(int requestId);
+}
+
+class MoneyTransactionsServiceApi implements MoneyTransactionService {
+  final AuthService authService;
+
+  MoneyTransactionsServiceApi({required this.authService});
+
+  Future<List<MoneyRequest>> getMoneyRequests(MoneyRequestStatus status) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/moneyRequest/findByRecipient');
+    final user = await authService.currentUser();
+
+    if (user == null) return [];
+
+    final params = {
+      'recipientId': user.id.toString(),
+      'status': status.name,
+    };
+    final a = url.replace(queryParameters: params);
+    final response = await http.get(a);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => MoneyRequest.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to fetch money requests');
+    }
+  }
+
+  @override
+  Future<List<MoneyRequest>> getMoneyRequestsForUser() {
+    return getMoneyRequests(MoneyRequestStatus.pending);
+  }
+
+  @override
+  Future<List<MoneyRequest>> getRejectedMoneyRequestsForUser() async {
+    return getMoneyRequests(MoneyRequestStatus.rejected);
+  }
+
+  Future<List<MoneyTransfer>> getMoneyTransfers(String who) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/moneyTransfer/findBy$who');
+    final user = await authService.currentUser();
+
+    if (user == null) return [];
+
+    final params = {"${who.toLowerCase()}Id": user.id.toString()};
+    final a = url.replace(queryParameters: params);
+    final response = await http.get(a);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => MoneyTransfer.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to fetch money transfers');
+    }
+  }
+
+  @override
+  Future<List<MoneyTransfer>> getMoneyTransfersForUser() async {
+    final from = await getMoneyTransfers('Sender');
+    final to = await getMoneyTransfers('Recipient');
+    return [...from, ...to];
+  }
+
+  @override
+  Future<void> markAsPaid(int requestId) {
+    // Implementation for marking a request as paid in API
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> rejectRequest(int requestId) {
+    // Implementation for rejecting a request in API
+    throw UnimplementedError();
+  }
 }
 
 class MoneyTransactionServiceMock implements MoneyTransactionService {

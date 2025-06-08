@@ -274,7 +274,7 @@ class _AppState extends State<_App> {
                   create: (context) => MockExpenseService(),
                 ),
                 Provider<MoneyTransactionService>(
-                    create: (context) => MoneyTransactionServiceMock(
+                    create: (context) => MoneyTransactionsServiceApi(
                         authService: context.read<AuthService>())),
                 Provider<FriendsService>(
                   create: (context) => MockFriendsService(

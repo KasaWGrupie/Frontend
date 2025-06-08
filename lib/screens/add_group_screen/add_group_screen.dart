@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/friends_list.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/invitation_code_tile.dart';
-import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/group_photo.dart';
 import 'package:kasa_w_grupie/screens/add_group_screen/widgets/currency_list.dart';
 import 'dart:math';

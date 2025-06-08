@@ -2,7 +2,6 @@ import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/group_join_request.dart';
 import 'package:kasa_w_grupie/models/user.dart';
-import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class GroupService {

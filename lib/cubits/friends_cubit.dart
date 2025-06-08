@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kasa_w_grupie/models/friend_request_user.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/friends_service.dart';
 
@@ -10,8 +11,8 @@ class FriendsLoading extends FriendsState {}
 
 class FriendsLoaded extends FriendsState {
   final List<User> friends;
-  final List<User> friendRequests;
-  final List<User> sentRequests;
+  final List<FriendRequestUser> friendRequests;
+  final List<FriendRequestUser> sentRequests;
 
   FriendsLoaded({
     required this.friends,
@@ -105,24 +106,6 @@ class FriendsCubit extends Cubit<FriendsState> {
           sentRequests: sentRequests));
     } catch (e) {
       emit(FriendsError("Failed to send friend request"));
-    }
-  }
-
-  // Remove a friend
-  Future<void> removeFriend(int friendId) async {
-    try {
-      await friendsService.removeFriend(friendId);
-
-      // After removing the friend, reload the friends list
-      final friends = await friendsService.getFriends();
-      final friendRequests = await friendsService.getFriendRequests();
-      final sentRequests = await friendsService.getSentRequests();
-      emit(FriendsLoaded(
-          friends: friends,
-          friendRequests: friendRequests,
-          sentRequests: sentRequests));
-    } catch (e) {
-      emit(FriendsError("Failed to remove friend"));
     }
   }
 

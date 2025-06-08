@@ -82,9 +82,8 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // TODO: build more advanced suggestions
-
-    if (query.isEmpty) {
+    final searchText = query.trim();
+    if (searchText.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -100,9 +99,48 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
       );
     }
 
-    // Show loading indicator when typing
-    return Center(
-      child: CircularProgressIndicator(),
+    return FutureBuilder(
+      future: Future.wait([
+        friendsService.searchUsersByEmail(searchText),
+        usersService.getCurrentUser(),
+      ]),
+      builder: (context, AsyncSnapshot<List<Object?>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final users = snapshot.data?[0] as List<User>? ?? [];
+        final currentUser = snapshot.data?[1] as User?;
+
+        if (users.isEmpty) {
+          return Center(child: Text('No users found'));
+        }
+
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final user = users[index];
+
+            if (user.id == currentUser?.id) {
+              return SizedBox.shrink();
+            }
+
+            return ListTile(
+              leading: Icon(Icons.person),
+              title: Text(user.name),
+              subtitle: Text(user.email),
+              onTap: () {
+                query = user.email;
+                showResults(context);
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

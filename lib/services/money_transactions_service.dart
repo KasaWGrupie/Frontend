@@ -1,7 +1,6 @@
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/money_requests.dart';
 import 'package:kasa_w_grupie/models/money_transfer.dart';
-import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class MoneyTransactionService {

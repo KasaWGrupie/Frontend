@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/friends_cubit.dart';
+import 'package:kasa_w_grupie/models/friend_request_user.dart';
 
 class SentRequestsTab extends StatelessWidget {
   const SentRequestsTab({super.key});
@@ -22,8 +23,8 @@ class SentRequestsTab extends StatelessWidget {
               final friend = state.sentRequests[index];
               return ListTile(
                 leading: CircleAvatar(child: Icon(Icons.person)),
-                title: Text(friend.name),
-                subtitle: Text(friend.email),
+                title: Text(friend.user.name),
+                subtitle: Text(friend.user.email),
                 trailing: CircleAvatar(
                   radius: 20,
                   backgroundColor: Colors.orangeAccent,
@@ -47,7 +48,7 @@ class SentRequestsTab extends StatelessWidget {
   }
 
   // Confirmation dialog to withdraw the request
-  void _showConfirmDialog(BuildContext context, friend) {
+  void _showConfirmDialog(BuildContext context, FriendRequestUser friend) {
     final friendsCubit = context.read<FriendsCubit>();
 
     showDialog(
@@ -56,12 +57,12 @@ class SentRequestsTab extends StatelessWidget {
         return AlertDialog(
           title: Text("Withdraw Friend Request"),
           content: Text(
-              "Are you sure you want to withdraw your friend request to ${friend.name}?"),
+              "Are you sure you want to withdraw your friend request to ${friend.user.name}?"),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                friendsCubit.withdrawFriendRequest(friend.id);
+                friendsCubit.withdrawFriendRequest(friend.requestId);
               },
               child: Text("Yes"),
             ),

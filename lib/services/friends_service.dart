@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:kasa_w_grupie/config/api_config.dart';
+import 'package:kasa_w_grupie/models/friend_request_user.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/user.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
@@ -9,28 +10,39 @@ import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class FriendsService {
   Future<List<User>> getFriends();
-  Future<List<User>> getFriendRequests();
-  Future<List<User>> getSentRequests();
-  Future<void> acceptFriendRequest(int friendId);
-  Future<void> declineFriendRequest(int friendId);
+  Future<List<FriendRequestUser>> getFriendRequests();
+  Future<List<FriendRequestUser>> getSentRequests();
+  Future<void> acceptFriendRequest(int requestId);
+  Future<void> declineFriendRequest(int requestId);
   Future<void> sendFriendRequest(String email);
-  Future<void> withdrawFriendRequest(int friendId);
-  Future<void> removeFriend(int targetUserId);
-  bool isAlreadyFriend(int targetUserId);
-  bool isRequestSentByUser(int targetUserId);
-  bool isRequestReceived(int targetUserId);
+  Future<void> withdrawFriendRequest(int requestId);
+  Future<bool> isAlreadyFriend(int targetUserId);
+  Future<bool> isRequestSentByUser(int targetUserId);
+  Future<bool> isRequestReceived(int targetUserId);
   Future<Map<String, dynamic>> getUserBalances(int userId);
   Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(int userId);
+  Future<List<User>> searchUsersByEmail(String query);
 }
 
 class FriendsServiceApi implements FriendsService {
   final UsersService usersService;
+  final AuthService authService;
 
   FriendsServiceApi({
     required this.usersService,
+    required this.authService,
   });
 
   String get baseUrl => ApiConfig.baseUrl;
+
+  Future<Map<String, String>> getAuthHeaders() async {
+    final idToken = await authService.userIdToken();
+    return {
+      'Authorization': 'Bearer $idToken',
+      'Accept': '*/*',
+      'Content-Type': 'application/json',
+    };
+  }
 
   @override
   Future<List<User>> getFriends() async {
@@ -40,7 +52,7 @@ class FriendsServiceApi implements FriendsService {
     }
     final currentUserId = currentUser.id;
     final url = Uri.parse('${ApiConfig.baseUrl}/users/friends/$currentUserId');
-    final response = await http.get(url);
+    final response = await http.get(url, headers: await getAuthHeaders());
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -51,32 +63,250 @@ class FriendsServiceApi implements FriendsService {
   }
 
   @override
-  Future<List<User>> getFriendRequests() => throw UnimplementedError();
+  Future<List<FriendRequestUser>> getFriendRequests() async {
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+
+    final url =
+        Uri.parse('$baseUrl/users/${currentUser.id}/receivedFriendRequests');
+    final response = await http.get(url, headers: await getAuthHeaders());
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      final List<FriendRequestUser> requestUsers = [];
+
+      for (final request in data) {
+        int friendId = request['senderId'];
+        final user = await usersService.getUser(friendId);
+        if (user != null) {
+          requestUsers.add(FriendRequestUser(
+            user: user,
+            requestId: request['id'],
+          ));
+        }
+      }
+
+      return requestUsers;
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      throw Exception('Failed to load friend requests');
+    }
+  }
+
   @override
-  Future<List<User>> getSentRequests() => throw UnimplementedError();
+  Future<List<FriendRequestUser>> getSentRequests() async {
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+
+    final url =
+        Uri.parse('$baseUrl/users/${currentUser.id}/sentFriendRequests');
+    final response = await http.get(url, headers: await getAuthHeaders());
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      final List<FriendRequestUser> sentRequestUsers = [];
+
+      for (final request in data) {
+        int friendId = request['receiverId'];
+        final user = await usersService.getUser(friendId);
+        if (user != null) {
+          sentRequestUsers.add(FriendRequestUser(
+            user: user,
+            requestId: request['id'],
+          ));
+        }
+      }
+
+      return sentRequestUsers;
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      throw Exception('Failed to load friend requests');
+    }
+  }
+
   @override
-  Future<void> acceptFriendRequest(int friendId) => throw UnimplementedError();
+  Future<void> acceptFriendRequest(int requestId) async {
+    final url = Uri.parse('$baseUrl/users/friendRequests/$requestId');
+
+    final response = await http.post(
+      url,
+      headers: await getAuthHeaders(),
+      body: jsonEncode({
+        'status': 'Confirmed',
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to accept friend request');
+    }
+  }
+
   @override
-  Future<void> declineFriendRequest(int friendId) => throw UnimplementedError();
+  Future<void> declineFriendRequest(int requestId) async {
+    final url = Uri.parse('$baseUrl/users/friendRequests/$requestId');
+
+    final response = await http.post(
+      url,
+      headers: await getAuthHeaders(),
+      body: jsonEncode({'status': 'Rejected'}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to decline friend request');
+    }
+  }
+
   @override
-  Future<void> sendFriendRequest(String email) => throw UnimplementedError();
+  Future<void> sendFriendRequest(String email) async {
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+    final senderId = currentUser.id;
+    final receiver = await usersService.getUserByEmail(email);
+
+    if (receiver == null) {
+      throw Exception('User with email $email not found');
+    }
+
+    final receiverId = receiver.id;
+
+    final url = Uri.parse('$baseUrl/users/friendRequests');
+
+    final body = jsonEncode({
+      'senderId': senderId,
+      'receiverId': receiverId,
+    });
+
+    final response = await http.post(
+      url,
+      headers: await getAuthHeaders(),
+      body: body,
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Failed to send friend request: ${response.body}');
+    }
+  }
+
   @override
-  Future<void> withdrawFriendRequest(int friendId) =>
-      throw UnimplementedError();
+  Future<void> withdrawFriendRequest(int requestId) async {
+    await declineFriendRequest(requestId);
+  }
+
   @override
-  Future<void> removeFriend(int targetUserId) => throw UnimplementedError();
+  Future<bool> isAlreadyFriend(int targetUserId) async {
+    final friends = await getFriends();
+    return friends.any((friend) => friend.id == targetUserId);
+  }
+
   @override
-  bool isAlreadyFriend(int targetUserId) => throw UnimplementedError();
+  Future<bool> isRequestSentByUser(int targetUserId) async {
+    final sentRequests = await getSentRequests();
+    return sentRequests.any((request) => request.user.id == targetUserId);
+  }
+
   @override
-  bool isRequestSentByUser(int targetUserId) => throw UnimplementedError();
+  Future<bool> isRequestReceived(int targetUserId) async {
+    final receivedRequests = await getFriendRequests();
+    return receivedRequests.any((request) => request.user.id == targetUserId);
+  }
+
   @override
-  bool isRequestReceived(int targetUserId) => throw UnimplementedError();
+  Future<Map<String, dynamic>> getUserBalances(int userId) async {
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+    final currentUserId = currentUser.id;
+
+    final url = Uri.parse('$baseUrl/users/$currentUserId/balances');
+
+    final response = await http.get(url, headers: await getAuthHeaders());
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonBody = json.decode(response.body);
+
+      if (jsonBody['owedByOthers'] is List &&
+          jsonBody['owesToOthers'] is List) {
+        final owedByOthers = jsonBody['owedByOthers'] as List;
+        final owesToOthers = jsonBody['owesToOthers'] as List;
+
+        double totalOwedToUser = 0.0;
+        double totalUserOwes = 0.0;
+
+        for (var item in owedByOthers) {
+          if (item['userId'] == userId) {
+            totalOwedToUser += (item['amount'] ?? 0).toDouble();
+          }
+        }
+
+        for (var item in owesToOthers) {
+          if (item['userId'] == userId) {
+            totalUserOwes += (item['amount'] ?? 0).toDouble();
+          }
+        }
+
+        final net = totalOwedToUser - totalUserOwes;
+
+        return {
+          "isOwedToUser": net >= 0,
+          "amount": net.abs(),
+        };
+      } else {
+        throw Exception('Invalid response format');
+      }
+    } else {
+      throw Exception('Failed to load user balances: ${response.statusCode}');
+    }
+  }
+
   @override
-  Future<Map<String, dynamic>> getUserBalances(int userId) =>
-      throw UnimplementedError();
+  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(
+      int userId) async {
+    final currentUser = await usersService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+    final url = Uri.parse('$baseUrl/users/${currentUser.id}/balances/$userId');
+
+    final response = await http.get(url, headers: await getAuthHeaders());
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonBody = json.decode(response.body);
+
+      if (jsonBody['balances'] is List) {
+        return List<Map<String, dynamic>>.from(jsonBody['balances']);
+      } else {
+        throw Exception('Invalid response structure');
+      }
+    } else {
+      throw Exception('Failed to load balances: ${response.statusCode}');
+    }
+  }
+
   @override
-  Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(int userId) =>
-      throw UnimplementedError();
+  Future<List<User>> searchUsersByEmail(String query) async {
+    final url = Uri.parse('$baseUrl/users/email/search/$query');
+
+    final response = await http.get(url, headers: await getAuthHeaders());
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+
+      return jsonList.map((json) => User.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to search users by email');
+    }
+  }
 }
 
 class MockFriendsService implements FriendsService {
@@ -107,16 +337,16 @@ class MockFriendsService implements FriendsService {
   final List<int> friendships = [2, 3, 4];
 
   // Mock pending friend requests for logged-in user
-  final List<int> friendRequests = [
-    5,
-    6,
-    7,
-    8,
+  final List<Map<String, dynamic>> friendRequests = [
+    {"userId": 5, "requestId": 100},
+    {"userId": 6, "requestId": 101},
+    {"userId": 7, "requestId": 102},
+    {"userId": 8, "requestId": 103},
   ];
 
-  final List<int> sentByUserRequests = [
-    10,
-    11,
+  final List<Map<String, dynamic>> sentByUserRequests = [
+    {"userId": 10, "requestId": 200},
+    {"userId": 11, "requestId": 201},
   ];
 
   final Map<int, Map<bool, double>> balances = {
@@ -169,36 +399,38 @@ class MockFriendsService implements FriendsService {
 
   // Fetch incoming friend requests for the logged-in user
   @override
-  Future<List<User>> getFriendRequests() async {
+  Future<List<FriendRequestUser>> getFriendRequests() async {
     await Future.delayed(Duration(milliseconds: 250));
-    return mockUsers.where((user) => friendRequests.contains(user.id)).toList();
+    return friendRequests.map((request) {
+      final user = mockUsers.firstWhere((u) => u.id == request['userId']);
+      return FriendRequestUser(user: user, requestId: request['requestId']);
+    }).toList();
   }
 
   @override
-  Future<List<User>> getSentRequests() async {
+  Future<List<FriendRequestUser>> getSentRequests() async {
     await Future.delayed(Duration(milliseconds: 250));
-    return mockUsers
-        .where((user) => sentByUserRequests.contains(user.id))
-        .toList();
+    return sentByUserRequests.map((request) {
+      final user = mockUsers.firstWhere((u) => u.id == request['userId']);
+      return FriendRequestUser(user: user, requestId: request['requestId']);
+    }).toList();
   }
 
   // Accept friend request
   @override
-  Future<void> acceptFriendRequest(int friendId) async {
+  Future<void> acceptFriendRequest(int requestId) async {
     await Future.delayed(Duration(milliseconds: 100));
-
-    // Since this is only a mock service we add new friend only for currently
-    // logged user, in future it will be changed
-
-    friendRequests.remove(friendId);
-    friendships.add(friendId);
+    final request =
+        friendRequests.firstWhere((r) => r['requestId'] == requestId);
+    friendships.add(request['userId']);
+    friendRequests.removeWhere((r) => r['requestId'] == requestId);
   }
 
   // Decline friend request
   @override
-  Future<void> declineFriendRequest(int friendId) async {
+  Future<void> declineFriendRequest(int requestId) async {
     await Future.delayed(Duration(milliseconds: 100));
-    friendRequests.remove(friendId);
+    friendRequests.removeWhere((request) => request['requestId'] == requestId);
   }
 
   // Send a friend request to another user by their email
@@ -209,7 +441,16 @@ class MockFriendsService implements FriendsService {
     User? user = await usersService.getUserByEmail(email);
 
     if (user != null) {
-      sentByUserRequests.add(user.id);
+      // Prevent duplicates
+      if (!sentByUserRequests.any((r) => r['userId'] == user.id)) {
+        final int newRequestId = DateTime.now().millisecondsSinceEpoch;
+        sentByUserRequests.add({
+          'userId': user.id,
+          'requestId': newRequestId,
+        });
+      }
+      // if (user != null) {
+      //   sentByUserRequests.add(user.id);
     } else {
       throw Exception("User not found or invalid request.");
     }
@@ -217,32 +458,24 @@ class MockFriendsService implements FriendsService {
 
   // Withdraw friend request sent by logged-in user
   @override
-  Future<void> withdrawFriendRequest(int friendId) async {
+  Future<void> withdrawFriendRequest(int requestId) async {
     await Future.delayed(Duration(milliseconds: 100));
-    sentByUserRequests.remove(friendId);
-  }
-
-  // Delete user from logged-in user friends list
-  @override
-  Future<void> removeFriend(int targetUserId) async {
-    await Future.delayed(Duration(milliseconds: 100));
-
-    friendships.removeWhere((user) => user == targetUserId);
+    sentByUserRequests.removeWhere((r) => r['requestId'] == requestId);
   }
 
   @override
-  bool isAlreadyFriend(int targetUserId) {
+  Future<bool> isAlreadyFriend(int targetUserId) async {
     return friendships.any((user) => user == targetUserId);
   }
 
   @override
-  bool isRequestSentByUser(int targetUserId) {
-    return sentByUserRequests.any((user) => user == targetUserId);
+  Future<bool> isRequestSentByUser(int targetUserId) async {
+    return sentByUserRequests.any((r) => r['userId'] == targetUserId);
   }
 
   @override
-  bool isRequestReceived(int targetUserId) {
-    return friendRequests.any((user) => user == targetUserId);
+  Future<bool> isRequestReceived(int targetUserId) async {
+    return friendRequests.any((r) => r['userId'] == targetUserId);
   }
 
   @override
@@ -283,5 +516,13 @@ class MockFriendsService implements FriendsService {
     }
 
     return balancesList;
+  }
+
+  @override
+  Future<List<User>> searchUsersByEmail(String query) async {
+    await Future.delayed(Duration(milliseconds: 300)); // simulate latency
+    return mockUsers
+        .where((user) => user.email.toLowerCase().contains(query.toLowerCase()))
+        .toList();
   }
 }

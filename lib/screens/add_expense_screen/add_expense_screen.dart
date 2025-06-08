@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/group_cubit.dart';
-import 'package:kasa_w_grupie/models/expense.dart';
-import 'package:kasa_w_grupie/models/new_expense.dart';
-import 'package:kasa_w_grupie/models/user.dart';
-import 'package:kasa_w_grupie/screens/add_expense_screen/expense_split_dialog.dart';
 import 'package:kasa_w_grupie/screens/add_expense_screen/manual_expense_screen.dart';
 import 'package:kasa_w_grupie/screens/add_expense_screen/receipt_expense_screen.dart';
 import 'package:kasa_w_grupie/services/expense_service.dart';

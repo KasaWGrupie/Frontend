@@ -1,6 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:kasa_w_grupie/models/user.dart' as u;
-import 'package:kasa_w_grupie/services/users_service.dart';
 
 enum SignInResult {
   invalidEmail,
@@ -99,8 +97,6 @@ class FirebaseAuthService implements AuthService {
       if (credential.user == null) {
         return 'Firebase auth failed';
       }
-      final user = credential.user!;
-      final _cachedToken = await user.getIdToken();
 
       return null;
     } on FirebaseAuthException catch (e) {

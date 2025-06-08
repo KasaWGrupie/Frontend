@@ -31,8 +31,8 @@ class MockExpenseService implements ExpenseService {
       pictureUrl: "https://example.com/sample.jpg",
       date: DateTime.now(),
       amount: 100.0,
-      payer: 1,
-      split: ExpenseSplit.equal(participants: [1, 2]),
+      payer: 6,
+      split: ExpenseSplit.equal(participants: [6]),
       description: "Sample description",
     );
   }

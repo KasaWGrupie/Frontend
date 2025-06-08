@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/cubits/group_join_requests_cubit.dart';
 
 class GroupJoinRequestsScreen extends StatelessWidget {
-  final String groupId;
+  final int groupId;
 
   const GroupJoinRequestsScreen({super.key, required this.groupId});
 

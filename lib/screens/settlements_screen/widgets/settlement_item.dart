@@ -2,10 +2,10 @@ import 'package:kasa_w_grupie/models/money_requests.dart';
 import 'package:kasa_w_grupie/models/money_transfer.dart';
 
 class SettlementItem {
-  final String senderId;
-  final String recipientId;
+  final int senderId;
+  final int recipientId;
   final double amount;
-  final List<String> groupIds;
+  final List<int> groupIds;
   final DateTime finalizedAt;
   final bool isTransfer;
   final bool isRejected;

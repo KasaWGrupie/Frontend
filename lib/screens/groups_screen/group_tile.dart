@@ -10,7 +10,7 @@ class GroupTile extends StatelessWidget {
   });
 
   final String groupName;
-  final String groupId;
+  final int groupId;
   final String? imageUrl;
 
   @override

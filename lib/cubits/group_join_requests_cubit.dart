@@ -18,7 +18,7 @@ class GroupJoinRequestsError extends GroupJoinRequestsState {
 
 class GroupJoinRequestsCubit extends Cubit<GroupJoinRequestsState> {
   final GroupService groupService;
-  final String groupId;
+  final int groupId;
 
   GroupJoinRequestsCubit({required this.groupService, required this.groupId})
       : super(GroupJoinRequestsLoading());
@@ -32,7 +32,7 @@ class GroupJoinRequestsCubit extends Cubit<GroupJoinRequestsState> {
     }
   }
 
-  Future<void> respondToRequest(String requestId, bool accept) async {
+  Future<void> respondToRequest(int requestId, bool accept) async {
     try {
       await groupService.respondToJoinRequest(groupId, requestId, accept);
       fetchRequests();

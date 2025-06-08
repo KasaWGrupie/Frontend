@@ -39,7 +39,7 @@ class MemberTile extends StatelessWidget {
   });
 
   final User user;
-  final Map<String, double>? balances;
+  final Map<int, double>? balances;
   final String currency;
 
   @override

@@ -19,7 +19,7 @@ abstract class AuthService {
 
   Future<String> userName();
 
-  String get userId;
+  int get userId;
 
   Future<u.User?> currentUser();
 
@@ -89,9 +89,7 @@ class AuthServiceMock implements AuthService {
 
     // Create a new user and add to the "database"
     final newUser = u.User(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        email: email);
+        id: DateTime.now().millisecondsSinceEpoch, name: name, email: email);
     _users[email] = newUser;
 
     return null;
@@ -105,7 +103,7 @@ class AuthServiceMock implements AuthService {
 
   @override
   // TODO: implement userId
-  String get userId => _currentUser!.id;
+  int get userId => _currentUser!.id;
 
   @override
   Future<u.User?> currentUser() async {
@@ -114,13 +112,16 @@ class AuthServiceMock implements AuthService {
 }
 
 class FirebaseAuthService implements AuthService {
-  const FirebaseAuthService({
+  FirebaseAuthService({
     required this.userService,
     required this.firebaseAuth,
   });
 
   final FirebaseAuth firebaseAuth;
   final UsersService userService;
+
+  u.User? _cachedUser;
+
   @override
   bool get isSignedIn => firebaseAuth.currentUser != null;
 
@@ -129,13 +130,29 @@ class FirebaseAuthService implements AuthService {
       firebaseAuth.userChanges().map((user) => user != null);
 
   @override
-  String get userEmail => firebaseAuth.currentUser!.email!;
+  String get userEmail => firebaseAuth.currentUser?.email ?? '';
 
   @override
   Future<String> userName() async {
-    return userService
-        .getUser(firebaseAuth.currentUser!.uid)
-        .then((value) => value!.name);
+    final user = await currentUser();
+    return user?.name ?? '';
+  }
+
+  @override
+  int get userId {
+    if (_cachedUser != null) return _cachedUser!.id;
+    throw Exception("User not loaded yet.");
+  }
+
+  @override
+  Future<u.User?> currentUser() async {
+    if (_cachedUser != null) return _cachedUser;
+
+    final email = firebaseAuth.currentUser?.email;
+    if (email == null) return null;
+
+    _cachedUser = await userService.getUserByEmail(email);
+    return _cachedUser;
   }
 
   @override
@@ -150,6 +167,9 @@ class FirebaseAuthService implements AuthService {
         password: password,
       );
 
+      _cachedUser = await userService.getUserByEmail(email);
+      if (_cachedUser == null) return SignInResult.userNotFound;
+
       return SignInResult.success;
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -157,7 +177,8 @@ class FirebaseAuthService implements AuthService {
           return SignInResult.invalidEmail;
         case 'user-disabled':
           return SignInResult.userDisabled;
-        case 'user-not-found' || 'invalid-credential':
+        case 'user-not-found':
+        case 'invalid-credential':
           return SignInResult.userNotFound;
         case 'wrong-password':
           return SignInResult.wrongPassword;
@@ -182,26 +203,35 @@ class FirebaseAuthService implements AuthService {
         email: email,
         password: password,
       );
+
       if (credential.user == null) {
-        return 'Error occurred';
+        return 'Firebase auth failed';
+      }
+      final user = credential.user!;
+      final token = await user.getIdToken();
+
+      if (token != null) {
+        await userService.createUser(
+          name: name,
+          email: user.email!,
+          profilePicture: null,
+          idToken: token,
+        );
+      } else {
+        throw Exception("Couldn't retrive authorization token");
       }
 
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
-    } catch (err) {
-      return 'Error occurred';
+    } catch (_) {
+      return 'Unexpected error';
     }
   }
 
   @override
-  Future<void> signOut() => firebaseAuth.signOut();
-
-  @override
-  String get userId => firebaseAuth.currentUser!.uid;
-
-  @override
-  Future<u.User?> currentUser() {
-    return userService.getUser(firebaseAuth.currentUser!.uid);
+  Future<void> signOut() async {
+    _cachedUser = null;
+    await firebaseAuth.signOut();
   }
 }

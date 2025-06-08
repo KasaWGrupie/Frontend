@@ -39,10 +39,10 @@ class GroupLoaded extends GroupState {
   final Group group;
   final List<Expense> expenses;
   late Map<DateTime, List<Expense>> grouped;
-  final Map<String, double> balances;
+  final Map<int, double> balances;
   final List<Settlement> settlements;
   final List<User> members;
-  final String currentUserId;
+  final int currentUserId;
 }
 
 class GroupError extends GroupState {
@@ -57,7 +57,7 @@ class GroupCubit extends Cubit<GroupState> {
     required this.usersService,
     required this.authService,
   }) : super(GroupLoading());
-  final String groupId;
+  final int groupId;
   final GroupService groupService;
   final UsersService usersService;
   final AuthService authService;
@@ -98,9 +98,9 @@ class GroupCubit extends Cubit<GroupState> {
     }
   }
 
-  List<Settlement> calculateSettlements(Map<String, double> balances) {
-    final creditors = <String, double>{};
-    final debtors = <String, double>{};
+  List<Settlement> calculateSettlements(Map<int, double> balances) {
+    final creditors = <int, double>{};
+    final debtors = <int, double>{};
     balances.forEach((user, balance) {
       if (balance > 0) {
         creditors[user] = balance;

@@ -133,7 +133,7 @@ class GroupServiceMock implements GroupService {
   @override
   Future<List<User>> getUsersForGroup(int groupId) async {
     // For now return the same set of users
-    return Future.value(usersPerGroups["0"]);
+    return Future.value(usersPerGroups[0]);
   }
 
   // Get a group by its ID
@@ -152,8 +152,8 @@ class GroupServiceMock implements GroupService {
 
       if (index != -1) {
         final oldGroup = allGroups[index];
-        final oldMembers = Set<String>.from(oldGroup.membersId);
-        final newMembers = Set<String>.from(group.membersId);
+        final oldMembers = Set<int>.from(oldGroup.membersId);
+        final newMembers = Set<int>.from(group.membersId);
 
         final removedMembers = oldMembers.difference(newMembers);
 

@@ -16,12 +16,12 @@ abstract class FriendsService {
   Future<void> declineFriendRequest(int requestId);
   Future<void> sendFriendRequest(String email);
   Future<void> withdrawFriendRequest(int requestId);
-  Future<void> removeFriend(int targetUserId);
-  bool isAlreadyFriend(int targetUserId);
-  bool isRequestSentByUser(int targetUserId);
-  bool isRequestReceived(int targetUserId);
+  Future<bool> isAlreadyFriend(int targetUserId);
+  Future<bool> isRequestSentByUser(int targetUserId);
+  Future<bool> isRequestReceived(int targetUserId);
   Future<Map<String, dynamic>> getUserBalances(int userId);
   Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(int userId);
+  Future<List<User>> searchUsersByEmail(String query);
 }
 
 class FriendsServiceApi implements FriendsService {
@@ -81,6 +81,7 @@ class FriendsServiceApi implements FriendsService {
   }
 
   @override
+  //TODO change api request
   Future<List<FriendRequestUser>> getSentRequests() async {
     final url = Uri.parse('$baseUrl/users/$currentUserId/friendRequests');
     final response = await http.get(url);
@@ -112,29 +113,110 @@ class FriendsServiceApi implements FriendsService {
   }
 
   @override
-  Future<void> acceptFriendRequest(int requestId) => throw UnimplementedError();
+  Future<void> acceptFriendRequest(int requestId) async {
+    final url = Uri.parse('$baseUrl/users/friendRequests/$requestId');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'status': 'Confirmed',
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to accept friend request');
+    }
+  }
+
   @override
-  Future<void> declineFriendRequest(int requestId) =>
-      throw UnimplementedError();
+  Future<void> declineFriendRequest(int requestId) async {
+    final url = Uri.parse('$baseUrl/users/friendRequests/$requestId');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'status': 'Rejected'}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to decline friend request');
+    }
+  }
+
   @override
-  Future<void> sendFriendRequest(String email) => throw UnimplementedError();
+  Future<void> sendFriendRequest(String email) async {
+    final senderId = currentUserId;
+    final receiver = await usersService.getUserByEmail(email);
+
+    if (receiver == null) {
+      throw Exception('User with email $email not found');
+    }
+
+    final receiverId = receiver.id;
+
+    final url = Uri.parse('$baseUrl/users/friendRequests');
+
+    final body = jsonEncode({
+      'senderId': senderId,
+      'receiverId': receiverId,
+    });
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Failed to send friend request: ${response.body}');
+    }
+  }
+
   @override
-  Future<void> withdrawFriendRequest(int requestId) =>
-      throw UnimplementedError();
+  Future<void> withdrawFriendRequest(int requestId) async {
+    await declineFriendRequest(requestId);
+  }
+
   @override
-  Future<void> removeFriend(int targetUserId) => throw UnimplementedError();
+  Future<bool> isAlreadyFriend(int targetUserId) async {
+    final friends = await getFriends();
+    return friends.any((friend) => friend.id == targetUserId);
+  }
+
   @override
-  bool isAlreadyFriend(int targetUserId) => throw UnimplementedError();
+  Future<bool> isRequestSentByUser(int targetUserId) async {
+    final sentRequests = await getSentRequests();
+    return sentRequests.any((request) => request.user.id == targetUserId);
+  }
+
   @override
-  bool isRequestSentByUser(int targetUserId) => throw UnimplementedError();
-  @override
-  bool isRequestReceived(int targetUserId) => throw UnimplementedError();
+  Future<bool> isRequestReceived(int targetUserId) async {
+    final receivedRequests = await getFriendRequests();
+    return receivedRequests.any((request) => request.user.id == targetUserId);
+  }
+
   @override
   Future<Map<String, dynamic>> getUserBalances(int userId) =>
       throw UnimplementedError();
   @override
   Future<List<Map<String, dynamic>>> getUserBalancesWithGroups(int userId) =>
       throw UnimplementedError();
+
+  @override
+  Future<List<User>> searchUsersByEmail(String query) async {
+    final url = Uri.parse('$baseUrl/users/email/search/$query');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+
+      return jsonList.map((json) => User.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to search users by email');
+    }
+  }
 }
 
 class MockFriendsService implements FriendsService {
@@ -293,26 +375,18 @@ class MockFriendsService implements FriendsService {
     sentByUserRequests.removeWhere((r) => r['requestId'] == requestId);
   }
 
-  // Delete user from logged-in user friends list
   @override
-  Future<void> removeFriend(int targetUserId) async {
-    await Future.delayed(Duration(milliseconds: 100));
-
-    friendships.removeWhere((user) => user == targetUserId);
-  }
-
-  @override
-  bool isAlreadyFriend(int targetUserId) {
+  Future<bool> isAlreadyFriend(int targetUserId) async {
     return friendships.any((user) => user == targetUserId);
   }
 
   @override
-  bool isRequestSentByUser(int targetUserId) {
+  Future<bool> isRequestSentByUser(int targetUserId) async {
     return sentByUserRequests.any((r) => r['userId'] == targetUserId);
   }
 
   @override
-  bool isRequestReceived(int targetUserId) {
+  Future<bool> isRequestReceived(int targetUserId) async {
     return friendRequests.any((r) => r['userId'] == targetUserId);
   }
 
@@ -354,5 +428,13 @@ class MockFriendsService implements FriendsService {
     }
 
     return balancesList;
+  }
+
+  @override
+  Future<List<User>> searchUsersByEmail(String query) async {
+    await Future.delayed(Duration(milliseconds: 300)); // simulate latency
+    return mockUsers
+        .where((user) => user.email.toLowerCase().contains(query.toLowerCase()))
+        .toList();
   }
 }

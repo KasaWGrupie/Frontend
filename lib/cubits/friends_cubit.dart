@@ -109,24 +109,6 @@ class FriendsCubit extends Cubit<FriendsState> {
     }
   }
 
-  // Remove a friend
-  Future<void> removeFriend(int friendId) async {
-    try {
-      await friendsService.removeFriend(friendId);
-
-      // After removing the friend, reload the friends list
-      final friends = await friendsService.getFriends();
-      final friendRequests = await friendsService.getFriendRequests();
-      final sentRequests = await friendsService.getSentRequests();
-      emit(FriendsLoaded(
-          friends: friends,
-          friendRequests: friendRequests,
-          sentRequests: sentRequests));
-    } catch (e) {
-      emit(FriendsError("Failed to remove friend"));
-    }
-  }
-
   // Withdraw friend request sent by logged-in user
   Future<void> withdrawFriendRequest(int friendId) async {
     try {

@@ -29,9 +29,11 @@ class UserProfilePreview extends StatelessWidget {
         bool isLoading = state is FriendsLoading;
 
         // Friendship status
-        bool isFriend = friendsService.isAlreadyFriend(user.id);
-        bool hasSentRequest = friendsService.isRequestSentByUser(user.id);
-        bool hasReceivedRequest = friendsService.isRequestReceived(user.id);
+        Future<bool> isFriend = friendsService.isAlreadyFriend(user.id);
+        Future<bool> hasSentRequest =
+            friendsService.isRequestSentByUser(user.id);
+        Future<bool> hasReceivedRequest =
+            friendsService.isRequestReceived(user.id);
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -85,6 +87,7 @@ class UserProfilePreview extends StatelessWidget {
                       isFriend: isFriend,
                       hasSentRequest: hasSentRequest,
                       hasReceivedRequest: hasReceivedRequest,
+                      user: user,
                     ),
                 ],
               ),
@@ -98,62 +101,76 @@ class UserProfilePreview extends StatelessWidget {
   // Helper widget showing buttons based on friendship status
   Widget buildActionButton(
     BuildContext context, {
-    required bool isFriend,
-    required bool hasSentRequest,
-    required bool hasReceivedRequest,
+    required Future<bool> isFriend,
+    required Future<bool> hasSentRequest,
+    required Future<bool> hasReceivedRequest,
+    required User user,
   }) {
     final friendsCubit = context.read<FriendsCubit>();
 
-    if (isFriend) {
-      return ElevatedButton.icon(
-        onPressed: () => friendsCubit.removeFriend(user.id),
-        icon: const Icon(Icons.person_remove),
-        label: const Text('Unfriend'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 231, 79, 79),
-        ),
-      );
-    } else if (hasSentRequest) {
-      return ElevatedButton.icon(
-        onPressed: () => friendsCubit.withdrawFriendRequest(user.id),
-        icon: const Icon(Icons.cancel),
-        label: const Text('Cancel Request'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.orangeAccent,
-        ),
-      );
-    } else if (hasReceivedRequest) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ElevatedButton.icon(
-            onPressed: () => friendsCubit.acceptFriendRequest(user.id),
-            icon: const Icon(Icons.check),
-            label: const Text('Accept'),
+    return FutureBuilder<List<bool>>(
+      future: Future.wait([isFriend, hasSentRequest, hasReceivedRequest]),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const CircularProgressIndicator();
+        }
+
+        final isFriendResult = snapshot.data![0];
+        final hasSentRequestResult = snapshot.data![1];
+        final hasReceivedRequestResult = snapshot.data![2];
+
+        if (isFriendResult) {
+          return ElevatedButton.icon(
+            onPressed: () => (),
+            icon: const Icon(Icons.person),
+            label: const Text('You are friends'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color.fromARGB(255, 119, 180, 121),
             ),
-          ),
-          const SizedBox(width: 10),
-          ElevatedButton.icon(
-            onPressed: () => friendsCubit.declineFriendRequest(user.id),
-            icon: const Icon(Icons.close),
-            label: const Text('Reject'),
+          );
+        } else if (hasSentRequestResult) {
+          return ElevatedButton.icon(
+            onPressed: () => friendsCubit.withdrawFriendRequest(user.id),
+            icon: const Icon(Icons.cancel),
+            label: const Text('Cancel Request'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 231, 79, 79),
+              backgroundColor: Colors.orangeAccent,
             ),
-          ),
-        ],
-      );
-    } else {
-      return ElevatedButton.icon(
-        onPressed: () => friendsCubit.sendFriendRequest(user.email),
-        icon: const Icon(Icons.person_add),
-        label: const Text('Add Friend'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 119, 180, 121),
-        ),
-      );
-    }
+          );
+        } else if (hasReceivedRequestResult) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => friendsCubit.acceptFriendRequest(user.id),
+                icon: const Icon(Icons.check),
+                label: const Text('Accept'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 119, 180, 121),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton.icon(
+                onPressed: () => friendsCubit.declineFriendRequest(user.id),
+                icon: const Icon(Icons.close),
+                label: const Text('Reject'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 231, 79, 79),
+                ),
+              ),
+            ],
+          );
+        } else {
+          return ElevatedButton.icon(
+            onPressed: () => friendsCubit.sendFriendRequest(user.email),
+            icon: const Icon(Icons.person_add),
+            label: const Text('Add Friend'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 119, 180, 121),
+            ),
+          );
+        }
+      },
+    );
   }
 }

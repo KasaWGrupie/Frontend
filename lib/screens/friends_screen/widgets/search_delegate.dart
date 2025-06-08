@@ -82,9 +82,8 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // TODO: build more advanced suggestions
-
-    if (query.isEmpty) {
+    final searchText = query.trim();
+    if (searchText.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -100,9 +99,48 @@ class FriendSearchDelegate extends SearchDelegate<User?> {
       );
     }
 
-    // Show loading indicator when typing
-    return Center(
-      child: CircularProgressIndicator(),
+    return FutureBuilder<List<User>>(
+      future: friendsService.searchUsersByEmail(searchText),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final users = snapshot.data ?? [];
+
+        if (users.isEmpty) {
+          return Center(child: Text('No users found'));
+        }
+
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final user = users[index];
+
+            // Skip current user
+            if (user.id == currentUserId) {
+              return SizedBox.shrink();
+            }
+
+            return ListTile(
+              leading: Icon(Icons.person),
+              // leading: CircleAvatar(
+              //   backgroundImage: NetworkImage(user.profilePictureUrl ?? ''),
+              // ),
+              title: Text(user.name),
+              subtitle: Text(user.email),
+              onTap: () {
+                query = user.email;
+                showResults(context);
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

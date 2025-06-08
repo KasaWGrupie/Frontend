@@ -28,7 +28,6 @@ import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
 import 'package:kasa_w_grupie/services/settlements_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
-import 'package:kasa_w_grupie/services/users_service_mock.dart';
 
 import 'package:provider/provider.dart';
 
@@ -166,7 +165,7 @@ class _AppState extends State<_App> {
           if (snapshot.connectionState == ConnectionState.done) {
             return MultiProvider(providers: [
               Provider<UsersService>(
-                create: (context) => UsersServiceMock(),
+                create: (context) => UsersServiceApi(),
               ),
               Provider<AuthService>(
                 create: (context) => FirebaseAuthService(
@@ -195,7 +194,7 @@ class _AppState extends State<_App> {
                   create: (context) => MoneyTransactionServiceMock(
                       authService: context.read<AuthService>())),
               Provider<FriendsService>(
-                create: (context) => MockFriendsService(
+                create: (context) => FriendsServiceApi(
                   authService: context.read<AuthService>(),
                   usersService: context.read<UsersService>(),
                 ),

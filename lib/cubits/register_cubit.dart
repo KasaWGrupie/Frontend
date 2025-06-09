@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
@@ -8,6 +9,7 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   final AuthService authService;
   final UsersService usersService;
+  File? profilePicture; // Added field to store profile picture
 
   Future<void> registerWithEmail(
     String email,
@@ -28,7 +30,12 @@ class RegisterCubit extends Cubit<RegisterState> {
         emit(RegisterState.error("Failed to log in after registration."));
         return;
       } else {
-        await usersService.createUser(name: name, email: email);
+        await usersService.createUser(
+          name: name,
+          email: email,
+          profilePicture:
+              profilePicture, // Pass the profile picture to usersService
+        );
         final user = await usersService.getCurrentUser();
         if (user == null) {
           emit(RegisterState.error('Failed to create user profile.'));

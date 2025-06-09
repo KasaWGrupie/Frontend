@@ -23,7 +23,11 @@ class ExpenseTile extends StatelessWidget {
           title: Text(expense.name),
           subtitle: Text(
               '${expense.amount.toStringAsFixed(2)} ${currency.name.toUpperCase()}'),
-          trailing: Image.network(expense.pictureUrl),
+          trailing: Image.network(
+            expense.pictureUrl == ''
+                ? 'https://static.vecteezy.com/system/resources/previews/009/391/394/original/pack-of-dollars-money-clipart-design-illustration-free-png.png'
+                : expense.pictureUrl,
+          ),
         ),
       ),
     );

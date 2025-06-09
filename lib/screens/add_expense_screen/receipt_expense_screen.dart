@@ -59,7 +59,8 @@ class _ReceiptExpenseScreenState extends State<ReceiptExpenseScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? image = await _imagePicker.pickImage(source: source);
+      final XFile? image = await _imagePicker.pickImage(
+          source: source, maxHeight: 1000, maxWidth: 1000);
 
       if (image != null) {
         setState(() {

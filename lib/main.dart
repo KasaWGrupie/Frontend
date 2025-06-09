@@ -236,8 +236,9 @@ class _AppState extends State<_App> {
                   ),
                 ),
                 Provider<GroupService>(
-                  create: (context) => GroupServiceMock(
+                  create: (context) => GroupServiceApi(
                     usersService: context.read(),
+                    authService: context.read<AuthService>(),
                   ),
                 ),
                 BlocProvider<AddGroupCubit>(
@@ -260,10 +261,14 @@ class _AppState extends State<_App> {
                   create: (context) => UserCubit(context.read<UsersService>()),
                 ),
                 Provider<ExpenseService>(
-                  create: (context) => MockExpenseService(),
+                  create: (context) => ExpenseServiceApi(
+                    authService: context.read<AuthService>(),
+                  ),
                 ),
                 Provider<ReceiptService>(
-                  create: (context) => MockReceiptParserService(),
+                  create: (context) => ReceiptServiceApi(
+                    authService: context.read<AuthService>(),
+                  ),
                 ),
               ],
               child: child!,

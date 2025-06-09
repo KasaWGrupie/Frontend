@@ -39,6 +39,54 @@ class Expense {
       description: description ?? this.description,
     );
   }
+
+  factory Expense.fromJson(Map<String, dynamic> json) {
+    // Parse participants and build the split details
+    final List<dynamic> participantsJson = json['participants'] ?? [];
+    final List<int> participantIds = [];
+    final Map<int, double> splitAmounts = {};
+
+    // Extract participant IDs and their amounts
+    for (var participant in participantsJson) {
+      final userId = participant['userId'] as int;
+      participantIds.add(userId);
+
+      // Store the amount if it exists
+      if (participant['amount'] != null) {
+        splitAmounts[userId] = (participant['amount'] as num).toDouble();
+      }
+    }
+
+    // Determine division method and create appropriate split
+    ExpenseSplit split;
+    final String divisionMethod = json['divisionMethod'] ?? 'Equal';
+
+    switch (divisionMethod.toLowerCase()) {
+      case 'equal':
+        split = ExpenseSplit.equal(participants: participantIds);
+        break;
+      case 'percentage':
+        split = ExpenseSplit.byPercentage(splitAmounts,
+            participants: participantIds);
+        break;
+      case 'amount':
+      default:
+        split =
+            ExpenseSplit.byAmount(splitAmounts, participants: participantIds);
+        break;
+    }
+
+    return Expense(
+      id: json['expenseId'] as int,
+      name: json['expenseName'] as String,
+      pictureUrl: json['expensePictureUri'] as String? ?? '',
+      date: DateTime.parse(json['date'] as String),
+      amount: (json['amount'] as num).toDouble(),
+      payer: json['paidBy'] as int,
+      split: split,
+      description: json['description'] as String?,
+    );
+  }
 }
 
 class ExpenseSplit {

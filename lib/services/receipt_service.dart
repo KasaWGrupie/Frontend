@@ -1,7 +1,12 @@
 import 'dart:math';
+import 'dart:convert';
 
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/receipt.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 
 abstract class ReceiptService {
   /// Parses a receipt image and extracts items with their amounts
@@ -10,6 +15,94 @@ abstract class ReceiptService {
   /// Returns [ReceiptParseResult] containing parsed items and total amount
   /// Throws [ReceiptParseException] if parsing fails
   Future<ReceiptParseResult> parseReceipt(XFile imageFile);
+}
+
+class ReceiptServiceApi implements ReceiptService {
+  final AuthService authService;
+  ReceiptServiceApi({required this.authService});
+
+  Future<Map<String, String>> _getAuthHeaders() async {
+    final idToken = await authService.userIdToken();
+    return {
+      'Authorization': 'Bearer $idToken',
+      'Accept': '*/*',
+      // 'Content-Type': 'application/json',
+    };
+  }
+
+  @override
+  Future<ReceiptParseResult> parseReceipt(XFile imageFile) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/api/receipts/analyze');
+    final headers = await _getAuthHeaders();
+    final request = http.MultipartRequest('POST', url)..headers.addAll(headers);
+
+    try {
+      // Add the image file to the request
+      final file = await imageFile.readAsBytes();
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          file,
+          filename: 'receipt_image.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        ),
+      );
+
+      // Send the request and get the response
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Parse the JSON response
+        final jsonData = jsonDecode(response.body);
+
+        // Extract items from response - using the new schema
+        List<ReceiptItem> items = [];
+        if (jsonData['items'] != null) {
+          for (var itemJson in jsonData['items']) {
+            // Calculate the total price for each item (price * quantity)
+            final double price = (itemJson['price'] as num).toDouble();
+            final double quantity = (itemJson['quantity'] as num).toDouble();
+            final double itemTotal = price * quantity;
+
+            items.add(
+              ReceiptItem(
+                name: itemJson['description'] as String,
+                amount: itemTotal,
+              ),
+            );
+          }
+        }
+
+        // Extract other receipt details from the new schema
+        double totalAmount = (jsonData['total'] as num?)?.toDouble() ??
+            items.fold(0.0, (sum, item) => sum + item.amount);
+
+        final String? storeName = jsonData['merchantName'] as String?;
+
+        DateTime? date;
+        if (jsonData['transactionDate'] != null) {
+          try {
+            date = DateTime.parse(jsonData['transactionDate'] as String);
+          } catch (_) {
+            // Ignore date parsing errors
+          }
+        }
+
+        return ReceiptParseResult(
+          items: items,
+          totalAmount: totalAmount,
+          storeName: storeName,
+          date: date,
+        );
+      } else {
+        throw Exception(
+            'Failed to parse receipt: ${response.statusCode} ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error parsing receipt: $e');
+    }
+  }
 }
 
 class MockReceiptParserService implements ReceiptService {

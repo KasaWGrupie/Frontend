@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 
 class AddGroupCubit extends Cubit<AddGroupState> {
   final GroupService groupService;
+  File? groupPicture;
 
   AddGroupCubit({required this.groupService})
       : super(const AddGroupState.initial());
@@ -17,21 +20,18 @@ class AddGroupCubit extends Cubit<AddGroupState> {
     required String invitationCode,
   }) async {
     emit(const AddGroupState.loading());
-    await Future<void>.delayed(const Duration(seconds: 1));
 
     try {
-      final group = Group(
-        id: DateTime.now().millisecondsSinceEpoch,
+      final newGroup = NewGroup(
         name: name,
         description: description,
         currency: currency,
-        status: GroupStatus.active,
-        adminId: adminId,
         membersId: members,
-        invitationCode: invitationCode,
+        picture: groupPicture,
+        adminId: adminId,
       );
 
-      final result = await groupService.addGroup(group);
+      final result = await groupService.addGroup(newGroup);
 
       if (result != null) {
         emit(AddGroupState.error(result));

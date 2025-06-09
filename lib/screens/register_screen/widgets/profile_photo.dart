@@ -1,19 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kasa_w_grupie/cubits/add_group_cubit.dart';
 
-class GroupPhotoWithAddButton extends StatefulWidget {
-  final AddGroupCubit cubit;
+class ProfilePhotoWithAddButton extends StatefulWidget {
+  final Function(File) onPhotoSelected;
 
-  const GroupPhotoWithAddButton({super.key, required this.cubit});
+  const ProfilePhotoWithAddButton({super.key, required this.onPhotoSelected});
 
   @override
-  State<GroupPhotoWithAddButton> createState() =>
-      _GroupPhotoWithAddButtonState();
+  State<ProfilePhotoWithAddButton> createState() =>
+      _ProfilePhotoWithAddButtonState();
 }
 
-class _GroupPhotoWithAddButtonState extends State<GroupPhotoWithAddButton> {
+class _ProfilePhotoWithAddButtonState extends State<ProfilePhotoWithAddButton> {
   File? _selectedImage;
 
   Future<void> _pickImage(ImageSource source) async {
@@ -33,7 +32,7 @@ class _GroupPhotoWithAddButtonState extends State<GroupPhotoWithAddButton> {
           _selectedImage = imageFile;
         });
 
-        widget.cubit.groupPicture = imageFile;
+        widget.onPhotoSelected(imageFile);
       }
     } catch (e) {
       if (mounted) {
@@ -85,7 +84,7 @@ class _GroupPhotoWithAddButtonState extends State<GroupPhotoWithAddButton> {
               _selectedImage != null ? FileImage(_selectedImage!) : null,
           child: _selectedImage == null
               ? const Icon(
-                  Icons.group,
+                  Icons.person,
                   size: 40,
                   color: Colors.white,
                 )

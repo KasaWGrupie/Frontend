@@ -95,9 +95,18 @@ class SettlementTile extends StatelessWidget {
         return Row(
           children: [
             // User avatar
-            const CircleAvatar(
+            CircleAvatar(
               radius: 24,
-              child: Icon(Icons.person),
+              backgroundColor: Colors.grey.shade300,
+              backgroundImage: isSender && senderUser.pictureUrl.isNotEmpty
+                  ? NetworkImage(senderUser.pictureUrl)
+                  : !isSender && recipientUser.pictureUrl.isNotEmpty
+                      ? NetworkImage(recipientUser.pictureUrl)
+                      : null,
+              child: (isSender && senderUser.pictureUrl.isEmpty) ||
+                      (!isSender && recipientUser.pictureUrl.isEmpty)
+                  ? const Icon(Icons.person, color: Colors.white)
+                  : null,
             ),
             const SizedBox(width: 16),
 

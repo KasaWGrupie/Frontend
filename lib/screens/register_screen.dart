@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasa_w_grupie/screens/base_screen.dart';
 import 'package:kasa_w_grupie/cubits/auth_cubit.dart';
 import 'package:kasa_w_grupie/cubits/register_cubit.dart';
+import 'package:kasa_w_grupie/screens/register_screen/widgets/profile_photo.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -40,6 +42,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           },
           child: BlocBuilder<RegisterCubit, RegisterState>(
             builder: (context, state) {
+              final registerCubit = context.read<RegisterCubit>();
+
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -48,6 +52,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: ListView(
                       shrinkWrap: true,
                       children: [
+                        Center(
+                          child: ProfilePhotoWithAddButton(
+                            onPhotoSelected: (File photo) {
+                              registerCubit.profilePicture = photo;
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 24),
                         TextFormField(
                           controller: nameController,
                           decoration: InputDecoration(

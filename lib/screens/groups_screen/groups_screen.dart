@@ -98,7 +98,7 @@ class _GroupsScreenContent extends StatelessWidget {
                     ? GroupTile(
                         groupName: state[index].name,
                         groupId: state[index].id,
-                        //imageUrl: state[index].imageUrl,
+                        imageUrl: state[index].pictureUrl,
                       )
                     : null,
               ),

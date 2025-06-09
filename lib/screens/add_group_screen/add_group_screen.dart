@@ -59,6 +59,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         id: user.id,
         name: user.name,
         email: user.email,
+        pictureUrl: user.pictureUrl,
       );
     }).toList();
   }
@@ -110,7 +111,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           child: ListView(
                             children: [
                               // Group photo field
-                              const GroupPhotoWithAddButton(),
+                              GroupPhotoWithAddButton(
+                                cubit: context.read(),
+                              ),
                               const SizedBox(height: 16),
 
                               // Group name field

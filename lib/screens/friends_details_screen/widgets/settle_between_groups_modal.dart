@@ -6,6 +6,7 @@ import 'package:kasa_w_grupie/screens/friends_details_screen/widgets/selected_gr
 Future<void> showSettleBetweenGroupsModal(
   BuildContext context,
   List<Map<String, dynamic>> groupBalances,
+  int friendId,
 ) async {
   List<String> selectedGroupNames = [];
   CurrencyEnum selectedCurrency = CurrencyEnum.pln;
@@ -33,7 +34,6 @@ Future<void> showSettleBetweenGroupsModal(
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-
                 SizedBox(height: 16),
                 Text(
                   'Select Groups to Settle',
@@ -43,8 +43,6 @@ Future<void> showSettleBetweenGroupsModal(
                   ),
                 ),
                 SizedBox(height: 16),
-
-                // List of groups from which user can settle
                 SizedBox(
                   height: 300,
                   child: ListView.builder(
@@ -84,8 +82,6 @@ Future<void> showSettleBetweenGroupsModal(
                   ),
                 ),
                 SizedBox(height: 16),
-
-                // Dropdown for currency
                 Row(
                   children: [
                     Text("Currency you want to settle in:"),
@@ -109,8 +105,6 @@ Future<void> showSettleBetweenGroupsModal(
                   ],
                 ),
                 SizedBox(height: 16),
-
-                // Button for confirming settlement between groups
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -120,7 +114,34 @@ Future<void> showSettleBetweenGroupsModal(
                               selectedGroupNames.contains(group["groupName"]))
                           .toList();
 
-                      if (selectedGroups.isNotEmpty) {
+                      if (selectedGroups.isEmpty) return;
+
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (dialogContext) {
+                          return AlertDialog(
+                            title: const Text('Confirm Settlement'),
+                            content: const Text(
+                              'Are you sure you want to settle between these groups? '
+                              'You confirm that you have either already completed the payment or will do so soon, and you want to record this settlement here.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(false),
+                                child: const Text('No'),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(true),
+                                child: const Text('Yes'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirm == true) {
                         if (context.mounted) {
                           Navigator.pop(context);
                         }
@@ -128,6 +149,7 @@ Future<void> showSettleBetweenGroupsModal(
                           context,
                           selectedGroups,
                           selectedCurrency,
+                          friendId,
                         );
                       }
                     },

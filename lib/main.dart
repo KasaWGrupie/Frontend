@@ -32,7 +32,6 @@ import 'package:kasa_w_grupie/services/friends_service.dart';
 import 'package:kasa_w_grupie/services/group_service.dart';
 import 'package:kasa_w_grupie/services/money_transactions_service.dart';
 import 'package:kasa_w_grupie/services/receipt_service.dart';
-import 'package:kasa_w_grupie/services/settlements_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 import 'package:provider/provider.dart';
@@ -252,9 +251,9 @@ class _AppState extends State<_App> {
                   ),
                 ),
                 Provider<FriendsService>(
-                  create: (context) => FriendsServiceApi(
+                  create: (context) => MockFriendsService(
                     usersService: context.read<UsersService>(),
-                    authService: context.read<AuthService>(),
+                    // authService: context.read<AuthService>(),
                   ),
                 ),
                 BlocProvider<UserCubit>(
@@ -262,9 +261,6 @@ class _AppState extends State<_App> {
                 ),
                 Provider<ExpenseService>(
                   create: (context) => MockExpenseService(),
-                ),
-                Provider<SettlementsService>(
-                  create: (context) => SettlementsServiceMock(),
                 ),
                 Provider<ReceiptService>(
                   create: (context) => MockReceiptParserService(),

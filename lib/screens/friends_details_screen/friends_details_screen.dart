@@ -76,7 +76,8 @@ class FriendDetailsScreen extends StatelessWidget {
                 ),
         ),
         if (totalBalance != 0)
-          SettleBetweenGroupsButton(groupBalances: groupBalances),
+          SettleBetweenGroupsButton(
+              groupBalances: groupBalances, friendId: userId),
       ],
     );
   }

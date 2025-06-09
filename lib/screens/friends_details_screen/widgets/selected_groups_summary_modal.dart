@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/utils/currency_formater.dart';
-import 'package:kasa_w_grupie/services/settlements_service.dart';
+import 'package:kasa_w_grupie/services/money_transactions_service.dart';
 
 Future<void> showSelectedGroupsSummaryModal(
   BuildContext context,
   List<Map<String, dynamic>> selectedGroups,
   CurrencyEnum selectedCurrency,
+  int friendId,
 ) async {
-  final settlementsService = context.read<SettlementsService>();
+  final moneyTransactionService = context.read<MoneyTransactionService>();
   final navigator = Navigator.of(context);
 
-  // Get total amount for settlement
-  final total =
-      await settlementsService.getTotalSettlementAmountInGivenCurrency(
-    selectedCurrency,
-    selectedGroups,
-  );
+  // TODO Create the money request here and integrate with backend
+  // final MoneyRequest newMoneyRequest =
+  //     await moneyTransactionService.createMoneyRequest(
+  //   selectedCurrency,
+  //   selectedGroups,
+  //   friendId,
+  // );
+
+  // final total = newMoneyRequest.moneyValue;
+  final total = 50.0;
 
   if (!navigator.mounted) {
     return;
@@ -45,13 +50,16 @@ Future<void> showSelectedGroupsSummaryModal(
               ),
             ),
             const SizedBox(height: 16),
+            Text(
+              'You are settling',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 16),
             const Text(
               'Confirm Settlement',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
-
-            // Display total amount of money to settle
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -67,54 +75,13 @@ Future<void> showSelectedGroupsSummaryModal(
               ],
             ),
             const SizedBox(height: 24),
-
-            // Confirmation button
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(builderContext),
-                    child: const Text("Cancel"),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: builderContext,
-                        builder: (dialogContext) {
-                          // Confiramtion alert dialog
-                          return AlertDialog(
-                            title: const Text('Confirm Settlement'),
-                            content: const Text(
-                                'Are you sure you want to confirm this settlement?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(dialogContext).pop(false),
-                                child: const Text('No'),
-                              ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(dialogContext).pop(true),
-                                child: const Text('Yes'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-
-                      if (confirm == true) {
-                        if (builderContext.mounted) {
-                          Navigator.pop(builderContext);
-                        }
-                      }
-                    },
-                    child: const Text("Confirm"),
-                  ),
-                ),
-              ],
+            ElevatedButton(
+              onPressed: () {
+                if (builderContext.mounted) {
+                  Navigator.pop(builderContext);
+                }
+              },
+              child: const Text("Close"),
             ),
             const SizedBox(height: 16),
           ],

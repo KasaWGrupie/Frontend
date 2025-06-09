@@ -144,13 +144,14 @@ Future<void> showSettleBetweenGroupsModal(
                       if (confirm == true) {
                         if (context.mounted) {
                           Navigator.pop(context);
+
+                          await showSelectedGroupsSummaryModal(
+                            context,
+                            selectedGroups,
+                            selectedCurrency,
+                            friendId,
+                          );
                         }
-                        await showSelectedGroupsSummaryModal(
-                          context,
-                          selectedGroups,
-                          selectedCurrency,
-                          friendId,
-                        );
                       }
                     },
                     child: Text('Settle Selected Groups'),

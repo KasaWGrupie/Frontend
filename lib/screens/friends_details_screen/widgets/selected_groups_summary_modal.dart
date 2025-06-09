@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/screens/friends_details_screen/utils/currency_formater.dart';
-import 'package:kasa_w_grupie/services/money_transactions_service.dart';
 
 Future<void> showSelectedGroupsSummaryModal(
   BuildContext context,
@@ -10,18 +8,8 @@ Future<void> showSelectedGroupsSummaryModal(
   CurrencyEnum selectedCurrency,
   int friendId,
 ) async {
-  final moneyTransactionService = context.read<MoneyTransactionService>();
   final navigator = Navigator.of(context);
 
-  // TODO Create the money request here and integrate with backend
-  // final MoneyRequest newMoneyRequest =
-  //     await moneyTransactionService.createMoneyRequest(
-  //   selectedCurrency,
-  //   selectedGroups,
-  //   friendId,
-  // );
-
-  // final total = newMoneyRequest.moneyValue;
   final total = 50.0;
 
   if (!navigator.mounted) {

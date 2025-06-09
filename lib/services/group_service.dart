@@ -7,6 +7,7 @@ import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/group.dart';
 import 'package:kasa_w_grupie/models/group_join_request.dart';
 import 'package:kasa_w_grupie/models/user.dart';
+import 'package:kasa_w_grupie/services/auth_service.dart';
 import 'package:kasa_w_grupie/services/users_service.dart';
 
 abstract class GroupService {
@@ -264,25 +265,21 @@ class GroupServiceApi implements GroupService {
 
   @override
   Future<String?> joinGroupByCode(String code) {
-    // TODO: implement joinGroupByCode
     throw UnimplementedError();
   }
 
   @override
   Future<void> respondToJoinRequest(int groupId, int requestId, bool accept) {
-    // TODO: implement respondToJoinRequest
     throw UnimplementedError();
   }
 
   @override
   Future<String?> updateGroup(Group group) {
-    // TODO: implement updateGroup
     throw UnimplementedError();
   }
 
   @override
   Future<String?> updateGroupStatus(int groupId, bool isActive) {
-    // TODO: implement updateGroupStatus
     throw UnimplementedError();
   }
 }

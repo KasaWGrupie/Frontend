@@ -361,7 +361,9 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                                     // Handle result
                                     if (result == null) {
                                       // Success - Navigate back
-                                      Navigator.of(context).pop();
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop();
+                                      }
                                     } else {
                                       setState(() {
                                         _error = result;

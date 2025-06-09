@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "467283107019",
+    "project_id": "kasawgrupie",
+    "storage_bucket": "kasawgrupie.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:467283107019:android:368f9fb1463e4c14b38f4e",
+        "android_client_info": {
+          "package_name": "com.example.kasa_w_grupie"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoe3g4Cgz4F1KTdUyPgCztlrMXoOf-nRE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

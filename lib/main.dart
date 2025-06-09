@@ -269,7 +269,9 @@ class _AppState extends State<_App> {
                   create: (context) => SettlementsServiceMock(),
                 ),
                 Provider<ReceiptService>(
-                  create: (context) => MockReceiptParserService(),
+                  create: (context) => ReceiptServiceApi(
+                    authService: context.read<AuthService>(),
+                  ),
                 ),
               ],
               child: child!,

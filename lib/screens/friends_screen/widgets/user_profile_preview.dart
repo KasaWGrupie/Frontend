@@ -51,11 +51,16 @@ class UserProfilePreview extends StatelessWidget {
                   CircleAvatar(
                     radius: 60,
                     backgroundColor: Theme.of(context).primaryColor,
-                    child: const Icon(
-                      Icons.person,
-                      size: 50,
-                      color: Colors.white,
-                    ),
+                    backgroundImage: user.pictureUrl.isNotEmpty
+                        ? NetworkImage(user.pictureUrl)
+                        : null,
+                    child: user.pictureUrl.isEmpty
+                        ? const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.white,
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 16),
 

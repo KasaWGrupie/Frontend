@@ -46,12 +46,18 @@ class MemberTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: const CircleAvatar(
+        leading: CircleAvatar(
           radius: 20,
-          // TODO: Replace with user image
-          child: FlutterLogo(
-            size: 30,
-          ),
+          backgroundColor: Colors.grey.shade300,
+          backgroundImage:
+              user.pictureUrl.isNotEmpty ? NetworkImage(user.pictureUrl) : null,
+          child: user.pictureUrl.isEmpty
+              ? const Icon(
+                  Icons.person,
+                  size: 20,
+                  color: Colors.white,
+                )
+              : null,
         ),
         title: Text(user.name),
         trailing: Text(

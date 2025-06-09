@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:kasa_w_grupie/models/expense.dart';
 
 class NewExpense {
@@ -8,6 +10,7 @@ class NewExpense {
   int? payer;
   String? description;
   ExpenseSplit? split;
+  File? picture;
 
   NewExpense({
     required this.groupId,
@@ -17,6 +20,7 @@ class NewExpense {
     this.payer,
     this.split,
     this.description,
+    this.picture,
   });
 }
 
@@ -60,7 +64,6 @@ extension NewExpenseJson on NewExpense {
       'groupId': groupId,
       'paidBy': payer,
       'expenseName': name,
-      'expensePictureUri': '',
       'description': description ?? '',
       'amount': amount,
       'date': date!.toUtc().toIso8601String(),

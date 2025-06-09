@@ -60,6 +60,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         id: user.id,
         name: user.name,
         email: user.email,
+        pictureUrl: user.pictureUrl,
       );
     }).toList();
   }

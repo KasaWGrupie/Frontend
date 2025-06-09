@@ -60,7 +60,7 @@ class GroupServiceApi implements GroupService {
     if (group.picture != null) {
       final pictureBytes = await group.picture!.readAsBytes();
       final multipartFile = http.MultipartFile.fromBytes(
-        'profilePicture',
+        'image',
         pictureBytes,
         filename: 'avatar.jpg',
         contentType: MediaType('image', 'jpeg'),

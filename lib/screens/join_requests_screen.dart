@@ -27,7 +27,10 @@ class GroupJoinRequestsScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final req = state.requests[index];
                 return ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.person)),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.grey.shade300,
+                    child: const Icon(Icons.person, color: Colors.white),
+                  ),
                   title: Text(req.name),
                   subtitle: Text(req.email),
                   trailing: Row(

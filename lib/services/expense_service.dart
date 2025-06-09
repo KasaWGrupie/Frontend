@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:kasa_w_grupie/config/api_config.dart';
 import 'package:kasa_w_grupie/models/expense.dart';
 import 'package:kasa_w_grupie/models/new_expense.dart';
@@ -21,7 +22,7 @@ class ExpenseServiceApi implements ExpenseService {
     return {
       'Authorization': 'Bearer $idToken',
       'Accept': '*/*',
-      'Content-Type': 'application/json',
+      // 'Content-Type': 'application/json',
     };
   }
 
@@ -29,20 +30,26 @@ class ExpenseServiceApi implements ExpenseService {
   Future<String?> addExpense(NewExpense expense) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/expense');
     final headers = await _getAuthHeaders();
+    final request = http.MultipartRequest('POST', url)..headers.addAll(headers);
 
     try {
       final requestBody = jsonEncode(expense.toJson());
+      request.fields['dto'] = requestBody;
 
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: requestBody,
-      );
+      if (expense.picture != null) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'expensePicture',
+          expense.picture!.readAsBytesSync(),
+          filename: 'expense_picture.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        ));
+      }
+      final response = await http.Response.fromStream(await request.send());
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return null; // Success, no error message
       } else {
-        return 'Failed to add expense: ${response.statusCode} ${response.body}';
+        return 'Failed to add expense: ${response.statusCode}';
       }
     } catch (e) {
       return 'Error adding expense: $e';

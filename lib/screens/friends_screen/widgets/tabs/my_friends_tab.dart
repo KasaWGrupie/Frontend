@@ -55,7 +55,10 @@ class MyFriendsTab extends StatelessWidget {
                     }
 
                     return ListTile(
-                      leading: CircleAvatar(child: Icon(Icons.person)),
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.grey.shade300,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
                       title: Text(friend.name),
                       subtitle: Text(balanceInfo),
                       trailing: Icon(Icons.arrow_forward_ios),

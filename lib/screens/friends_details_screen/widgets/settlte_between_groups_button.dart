@@ -3,10 +3,12 @@ import 'package:kasa_w_grupie/screens/friends_details_screen/widgets/settle_betw
 
 class SettleBetweenGroupsButton extends StatelessWidget {
   final List<Map<String, dynamic>> groupBalances;
+  final int friendId;
 
   const SettleBetweenGroupsButton({
     super.key,
     required this.groupBalances,
+    required this.friendId,
   });
 
   @override
@@ -19,7 +21,8 @@ class SettleBetweenGroupsButton extends StatelessWidget {
         border: Border(top: BorderSide(color: Colors.grey.shade200)),
       ),
       child: ElevatedButton(
-        onPressed: () => showSettleBetweenGroupsModal(context, groupBalances),
+        onPressed: () =>
+            showSettleBetweenGroupsModal(context, groupBalances, friendId),
         style: ElevatedButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 12)),
         child: Text("Settle"),
